@@ -14,11 +14,7 @@
 #   pragma clang diagnostic ignored "-W#warnings"
 #       include <OpenGL/gl3.h>
 #   pragma clang diagnostic pop*/
-    #   include "libglew/glew.h"
 #   include <GLUT/glut.h>
-#   undef glGenVertexArrays
-#   undef glBindVertexArray
-#   undef glDeleteVertexArrays
 #   define glGenVertexArrays glGenVertexArraysAPPLE
 #   define glBindVertexArray glBindVertexArrayAPPLE
 #   define glDeleteVertexArrays glDeleteVertexArraysAPPLE

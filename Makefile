@@ -19,7 +19,8 @@ OBJDIR = obj
 BINDIR = bin
 
 _CSRC = final.cpp mjterrain.cpp mjshader.cpp mjrenderable.cpp\
-        mjutil.cpp mjmath.cpp mjscene.cpp mjcamera.cpp mjlight.cpp
+        mjutil.cpp mjmath.cpp mjscene.cpp mjcamera.cpp mjlight.cpp\
+        mjprimitive.cpp mjloader.cpp
 
 _SHADERS = shader.fsh shader.vsh
 
@@ -38,8 +39,7 @@ ifeq "${UNAME}" "Darwin"
 	FRAMEWORKS = -framework OpenGL -framework GLUT
 	LINK = ${COMPILER} ${OPTIONS} ${FRAMEWORKS}
 	MAINTARGET = bundle
-	LIBS = ${SRCDIR}/libglew/libglew${UNAME}${ARCH}.a\
-	       ${SRCDIR}/libglui/libglui${UNAME}${ARCH}.a
+	LIBS = ${SRCDIR}/libglui/libglui${UNAME}${ARCH}.a
 endif
 
 ifeq "${UNAME}" "Linux"

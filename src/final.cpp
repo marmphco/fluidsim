@@ -6,11 +6,19 @@
   Putting together all the pieces of this wondrous machine!
 */
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-parameter"
+#pragma clang diagnostic ignored "-Woverloaded-virtual"
+#pragma clang diagnostic ignored "-Wunused-comparison"
+#include "libglui/glui.h"
+#pragma clang diagnostic pop
 #include "mjutil.h"
 #include "mjshader.h"
 #include "mjrenderable.h"
 #include "mjmath.h"
 #include "mjscene.h"
+#include "mjprimitive.h"
+#include "mjloader.h"
 #include <cmath>
 #include <iostream>
 
@@ -43,18 +51,7 @@ public:
 static Shader *shader;
 static Model *model;
 static Scene *scene;
-
-GLfloat vertexData[] = {
-    0.0, 0.0, 0.0,
-    1.0, 0.0, 0.0,
-    1.0, 1.0, 0.0,
-    0.0, 1.0, 0.0,
-
-    0.0, 0.0, 1.0,
-    1.0, 0.0, 1.0,
-    1.0, 1.0, 1.0,
-    0.0, 1.0, 1.0
-};
+static int mainWindow;
 
 GLuint indexData[] = {
     0, 3, 1,
@@ -94,13 +91,13 @@ void mouseEvent(int button, int state, int x, int y) {
 }
 
 void render(void) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    float t = sinf(glutGet(GLUT_ELAPSED_TIME)*0.005)*0.8;
+    GLUI_Master.auto_set_viewport();
     scene->render();
     glutSwapBuffers();
 }
 
 void idle(void) {
+    glutSetWindow(mainWindow);
     glutPostRedisplay();
 }
 
@@ -127,11 +124,25 @@ void init(void) {
     scene->camera.translate(0.0, 3.0, 5.0);
     scene->camera.rotate(-30, 0, 0);
 
+    float *vertexData = new float[cubeSize()];
+    cubeVertices(vertexData, 1.0, 1.0, 1.0);
     model = new Model(shader, GL_TRIANGLES);
     model->init(vertexData, indexData, 8, 36, 3);
     model->modelMatrix.translate(-0.5, -0.5, -0.5);
 
     scene->add(model);
+
+    float *vertices;
+    int vertexCount = loadVertices(&vertices, "woman.coor");
+    unsigned int *indices;
+    int indexCount = loadPolygons(&indices, "woman.poly");
+    cout << indexCount << endl;
+    for (int q = 0; q < indexCount; q += 3) {
+        cout << indices[q] << ", "
+             << indices[q+1] << ", "
+             << indices[q+2] << ", "
+             << endl;
+    }
 
     int width = 10;
     GLuint *textureData = new GLuint[width*width*width];
@@ -151,7 +162,7 @@ void init(void) {
             }
         }
     }
-    shader->use();
+    //shader->use();
     GLint texLoc = shader->getUniformLocation("texture0");
     glUniform1i(texLoc, 0);
 
@@ -172,21 +183,31 @@ void init(void) {
                  textureData);
 }
 
+void reshapeWindow(int, int) {
+    GLUI_Master.reshape();
+}
+
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     glutInitWindowPosition(100, 100);
-    glutCreateWindow("Fluid Simulator");
-//#ifndef __APPLE__
+    mainWindow = glutCreateWindow("Fluid Simulator");
+
+#ifndef __APPLE__
     glewInit();
-//#endif
+#endif
     init();
+
+    GLUI *gui = GLUI_Master.create_glui_subwindow(mainWindow, GLUI_SUBWINDOW_BOTTOM);
+    gui->add_statictext("le GUI");
+    gui->add_column();
 
     glutDisplayFunc(render);
     glutMotionFunc(mouseMove);
-    glutMouseFunc(mouseEvent);
-    glutIdleFunc(idle);
+    GLUI_Master.set_glutIdleFunc(idle);
+    GLUI_Master.set_glutMouseFunc(mouseEvent);
+    GLUI_Master.set_glutReshapeFunc(reshapeWindow);
     glutMainLoop();
 
     delete shader;
