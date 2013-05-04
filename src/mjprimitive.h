@@ -23,12 +23,15 @@ void interleaveVertexData(float *interleaved,
                           float *textureData,
                           long vertexCount);
 
+// Assuming vertices is meant for GL_TRIANGLES
+void generateNormals(float *normals, float *vertices, unsigned int *indices, long vertexCount, long indexCount);
+
 long cubeSize();
 
 void cubeVertices(float *out,
-          float width, float height, float depth);
+                  float width, float height, float depth);
 
-void cubeIndices();
+void cubeIndices(unsigned int *out);
 
 }
 #endif

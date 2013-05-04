@@ -65,13 +65,13 @@ union Vector3 {
         return *this;
     }
     float length() {
-        return sqrtf(x*x+y*y);
+        return sqrtf(x*x+y*y+z*z);
     }
     float dot(Vector3 &that) {
         return x*that.x+y*that.y+z*that.z;
     }
     Vector3 cross(Vector3 &that) {
-        return Vector3(y*that.z-z*that.y, z*that.x-x*that.z, x*that.y-y*that.z);
+        return Vector3(y*that.z-z*that.y, z*that.x-x*that.z, x*that.y-y*that.x);
     }
     Vector3 normalized() {
         float l = length();

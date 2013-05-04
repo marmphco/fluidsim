@@ -280,8 +280,7 @@ std::ostream &operator<<(std::ostream &out,
                          mcjee::Vector3 &vec) {
     out << "[" << vec.x << ", "
         << vec.y << ", "
-        << vec.z << "]"
-        << std::endl;
+        << vec.z << "]";
     return out;
 }
 

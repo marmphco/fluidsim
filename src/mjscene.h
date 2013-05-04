@@ -22,6 +22,8 @@ namespace mcjee {
     public:
         static const int MAX_LIGHTS = 8;
         Vector3 ambientColor;
+        float diffuseMultiplier;
+        float specularMultiplier;
 
         Camera camera;
         Scene();

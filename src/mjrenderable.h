@@ -4,10 +4,6 @@
     mcjee@ucsc.edu
 
     Abstract class meant to be subclassed before usage.
-    Makes a lot of assumptions on what kind of data is rendered.
-    - Assumes GL_UNSIGNED_INT indices
-    - Assumes GL_FLOAT vertices
-    Should be template-ized!
     Definitely not the most efficient nor the most flexible,
     but it is very convenient for this project.
 */
@@ -18,34 +14,43 @@
 #include "mjutil.h"
 #include "mjshader.h"
 #include "mjlight.h"
+#include "mjgeometry.h"
 
 namespace mcjee {
     class Renderable {
     friend class Scene;
     private:
-        size_t indexCount;
-        GLuint vertexBufferObject;
-        GLuint indexBufferObject;
         GLuint vertexArrayObject;
+        // local rotation axes
+        Vector3 localAxisX;
+        Vector3 localAxisY;
+        Vector3 localAxisZ;
+        Matrix4 rotation;
+        Matrix4 inverseRotation;
+
     public:
+        Geometry *geometry;
         Shader *shader;
         Material material;
-        Matrix4 modelMatrix;
         GLenum drawType;
+        GLenum polygonMode;
 
-        Renderable(Shader *shader, GLenum drawType);
+        Vector3 center;
+        Vector3 scale;
+        Vector3 position;
+
+        Renderable(Geometry *, Shader *, GLenum drawType);
         virtual ~Renderable();
-        void init(GLfloat *vertexData,
-                  GLuint *indexData,
-                  int vertexCount,
-                  int indexCount,
-                  int vertexElements);
-        void modifyData(GLfloat *vertexData,
-                        GLuint *indexData,
-                        int vertexCount,
-                        int indexCount,
-                        int vertexElements);
+        void init();
         void render(void);
+
+        // rotation can not be directly manipulated
+        // in the way scale and translate can
+        void resetRotation();
+        void rotate(float angle, Vector3 axis);
+        void rotateLocalX(float angle);
+        void rotateLocalY(float angle);
+        void rotateLocalZ(float angle);
 
         // To be overridden by subclasses
         virtual void setupVertexAttributes() = 0;

@@ -28,14 +28,6 @@ namespace mcjee {
     private:
         bool linked;
 
-        bool _ambientEnabled;
-        bool _lightEnabled;
-        bool _diffuseEnabled;
-        bool _specularEnabled;
-        bool _projectionMatrixEnabled;
-        bool _viewMatrixEnabled;
-        bool _modelMatrixEnabled;
-
         std::map<string, GLint> uniformMap;
         std::map<string, GLint> attributeMap;
 
@@ -52,13 +44,8 @@ namespace mcjee {
         GLint getUniformLocation(const GLchar *name);
         void use(void);
 
-        bool ambientEnabled() {return _ambientEnabled;};
-        bool lightEnabled() {return _lightEnabled;};
-        bool diffuseEnabled() {return _diffuseEnabled;};
-        bool specularEnabled() {return _specularEnabled;};
-        bool projectionMatrixEnabled() {return _projectionMatrixEnabled;};
-        bool viewMatrixEnabled() {return _viewMatrixEnabled;};
-        bool modelMatrixEnabled() {return _modelMatrixEnabled;};
+        bool uniformEnabled(const char *name);
+        bool attributeEnabled(const char *name);
     };
 }
 

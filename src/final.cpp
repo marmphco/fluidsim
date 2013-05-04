@@ -18,7 +18,6 @@
 #include "mjmath.h"
 #include "mjscene.h"
 #include "mjprimitive.h"
-#include "mjloader.h"
 #include <cmath>
 #include <iostream>
 
@@ -32,8 +31,8 @@ static const int WINDOW_HEIGHT = 640;
 
 class Model : public Renderable {
 public:
-    Model(Shader *shader, GLenum drawType) :
-        Renderable(shader, drawType) {}
+    Model(Geometry *geo, Shader *shader, GLenum drawType) :
+        Renderable(geo, shader, drawType) {}
     virtual void setupVertexAttributes() {
         GLint loc = shader->getAttribLocation("vPosition");
         glEnableVertexAttribArray(loc);
@@ -49,36 +48,20 @@ public:
 };
 
 static Shader *shader;
+static Geometry *geo;
 static Model *model;
 static Scene *scene;
 static int mainWindow;
 
-GLuint indexData[] = {
-    0, 3, 1,
-    3, 2, 1,
-    1, 2, 5,
-    2, 6, 5,
-    0, 7, 3,
-    0, 4, 7,
-    3, 7, 2,
-    7, 6, 2,
-    4, 5, 7,
-    7, 5, 6,
-    0, 1, 4,
-    1, 5, 4
-};
-
 static int lastX = 0;
 static int lastY = 0;
 void mouseMove(int x, int y) {
-    Matrix4 rotation;
     if (-y+lastY == 0 && -x+lastX == 0) return;
     Vector3 rotationAxis(y-lastY, x-lastX, 0.0);
     float rotationAmount = rotationAxis.length();
     rotationAxis.normalize();
 
-    rotation.rotate(rotationAmount, rotationAxis);
-    model->modelMatrix = rotation*model->modelMatrix;
+    model->rotate(rotationAmount, rotationAxis);
     lastX = x;
     lastY = y;
 }
@@ -124,25 +107,17 @@ void init(void) {
     scene->camera.translate(0.0, 3.0, 5.0);
     scene->camera.rotate(-30, 0, 0);
 
-    float *vertexData = new float[cubeSize()];
+    float vertexData[cubeSize()];
+    GLuint indexData[36];
     cubeVertices(vertexData, 1.0, 1.0, 1.0);
-    model = new Model(shader, GL_TRIANGLES);
-    model->init(vertexData, indexData, 8, 36, 3);
-    model->modelMatrix.translate(-0.5, -0.5, -0.5);
+    cubeIndices(indexData);
+    geo = new Geometry(vertexData, indexData, 8, 36, 3);
+
+    model = new Model(geo, shader, GL_TRIANGLES);
+    model->init();
+    model->center = Vector3(0.5, 0.5, 0.5);
 
     scene->add(model);
-
-    float *vertices;
-    int vertexCount = loadVertices(&vertices, "woman.coor");
-    unsigned int *indices;
-    int indexCount = loadPolygons(&indices, "woman.poly");
-    cout << indexCount << endl;
-    for (int q = 0; q < indexCount; q += 3) {
-        cout << indices[q] << ", "
-             << indices[q+1] << ", "
-             << indices[q+2] << ", "
-             << endl;
-    }
 
     int width = 10;
     GLuint *textureData = new GLuint[width*width*width];

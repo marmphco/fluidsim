@@ -6,7 +6,7 @@
 
 namespace mcjee {
 
-    Scene::Scene() {
+    Scene::Scene() : diffuseMultiplier(1.0), specularMultiplier(1.0 ){
 
     }
 
@@ -35,8 +35,8 @@ namespace mcjee {
         Vector3 lightSpecularColors[MAX_LIGHTS];
         for (unsigned int i = 0; i < MAX_LIGHTS && i < lights.size(); ++i) {
             lightPositions[i] = lights[i]->position;
-            lightDiffuseColors[i] = lights[i]->diffuseColor;
-            lightSpecularColors[i] = lights[i]->specularColor;
+            lightDiffuseColors[i] = lights[i]->diffuseColor*diffuseMultiplier;
+            lightSpecularColors[i] = lights[i]->specularColor*specularMultiplier;
         }
 
         // render objects
@@ -46,28 +46,32 @@ namespace mcjee {
             Shader &shader = *object.shader;
             shader.use();
             // matrix uniforms
-            if (shader.projectionMatrixEnabled()) {
+            if (shader.uniformEnabled("projectionMatrix")) {
                 GLint pLoc = shader.getUniformLocation("projectionMatrix");
                 glUniformMatrix4fv(pLoc, 1, GL_FALSE, camera.projectionMatrix().data);
             }
-            if (shader.viewMatrixEnabled()) {
+            if (shader.uniformEnabled("viewMatrix")) {
                 GLint vLoc = shader.getUniformLocation("viewMatrix");
                 glUniformMatrix4fv(vLoc, 1, GL_FALSE, camera.viewMatrix().data);
             }
+            if (shader.uniformEnabled("inverseViewMatrix")) {
+                GLint vLoc = shader.getUniformLocation("inverseViewMatrix");
+                glUniformMatrix4fv(vLoc, 1, GL_FALSE, camera.inverseViewMatrix().data);
+            }
             //light uniforms
-            if (shader.ambientEnabled()) {
+            if (shader.uniformEnabled("ambientColor")) {
                 GLint lightAmbLoc = shader.getUniformLocation("ambientColor");
                 glUniform3fv(lightAmbLoc, 1, (const GLfloat *)&ambientColor);
             }
-            if (shader.lightEnabled()) {
+            if (shader.uniformEnabled("lightPositions")) {
                 GLint lightPosLoc = shader.getUniformLocation("lightPositions");
                 glUniform3fv(lightPosLoc, MAX_LIGHTS, (const GLfloat *)lightPositions);
             }
-            if (shader.diffuseEnabled()) {
+            if (shader.uniformEnabled("lightDiffuseColors")) {
                 GLint lightDifLoc = shader.getUniformLocation("lightDiffuseColors");
                 glUniform3fv(lightDifLoc, MAX_LIGHTS, (const GLfloat *)lightDiffuseColors);
             }
-            if (shader.specularEnabled()) {
+            if (shader.uniformEnabled("lightSpecularColors")) {
                 GLint lightSpeLoc = shader.getUniformLocation("lightSpecularColors");
                 glUniform3fv(lightSpeLoc, MAX_LIGHTS, (const GLfloat *)lightSpecularColors);
             }

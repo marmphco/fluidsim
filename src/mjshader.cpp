@@ -120,28 +120,7 @@ namespace mcjee {
                 name[nameSize] = '\0'; // just in case
             }
             uniformMap[name] = glGetUniformLocation(program, name);
-            std::cerr << name << ", " << uniformMap[name] << std::endl;
-        }
-        if (uniformMap.find("ambientColor") != uniformMap.end()) {
-            _ambientEnabled = true;
-        }
-        if (uniformMap.find("lightPositions") != uniformMap.end()) {
-            _lightEnabled = true;
-        }
-        if (uniformMap.find("lightDiffuseColors") != uniformMap.end()) {
-            _diffuseEnabled = true;
-        }
-        if (uniformMap.find("lightSpecularColors") != uniformMap.end()) {
-            _specularEnabled = true;
-        }
-        if (uniformMap.find("projectionMatrix") != uniformMap.end()) {
-            _projectionMatrixEnabled = true;
-        }
-        if (uniformMap.find("viewMatrix") != uniformMap.end()) {
-            _viewMatrixEnabled = true;
-        }
-        if (uniformMap.find("modelMatrix") != uniformMap.end()) {
-            _modelMatrixEnabled = true;
+            //std::cerr << name << ", " << uniformMap[name] << std::endl;
         }
     }
 
@@ -162,7 +141,7 @@ namespace mcjee {
                               name);
             name[nameSize] = '\0'; // just in case
             attributeMap[name] = glGetAttribLocation(program, name);
-	    std::cerr << name << ", " << attributeMap[name] << std::endl;
+	    //std::cerr << name << ", " << attributeMap[name] << std::endl;
         }
 
     }
@@ -178,5 +157,13 @@ namespace mcjee {
 
     GLint Shader::getUniformLocation(const GLchar *name) {
         return uniformMap[name];
+    }
+
+    bool Shader::uniformEnabled(const char *name) {
+        return uniformMap.find(name) != uniformMap.end();
+    }
+
+    bool Shader::attributeEnabled(const char *name) {
+        return attributeMap.find(name) != attributeMap.end();
     }
 }
