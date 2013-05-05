@@ -18,6 +18,7 @@
 #include "mjmath.h"
 #include "mjscene.h"
 #include "mjprimitive.h"
+#include "mjfluid.h"
 #include <cmath>
 #include <iostream>
 
@@ -51,10 +52,15 @@ static Shader *shader;
 static Geometry *geo;
 static Model *model;
 static Scene *scene;
+static FluidSolver *solver;
+static GLuint *textureData;
+static GLuint texture;
+static int width = 20;
 static int mainWindow;
 
 static int lastX = 0;
 static int lastY = 0;
+
 void mouseMove(int x, int y) {
     if (-y+lastY == 0 && -x+lastX == 0) return;
     Vector3 rotationAxis(y-lastY, x-lastX, 0.0);
@@ -75,6 +81,25 @@ void mouseEvent(int button, int state, int x, int y) {
 
 void render(void) {
     GLUI_Master.auto_set_viewport();
+
+    solver->addDensity(1, 1, 1, 1000.0);
+    solver->solve(0.02);
+    solver->fillDensityData(textureData);
+
+     /*glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA,
+                 width, width, width,
+                 0,
+                 GL_RGBA,
+                 GL_UNSIGNED_INT_8_8_8_8,
+                 textureData);*/
+    glBindTexture(GL_TEXTURE_3D, texture);
+    glTexSubImage3D(GL_TEXTURE_3D,
+                    0,
+                    0, 0, 0,
+                    width, width, width,
+                    GL_RGBA,
+                    GL_UNSIGNED_INT_8_8_8_8,
+                    textureData);
     scene->render();
     glutSwapBuffers();
 }
@@ -91,7 +116,7 @@ void init(void) {
     glCullFace(GL_BACK);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-    glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     shader = new Shader();
     try {
@@ -119,8 +144,7 @@ void init(void) {
 
     scene->add(model);
 
-    int width = 10;
-    GLuint *textureData = new GLuint[width*width*width];
+    textureData = new GLuint[width*width*width];
     for (int i = 0; i < width; ++i) {
         for (int j = 0; j < width; ++j) {
             for (int k = 0; k < width; ++k) {
@@ -141,7 +165,6 @@ void init(void) {
     GLint texLoc = shader->getUniformLocation("texture0");
     glUniform1i(texLoc, 0);
 
-    GLuint texture;
     glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_3D, texture);
@@ -156,6 +179,8 @@ void init(void) {
                  GL_RGBA,
                  GL_UNSIGNED_INT_8_8_8_8,
                  textureData);
+
+    solver = new FluidSolver(width, width, width);
 }
 
 void reshapeWindow(int, int) {

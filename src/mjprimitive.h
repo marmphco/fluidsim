@@ -27,10 +27,8 @@ void interleaveVertexData(float *interleaved,
 void generateNormals(float *normals, float *vertices, unsigned int *indices, long vertexCount, long indexCount);
 
 long cubeSize();
-
 void cubeVertices(float *out,
                   float width, float height, float depth);
-
 void cubeIndices(unsigned int *out);
 
 }
