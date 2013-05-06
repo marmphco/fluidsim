@@ -15,25 +15,28 @@ namespace mcjee {
 FluidSolver::FluidSolver(int width, int height, int depth) :
     _width(width), _height(height), _depth(depth) {
     density1 = new float[width*height*depth];
-    density2 = new float[width*height*depth];
+    density0 = new float[width*height*depth];
     vx1 = new float[width*height*depth];
-    vx2 = new float[width*height*depth];
+    vx0 = new float[width*height*depth];
     vy1 = new float[width*height*depth];
-    vy2 = new float[width*height*depth];
+    vy0 = new float[width*height*depth];
     vz1 = new float[width*height*depth];
-    vz2 = new float[width*height*depth];
+    vz0 = new float[width*height*depth];
+
+    temp1 = new float[width*height*depth];
+    temp2 = new float[width*height*depth];
 
     for (int i = 0; i < _width; ++i) {
         for (int j = 0; j < _height; ++j) {
             for (int k = 0; k < _depth; ++k) {
                 density1[idx(i, j, k)] = 0.0;
-                density2[idx(i, j, k)] = 0.0;
+                density0[idx(i, j, k)] = 0.0;
                 vx1[idx(i, j, k)] = 0.0;
-                vx2[idx(i, j, k)] = 0.0;
+                vx0[idx(i, j, k)] = 0.0;
                 vy1[idx(i, j, k)] = 0.0;
-                vy2[idx(i, j, k)] = 0.0;
+                vy0[idx(i, j, k)] = 0.0;
                 vz1[idx(i, j, k)] = 0.0;
-                vz2[idx(i, j, k)] = 0.0;
+                vz0[idx(i, j, k)] = 0.0;
             }
         }
     }
@@ -41,27 +44,27 @@ FluidSolver::FluidSolver(int width, int height, int depth) :
 
 FluidSolver::~FluidSolver() {
     delete density1;
-    delete density2;
+    delete density0;
     delete vx1;
-    delete vx2;
+    delete vx0;
     delete vy1;
-    delete vy2;
+    delete vy0;
     delete vz1;
-    delete vz2;
+    delete vz0;
 }
 
-void FluidSolver::diffuse(float *prev, float *next, float dt) {
-    float f = dt*0.1;
+void FluidSolver::diffuse(float *next, float *prev, float dt) {
+    float f = dt*0.2;
 
-    for (int n = 0; n < 20; ++n) {
+    for (int n = 0; n < 4; ++n) {
         for (int i = 1; i < _width-1; ++i) {
             for (int j = 1; j < _height-1; ++j) {
                 for (int k = 1; k < _depth-1; ++k) {
                     next[idx(i, j, k)] =
-                        prev[idx(i, j, k)]+
+                        (prev[idx(i, j, k)]+
                         f*(next[idx(i, j, k+1)]+next[idx(i, j, k-1)]
                           +next[idx(i+1, j, k)]+next[idx(i-1, j, k)]
-                          +next[idx(i, j+1, k)]+next[idx(i, j-1, k)])/(1+8*f);
+                          +next[idx(i, j+1, k)]+next[idx(i, j-1, k)]))/(1+8*f);
                 }
             }
         }
@@ -69,7 +72,7 @@ void FluidSolver::diffuse(float *prev, float *next, float dt) {
 }
 
 // move stuff along a velocity field
-void FluidSolver::advect(float *prev, float *next, float *vx, float *vy, float *vz, float dt) {
+void FluidSolver::advect(float *next, float *prev, float *vx, float *vy, float *vz, float dt) {
     for (int i = 1; i < _width-1; ++i) {
         for (int j = 1; j < _height-1; ++j) {
             for (int k = 1; k < _depth-1; ++k) {
@@ -77,12 +80,12 @@ void FluidSolver::advect(float *prev, float *next, float *vx, float *vy, float *
                 float srcy = j-vy[idx(i, j, k)]*dt;
                 float srcz = k-vz[idx(i, j, k)]*dt;
 
-                /*if (srcx < 0.5) srcx = 0.5;
+                if (srcx < 0.5) srcx = 0.5;
                 if (srcx > _width-0.5) srcx = _width-0.5;
                 if (srcy < 0.5) srcy = 0.5;
                 if (srcy > _height-0.5) srcy = _height-0.5;
                 if (srcz < 0.5) srcz = 0.5;
-                if (srcz > _depth-0.5) srcz = _depth-0.5;*/
+                if (srcz > _depth-0.5) srcz = _depth-0.5;
 
                 int x0 = (int)srcx; int x1 = x0+1;
                 int y0 = (int)srcy; int y1 = y0+1;
@@ -91,9 +94,9 @@ void FluidSolver::advect(float *prev, float *next, float *vx, float *vy, float *
                 float yl = y1-srcy; float yr = 1-yl;
                 float zl = z1-srcz; float zr = 1-zl;
 
-                if (x0 < 0 || y0 < 0 || z0 < 0 || x1 >= _width || y1 >= _height || z1 >= _depth) continue;
+                //if (x0 < 0 || y0 < 0 || z0 < 0 || x1 >= _width || y1 >= _height || z1 >= _depth) continue;
 
-                next[idx(i, j, k)] = 
+                next[idx(i, j, k)] =
                 zl*(yl*(xl*prev[idx(x0, y0, z0)]+xr*prev[idx(x1, y0, z0)])+
                     yr*(xl*prev[idx(x0, y1, z0)]+xr*prev[idx(x1, y1, z0)]))+
                 zr*(yl*(xl*prev[idx(x0, y0, z1)]+xr*prev[idx(x1, y0, z1)])+
@@ -103,31 +106,97 @@ void FluidSolver::advect(float *prev, float *next, float *vx, float *vy, float *
     }
 }
 
-void FluidSolver::addDensity(int x, int y, int z, float amount) {
-    density1[idx(x, y, z)] += amount;
-    density1[idx(x, y+1, z)] += amount;
-    density1[idx(x, y-1, z)] += amount;
-    density1[idx(x, y, z+1)] += amount;
-    density1[idx(x, y, z-1)] += amount;
-    density1[idx(x+1, y, z)] += amount;
-    density1[idx(x-1, y, z)] += amount;
-    density2[idx(x, y, z)] += amount;
-    density2[idx(x, y+1, z)] += amount;
-    density2[idx(x, y-1, z)] += amount;
-    density2[idx(x, y, z+1)] += amount;
-    density2[idx(x, y, z-1)] += amount;
-    density2[idx(x+1, y, z)] += amount;
-    density2[idx(x-1, y, z)] += amount;
+// some of these scalars may be wrong
+void FluidSolver::project(float *vx, float *vy, float *vz, float *div, float *temp) {
+    //compute divergence
+    float b = 1.0; // arbitrary scaling term
+    for (int i = 1; i < _width-1; ++i) {
+        for (int j = 1; j < _height-1; ++j) {
+            for (int k = 1; k < _depth-1; ++k) {
+                div[idx(i, j, k)] = 0.5*b*(
+                    vx[idx(i+1, j, k)]-vx[idx(i-1, j, k)]+
+                    vy[idx(i, j+1, k)]-vy[idx(i, j-1, k)]+
+                    vz[idx(i, j, k+1)]-vz[idx(i, j, k)-1]
+                );
+                temp[idx(i, j, k)] = 0.0;
+            }
+        }
+    }
+
+    //compute base scalar field of gradient component somehow
+    for (int n = 0; n < 4; ++n) {
+        for (int i = 1; i < _width-1; ++i) {
+            for (int j = 1; j < _height-1; ++j) {
+                for (int k = 1; k < _depth-1; ++k) {
+                    temp[idx(i, j, k)] = (
+                        -div[idx(i, j, k)]+
+                        temp[idx(i-1, j, k)]+
+                        temp[idx(i+1, j, k)]+
+                        temp[idx(i, j-1, k)]+
+                        temp[idx(i, j+1, k)]+
+                        temp[idx(i, j, k+1)]+
+                        temp[idx(i, j, k-1)]
+                    )/8;
+                }
+            }
+        }
+    }
+
+    // subtract gradient field from velocities to get
+    // zero divergence field.
+    for (int i = 1; i < _width-1; ++i) {
+        for (int j = 1; j < _height-1; ++j) {
+            for (int k = 1; k < _depth-1; ++k) {
+                vx[idx(i, j, k)] -= 0.5*(temp[idx(i+1, j, k)]-temp[idx(i-1, j, k)])/b;
+                vy[idx(i, j, k)] -= 0.5*(temp[idx(i, j+1, k)]-temp[idx(i, j-1, k)])/b;
+                vz[idx(i, j, k)] -= 0.5*(temp[idx(i, j, k+1)]-temp[idx(i, j, k-1)])/b;
+            }
+        }
+    }
 }
+
+void FluidSolver::addDensity(int x, int y, int z, float amount) {
+    density0[idx(x, y, z)] += amount;
+}
+
+void FluidSolver::addVelocityX(int x, int y, int z, float amount) {
+    vx0[idx(x, y, z)] += amount;
+}
+
+void FluidSolver::addVelocityY(int x, int y, int z, float amount) {
+    vy0[idx(x, y, z)] += amount;
+}
+
 
 void FluidSolver::solve(float dt) {
-    diffuse(density1, density2, dt);
-    swap(density1, density2);
-    advect(density1, density2, vx2, vy2, vz2, dt);
-    swap(density1, density2);
+    diffuse(density1, density0, dt);
+    swap(density1, density0);
+    advect(density1, density0, vx0, vy0, vz0, dt);
+    swap(density1, density0);
+
+    diffuse(vx1, vx0, dt);
+    swap(vx1, vx0);
+    diffuse(vy1, vy0, dt);
+    swap(vy1, vy0);
+    diffuse(vz1, vz0, dt);
+    swap(vz1, vz0);
+
+    //project
+    project(vx0, vy0, vz0, temp1, temp2);
+    //swap(vx1, vx0);
+    //swap(vy1, vy0);
+    //swap(vz1, vz0);
+    advect(vx1, vx0, vx0, vy0, vz0, dt);
+    advect(vy1, vy0, vx0, vy0, vz0, dt);
+    advect(vz1, vz0, vx0, vy0, vz0, dt);
+    
+    project(vx1, vy1, vz1, temp1, temp2);
+    swap(vx1, vx0);
+    swap(vy1, vy0);
+    swap(vz1, vz0);
 }
 
-// until i figure out wether we can use float textures
+// until I figure out wether we can use float textures
 void FluidSolver::fillDensityData(unsigned int *out) {
     for (int i = 0; i < _width; ++i) {
         for (int j = 0; j < _height; ++j) {

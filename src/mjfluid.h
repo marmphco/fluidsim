@@ -14,14 +14,18 @@ namespace mcjee {
 
 class FluidSolver {
 private:
+    float *density0;
     float *density1;
-    float *density2;
+    float *vx0;
     float *vx1;
-    float *vx2;
+    float *vy0;
     float *vy1;
-    float *vy2;
+    float *vz0;
     float *vz1;
-    float *vz2;
+
+    // temporary storage
+    float *temp1;
+    float *temp2;
 
     float *density;
     float *velocity;
@@ -30,13 +34,15 @@ private:
     int _height;
     int _depth;
 
-    void diffuse(float *prev, float *next, float dt);
-    void advect(float *prev, float *next, float *vx, float *vy, float *vz, float dt);
-    void project(float dt);
+    void diffuse(float *next, float *prev, float dt);
+    void advect(float *next, float *prev, float *vx, float *vy, float *vz, float dt);
+    void project(float *vx, float *vy, float *vz, float *div, float *temp);
 public:
     FluidSolver(int width, int height, int depth);
     ~FluidSolver();
 
+    void addVelocityX(int x, int y, int z, float amount);
+    void addVelocityY(int x, int y, int z, float amount);
     void addDensity(int x, int y, int z, float amount);
     void solve(float dt);
 

@@ -55,18 +55,36 @@ static Scene *scene;
 static FluidSolver *solver;
 static GLuint *textureData;
 static GLuint texture;
-static int width = 20;
+static int width = 30;
 static int mainWindow;
 
 static int lastX = 0;
 static int lastY = 0;
+static bool filling = false;
+
+void keyboardEvent(unsigned char key, int x, int y) {
+    switch(key) {
+        case 32:
+            filling = true;
+            break;
+        default: break;
+    }
+}
+
+void keyboardUpEvent(unsigned char key, int x, int y) {
+    switch(key) {
+        case 32:
+            filling = false;
+            break;
+        default: break;
+    }
+}
 
 void mouseMove(int x, int y) {
     if (-y+lastY == 0 && -x+lastX == 0) return;
     Vector3 rotationAxis(y-lastY, x-lastX, 0.0);
     float rotationAmount = rotationAxis.length();
     rotationAxis.normalize();
-
     model->rotate(rotationAmount, rotationAxis);
     lastX = x;
     lastY = y;
@@ -81,9 +99,25 @@ void mouseEvent(int button, int state, int x, int y) {
 
 void render(void) {
     GLUI_Master.auto_set_viewport();
+    static long ox = 0;
+    long x = glutGet(GLUT_ELAPSED_TIME);
+    float dt = (x-ox)/1000.0;
+    ox = x;
+    float angle = x*0.005;
+    float beta = x*0.0052+1;
+    //solver->addDensity(1, width/2, width/2, 100.0);
+    if (filling) {
+        int xx = cosf(angle)*width/4;
+        int yy = sinf(angle)*width/4;
+        int zz = sinf(beta)*width/4;
+        float vx = -sinf(angle)*1000.0;
+        float vy = -cosf(angle)*1000.0;
+        solver->addVelocityX(width/2+xx, width/2+yy, width/2+zz, vx);
+        solver->addVelocityY(width/2+xx, width/2+yy, width/2+zz, vy);
+        solver->addDensity(width/2+xx, width/2+yy, width/2+zz, 200.0);
+    }
 
-    solver->addDensity(1, 1, 1, 10.0);
-    solver->solve(0.02);
+    solver->solve(dt);
     solver->fillDensityData(textureData);
 
     glBindTexture(GL_TEXTURE_3D, texture);
@@ -199,9 +233,11 @@ int main(int argc, char **argv) {
 
     glutDisplayFunc(render);
     glutMotionFunc(mouseMove);
+    glutKeyboardUpFunc(keyboardUpEvent);
     GLUI_Master.set_glutIdleFunc(idle);
     GLUI_Master.set_glutMouseFunc(mouseEvent);
     GLUI_Master.set_glutReshapeFunc(reshapeWindow);
+    GLUI_Master.set_glutKeyboardFunc(keyboardEvent);
     glutMainLoop();
 
     delete shader;
