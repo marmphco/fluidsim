@@ -82,16 +82,10 @@ void mouseEvent(int button, int state, int x, int y) {
 void render(void) {
     GLUI_Master.auto_set_viewport();
 
-    solver->addDensity(1, 1, 1, 1000.0);
+    solver->addDensity(1, 1, 1, 10.0);
     solver->solve(0.02);
     solver->fillDensityData(textureData);
 
-     /*glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA,
-                 width, width, width,
-                 0,
-                 GL_RGBA,
-                 GL_UNSIGNED_INT_8_8_8_8,
-                 textureData);*/
     glBindTexture(GL_TEXTURE_3D, texture);
     glTexSubImage3D(GL_TEXTURE_3D,
                     0,

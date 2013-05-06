@@ -31,7 +31,7 @@ private:
     int _depth;
 
     void diffuse(float *prev, float *next, float dt);
-    void advect(float dt);
+    void advect(float *prev, float *next, float *vx, float *vy, float *vz, float dt);
     void project(float dt);
 public:
     FluidSolver(int width, int height, int depth);
