@@ -45,6 +45,7 @@ public:
     void solve(float dt);
 
     void fillDensityData(unsigned int *out);
+    void fillDensityData(float *out);
 };
 
 }

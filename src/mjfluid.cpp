@@ -7,7 +7,7 @@
 #include "mjfluid.h"
     #include <iostream>
 
-#define idx(x, y, z) _width*_height*(z)+_width*(y)+x
+#define idx(x, y, z) (_width*_height*(z)+_width*(y)+x)
 #define swap(x, y) {float *t = (x); (x) = (y); (y) = t;}
 
 namespace mcjee {
@@ -192,7 +192,7 @@ void FluidSolver::solve(float dt) {
     swap(vz1, vz0);
 }
 
-// until I figure out wether we can use float textures
+// until I figure out whether we can use float textures
 void FluidSolver::fillDensityData(unsigned int *out) {
     for (int i = 0; i < _width; ++i) {
         for (int j = 0; j < _height; ++j) {
@@ -200,6 +200,18 @@ void FluidSolver::fillDensityData(unsigned int *out) {
                 float c =  density1[idx(i, j, k)] > 1.0 ? 1.0 : density1[idx(i, j, k)];
                 int num = (int)(c*0xff);
                 out[idx(i, j, k)] = (num<<8) | (num<<16) | (num<<24) | 0xff;
+            }
+        }
+    }
+}
+
+void FluidSolver::fillDensityData(float *out) {
+    for (int i = 0; i < _width; ++i) {
+        for (int j = 0; j < _height; ++j) {
+            for (int k = 0; k < _depth; ++k) {
+                out[idx(i, j, k)*3] = density1[idx(i, j, k)];
+                out[idx(i, j, k)*3+1] = density1[idx(i, j, k)];
+                out[idx(i, j, k)*3+2] = density1[idx(i, j, k)];
             }
         }
     }

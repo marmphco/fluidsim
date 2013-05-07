@@ -60,6 +60,18 @@ static int mainWindow;
 static GLUI_StaticText *computeTimeText;
 static char computeTimeString[16];
 
+static Scene *simulationScene;
+static Model *fullScreenQuad;
+static Shader *diffuseShader;
+static Shader *advectShader;
+static Shader *projectShader;
+static GLuint densityTexture;
+static GLfloat *densityTextureData;
+static GLuint velocityTexture;
+static GLfloat *velocityTextureData;
+static GLuint pressureTexture;
+static GLfloat *pressureTextureData;
+
 static int lastX = 0;
 static int lastY = 0;
 static bool filling = false;
@@ -121,18 +133,18 @@ void render(void) {
         solver->addVelocityY(width/2+xx, width/2+yy, width/2+zz, vy);
         solver->addDensity(width/2+xx, width/2+yy, width/2+zz, 200.0);
     }
-    //solver->addDensity(width/2, width/2, width/2, 200.0);
-    solver->solve(dt);
-    solver->fillDensityData(textureData);
 
-    glBindTexture(GL_TEXTURE_3D, texture);
+    solver->solve(dt);
+    solver->fillDensityData(densityTextureData);
+
+    glBindTexture(GL_TEXTURE_3D, densityTexture);
     glTexSubImage3D(GL_TEXTURE_3D,
                     0,
                     0, 0, 0,
                     width, width, width,
-                    GL_RGBA,
-                    GL_UNSIGNED_INT_8_8_8_8,
-                    textureData);
+                    GL_RGB,
+                    GL_FLOAT,
+                    densityTextureData);
     scene->render();
     glutSwapBuffers();
 }
@@ -145,7 +157,6 @@ void idle(void) {
 void init(void) {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
-    glEnable(GL_TEXTURE_3D);
     glCullFace(GL_BACK);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
@@ -160,7 +171,6 @@ void init(void) {
     }
 
     scene = new Scene();
-
     scene->camera.perspective(-1.0f, 1.0f, -1.0f, 1.0f, 4.0f, 10.0f);
     scene->camera.translate(0.0, 2.2, 4.0);
     scene->camera.rotate(-30, 0, 0);
@@ -194,11 +204,8 @@ void init(void) {
             }
         }
     }
-    //shader->use();
-    GLint texLoc = shader->getUniformLocation("texture0");
-    glUniform1i(texLoc, 0);
 
-    glActiveTexture(GL_TEXTURE0);
+    /*glActiveTexture(GL_TEXTURE0);
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_3D, texture);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -211,7 +218,24 @@ void init(void) {
                  0,
                  GL_RGBA,
                  GL_UNSIGNED_INT_8_8_8_8,
-                 textureData);
+                 textureData);*/
+
+    densityTextureData = new GLfloat[width*width*width*3];
+
+    glActiveTexture(GL_TEXTURE0);
+    glGenTextures(1, &densityTexture);
+    glBindTexture(GL_TEXTURE_3D, densityTexture);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB,
+                 width, width, width,
+                 0,
+                 GL_RGB,
+                 GL_FLOAT,
+                 densityTextureData);
 
     solver = new FluidSolver(width, width, width);
 }
