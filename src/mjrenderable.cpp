@@ -6,6 +6,7 @@
 
 #include "mjrenderable.h"
 #include "mjutil.h"
+#include "mjtexture.h"
 
 namespace mcjee {
 
@@ -70,6 +71,10 @@ namespace mcjee {
             loc = shader->getUniformLocation("matSpecularPower");
             glUniform1f(loc, material.specularPower);
         }
+        std::vector<Texture *>::iterator i;
+        for (i = material.textures.begin(); i != material.textures.end(); ++i) {
+            (*i)->bind();
+        }
         glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
         glBindVertexArray(vertexArrayObject);
         glDrawElements(drawType, geometry->elementCount(), GL_UNSIGNED_INT, 0);
@@ -80,6 +85,7 @@ namespace mcjee {
         //not implemented
     }
 
+    // rotate global
     void Renderable::rotate(float angle, Vector3 axis) {
         rotation.rotate(angle, axis);
         inverseRotation.rotate(-angle, axis);
@@ -88,7 +94,9 @@ namespace mcjee {
         localAxisZ = rotation.matrix3() * Z_AXIS;
     }
 
-    // not very efficient
+    //void Renderable::rotateLocal(float angle, Vector3 axis) {
+
+    // not very efficient, quaternions would help?
     void Renderable::rotateLocalX(float angle) {
         rotation.rotate(angle, localAxisX);
         inverseRotation.rotate(-angle, localAxisX);

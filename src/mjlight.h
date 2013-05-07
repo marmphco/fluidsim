@@ -4,10 +4,12 @@
     mcjee@ucsc.edu
 */
 
-#include "mjmath.h"
-
 #ifndef MJ_LIGHT
 #define MJ_LIGHT
+
+#include <vector>
+#include "mjmath.h"
+#include "mjtexture.h"
 
 namespace mcjee {
 
@@ -29,6 +31,7 @@ namespace mcjee {
         Vector3 diffuseColor;
         Vector3 specularColor;
         float specularPower;
+        std::vector<Texture *> textures;
         Material() :
             diffuseColor(Vector3(1.0, 1.0, 1.0)),
             specularColor(Vector3(1.0, 1.0, 1.0)),

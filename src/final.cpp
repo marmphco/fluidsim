@@ -22,6 +22,8 @@
 #include <cmath>
 #include <iostream>
 
+#include "mjtexture.h"
+
 using namespace mcjee;
 using namespace std;
 
@@ -53,24 +55,22 @@ static Geometry *geo;
 static Model *model;
 static Scene *scene;
 static FluidSolver *solver;
-static GLuint *textureData;
-static GLuint texture;
-static int width = 32;
+static int width = 32; // power of 2 plz
 static int mainWindow;
 static GLUI_StaticText *computeTimeText;
 static char computeTimeString[16];
 
-static Scene *simulationScene;
+static Scene *computeScene;
 static Model *fullScreenQuad;
 static Shader *diffuseShader;
 static Shader *advectShader;
 static Shader *projectShader;
-static GLuint densityTexture;
+static Texture3D *densityTexture;
+static Texture3D *velocityTexture;
 static GLfloat *densityTextureData;
-static GLuint velocityTexture;
 static GLfloat *velocityTextureData;
-static GLuint pressureTexture;
 static GLfloat *pressureTextureData;
+
 
 static int lastX = 0;
 static int lastY = 0;
@@ -137,14 +137,7 @@ void render(void) {
     solver->solve(dt);
     solver->fillDensityData(densityTextureData);
 
-    glBindTexture(GL_TEXTURE_3D, densityTexture);
-    glTexSubImage3D(GL_TEXTURE_3D,
-                    0,
-                    0, 0, 0,
-                    width, width, width,
-                    GL_RGB,
-                    GL_FLOAT,
-                    densityTextureData);
+    densityTexture->initData<float>(densityTextureData);
     scene->render();
     glutSwapBuffers();
 }
@@ -158,8 +151,6 @@ void init(void) {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     shader = new Shader();
@@ -181,61 +172,14 @@ void init(void) {
     cubeIndices(indexData);
     geo = new Geometry(vertexData, indexData, 8, 36, 3);
 
+    densityTextureData = new GLfloat[width*width*width*3];
+    densityTexture = new Texture3D(GL_RGB, GL_RGB, GL_FLOAT, width, width, width);
+    densityTexture->initData(densityTextureData);
+
     model = new Model(geo, shader, GL_TRIANGLES);
     model->init();
     model->center = Vector3(0.5, 0.5, 0.5);
-
     scene->add(model);
-
-    textureData = new GLuint[width*width*width];
-    for (int i = 0; i < width; ++i) {
-        for (int j = 0; j < width; ++j) {
-            for (int k = 0; k < width; ++k) {
-                float facg = j*1.0/(width);
-                int g = 0xff*facg;
-                float facr = i*1.0/(width);
-                int r = 0xff*facr;
-                float facb = k*1.0/(width);
-                int b = 0xff*facb;
-                int a = 0xff*(facr*facg*facb);
-                a = a > 0x22 ? 0xff : 0;
-                GLuint f = a | (b << 8) | (g << 16) | (r << 24);
-                textureData[i+j*width+k*width*width] = f;
-            }
-        }
-    }
-
-    /*glActiveTexture(GL_TEXTURE0);
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_3D, texture);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGBA,
-                 width, width, width,
-                 0,
-                 GL_RGBA,
-                 GL_UNSIGNED_INT_8_8_8_8,
-                 textureData);*/
-
-    densityTextureData = new GLfloat[width*width*width*3];
-
-    glActiveTexture(GL_TEXTURE0);
-    glGenTextures(1, &densityTexture);
-    glBindTexture(GL_TEXTURE_3D, densityTexture);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
-    glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB,
-                 width, width, width,
-                 0,
-                 GL_RGB,
-                 GL_FLOAT,
-                 densityTextureData);
 
     solver = new FluidSolver(width, width, width);
 }

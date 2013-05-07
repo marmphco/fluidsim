@@ -20,7 +20,8 @@ BINDIR = bin
 
 _CSRC = final.cpp mjterrain.cpp mjshader.cpp mjrenderable.cpp\
         mjutil.cpp mjmath.cpp mjscene.cpp mjcamera.cpp mjlight.cpp\
-        mjprimitive.cpp mjloader.cpp mjgeometry.cpp mjfluid.cpp
+        mjprimitive.cpp mjloader.cpp mjgeometry.cpp mjfluid.cpp\
+        mjtexture.cpp
 
 _SHADERS = shader.fsh shader.vsh
 
