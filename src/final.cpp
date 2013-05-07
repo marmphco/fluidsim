@@ -59,8 +59,10 @@ static int width = 32; // power of 2 plz
 static int mainWindow;
 static GLUI_StaticText *computeTimeText;
 static char computeTimeString[16];
+static GLuint windowFramebuffer;
 
 static Scene *computeScene;
+static Geometry *quadGeometry;
 static Model *fullScreenQuad;
 static Shader *diffuseShader;
 static Shader *advectShader;
@@ -70,13 +72,13 @@ static Texture3D *velocityTexture;
 static GLfloat *densityTextureData;
 static GLfloat *velocityTextureData;
 static GLfloat *pressureTextureData;
-
+static GLuint advectStepFramebuffer;
 
 static int lastX = 0;
 static int lastY = 0;
 static bool filling = false;
 
-void keyboardEvent(unsigned char key, int x, int y) {
+void keyboardEvent(unsigned char key, int, int) {
     switch(key) {
         case 32:
             filling = true;
@@ -85,7 +87,7 @@ void keyboardEvent(unsigned char key, int x, int y) {
     }
 }
 
-void keyboardUpEvent(unsigned char key, int x, int y) {
+void keyboardUpEvent(unsigned char key, int, int) {
     switch(key) {
         case 32:
             filling = false;
@@ -104,7 +106,7 @@ void mouseMove(int x, int y) {
     lastY = y;
 }
 
-void mouseEvent(int button, int state, int x, int y) {
+void mouseEvent(int, int state, int x, int y) {
     if (state == GLUT_DOWN) {
         lastX = x;
         lastY = y;
@@ -120,9 +122,9 @@ void render(void) {
     computeTimeText->draw_text();
     float dt = (x-ox)/1000.0;
     ox = x;
+
     float angle = x*0.005;
     float beta = x*0.006+1;
-
     if (filling) {
         int xx = cosf(angle)*width/4;
         int yy = sinf(angle)*width/4;
@@ -138,7 +140,9 @@ void render(void) {
     solver->fillDensityData(densityTextureData);
 
     densityTexture->initData<float>(densityTextureData);
-    scene->render();
+    glBindFramebuffer(GL_FRAMEBUFFER, windowFramebuffer);
+    //scene->render();
+    computeScene->render();
     glutSwapBuffers();
 }
 
@@ -166,8 +170,8 @@ void init(void) {
     scene->camera.translate(0.0, 2.2, 4.0);
     scene->camera.rotate(-30, 0, 0);
 
-    float vertexData[cubeSize()];
-    GLuint indexData[36];
+    float vertexData[cubeVerticesSize()];
+    GLuint indexData[cubeIndicesSize()];
     cubeVertices(vertexData, 1.0, 1.0, 1.0);
     cubeIndices(indexData);
     geo = new Geometry(vertexData, indexData, 8, 36, 3);
@@ -182,6 +186,29 @@ void init(void) {
     scene->add(model);
 
     solver = new FluidSolver(width, width, width);
+    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint *)&windowFramebuffer);
+}
+
+void initCompute(void) {
+    computeScene = new Scene();
+    computeScene->camera.orthographic(-1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
+    computeScene->camera.translate(0.0, 0.0, 1.0);
+
+    //compile shaders
+
+    //setup quad
+    float vertices[squareVerticesSize()];
+    GLuint indices[squareIndicesSize()];
+    squareVertices(vertices, 1, 1);
+    squareIndices(indices);
+    quadGeometry = new Geometry(vertices, indices, 4, 6, 3);
+    fullScreenQuad = new Model(quadGeometry, shader, GL_TRIANGLES);
+    model->init();
+    computeScene->add(fullScreenQuad);
+
+    //setup frambuffers
+    glGenFramebuffers(1, &advectStepFramebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, advectStepFramebuffer);
 }
 
 void reshapeWindow(int, int) {
@@ -199,6 +226,7 @@ int main(int argc, char **argv) {
     glewInit();
 #endif
     init();
+    initCompute();
 
     GLUI *gui = GLUI_Master.create_glui_subwindow(mainWindow, GLUI_SUBWINDOW_BOTTOM);
     gui->add_statictext("le GUI");

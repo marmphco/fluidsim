@@ -68,9 +68,13 @@ void generateNormals(float *normals,
 
 }
 
-long cubeSize() {
-    return sizeof(float)*3*8;
+int cubeVerticesSize() {
+    return 24;
 };
+
+int cubeIndicesSize() {
+    return 36;
+}
 
 void cubeVertices(float *out,
                   float width, float height, float depth) {
@@ -98,6 +102,30 @@ void cubeIndices(unsigned int *out) {
     out[27] = 7; out[28] = 5; out[29] = 6;
     out[30] = 0; out[31] = 1; out[32] = 4;
     out[33] = 1; out[34] = 5; out[35] = 4;
+}
+
+int squareVerticesSize() {
+    return 12;
+}
+
+int squareIndicesSize() {
+    return 6;
+}
+
+void squareVertices(float *out, float width, float height) {
+    out[0] = 0.0; out[1] = 0.0; out[2] = 0.0;
+    out[3] = width; out[4] = 0.0; out[5] = 0.0;
+    out[6] = width; out[7] = height; out[8] = 0.0;
+    out[9] = 0.0; out[10] = height; out[11] = 0.0;
+}
+
+void squareIndices(unsigned int *out) {
+    out[0] = 0;
+    out[1] = 1;
+    out[2] = 2;
+    out[3] = 0;
+    out[4] = 2;
+    out[5] = 3;
 }
 
 }

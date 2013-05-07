@@ -2,6 +2,8 @@
     mjprimitive.h
     Matthew Jee
     mcjee#ucsc.edu
+
+    Eveything assumes GL_TRIANGLES
 */
 
 #ifndef MJ_PRIMITIVE_H
@@ -24,12 +26,25 @@ void interleaveVertexData(float *interleaved,
                           long vertexCount);
 
 // Assuming vertices is meant for GL_TRIANGLES
-void generateNormals(float *normals, float *vertices, unsigned int *indices, long vertexCount, long indexCount);
+void generateNormals(float *normals,
+                     float *vertices,
+                     unsigned int *indices,
+                     long vertexCount,
+                     long indexCount);
 
-long cubeSize();
+int cubeVerticesSize();
+int cubeIndicesSize();
 void cubeVertices(float *out,
-                  float width, float height, float depth);
+                  float width,
+                  float height,
+                  float depth);
 void cubeIndices(unsigned int *out);
+
+int squareVerticesSize();
+int squareIndicesSize();
+void squareVertices(float *out, float width, float height);
+void squareIndices(unsigned int *out);
+
 
 }
 #endif
