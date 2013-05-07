@@ -23,10 +23,6 @@ private:
     float *vz0;
     float *vz1;
 
-    // temporary storage
-    float *temp1;
-    float *temp2;
-
     float *density;
     float *velocity;
 
@@ -38,6 +34,8 @@ private:
     void advect(float *next, float *prev, float *vx, float *vy, float *vz, float dt);
     void project(float *vx, float *vy, float *vz, float *div, float *temp);
 public:
+    int iterations;
+
     FluidSolver(int width, int height, int depth);
     ~FluidSolver();
 

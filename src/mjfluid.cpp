@@ -13,7 +13,7 @@
 namespace mcjee {
 
 FluidSolver::FluidSolver(int width, int height, int depth) :
-    _width(width), _height(height), _depth(depth) {
+    _width(width), _height(height), _depth(depth), iterations(4) {
     density1 = new float[width*height*depth];
     density0 = new float[width*height*depth];
     vx1 = new float[width*height*depth];
@@ -22,9 +22,6 @@ FluidSolver::FluidSolver(int width, int height, int depth) :
     vy0 = new float[width*height*depth];
     vz1 = new float[width*height*depth];
     vz0 = new float[width*height*depth];
-
-    temp1 = new float[width*height*depth];
-    temp2 = new float[width*height*depth];
 
     for (int i = 0; i < _width; ++i) {
         for (int j = 0; j < _height; ++j) {
@@ -54,9 +51,9 @@ FluidSolver::~FluidSolver() {
 }
 
 void FluidSolver::diffuse(float *next, float *prev, float dt) {
-    float f = dt*0.2;
+    float f = dt*0.02;
 
-    for (int n = 0; n < 4; ++n) {
+    for (int n = 0; n < iterations; ++n) {
         for (int i = 1; i < _width-1; ++i) {
             for (int j = 1; j < _height-1; ++j) {
                 for (int k = 1; k < _depth-1; ++k) {
@@ -124,7 +121,7 @@ void FluidSolver::project(float *vx, float *vy, float *vz, float *div, float *te
     }
 
     //compute base scalar field of gradient component somehow
-    for (int n = 0; n < 4; ++n) {
+    for (int n = 0; n < iterations; ++n) {
         for (int i = 1; i < _width-1; ++i) {
             for (int j = 1; j < _height-1; ++j) {
                 for (int k = 1; k < _depth-1; ++k) {
@@ -169,20 +166,19 @@ void FluidSolver::addVelocityY(int x, int y, int z, float amount) {
 
 
 void FluidSolver::solve(float dt) {
-    diffuse(density1, density0, dt);
-    swap(density1, density0);
+    //diffuse(density1, density0, dt);
+    //swap(density1, density0);
     advect(density1, density0, vx0, vy0, vz0, dt);
     swap(density1, density0);
 
-    diffuse(vx1, vx0, dt);
-    swap(vx1, vx0);
-    diffuse(vy1, vy0, dt);
-    swap(vy1, vy0);
-    diffuse(vz1, vz0, dt);
-    swap(vz1, vz0);
+    //diffuse(vx1, vx0, dt);
+    //swap(vx1, vx0);
+    //diffuse(vy1, vy0, dt);
+    //swap(vy1, vy0);
+    //diffuse(vz1, vz0, dt);
+    //swap(vz1, vz0);
 
-    //project
-    project(vx0, vy0, vz0, temp1, temp2);
+    project(vx0, vy0, vz0, vx1, vy1);
     //swap(vx1, vx0);
     //swap(vy1, vy0);
     //swap(vz1, vz0);
@@ -190,7 +186,7 @@ void FluidSolver::solve(float dt) {
     advect(vy1, vy0, vx0, vy0, vz0, dt);
     advect(vz1, vz0, vx0, vy0, vz0, dt);
     
-    project(vx1, vy1, vz1, temp1, temp2);
+    //project(vx1, vy1, vz1, vx0, vy0);
     swap(vx1, vx0);
     swap(vy1, vy0);
     swap(vz1, vz0);

@@ -55,8 +55,10 @@ static Scene *scene;
 static FluidSolver *solver;
 static GLuint *textureData;
 static GLuint texture;
-static int width = 30;
+static int width = 32;
 static int mainWindow;
+static GLUI_StaticText *computeTimeText;
+static char computeTimeString[16];
 
 static int lastX = 0;
 static int lastY = 0;
@@ -101,11 +103,14 @@ void render(void) {
     GLUI_Master.auto_set_viewport();
     static long ox = 0;
     long x = glutGet(GLUT_ELAPSED_TIME);
+    sprintf(computeTimeString, "%ldms", x-ox);
+    computeTimeText->set_text(computeTimeString);
+    computeTimeText->draw_text();
     float dt = (x-ox)/1000.0;
     ox = x;
     float angle = x*0.005;
-    float beta = x*0.0052+1;
-    //solver->addDensity(1, width/2, width/2, 100.0);
+    float beta = x*0.006+1;
+
     if (filling) {
         int xx = cosf(angle)*width/4;
         int yy = sinf(angle)*width/4;
@@ -116,7 +121,7 @@ void render(void) {
         solver->addVelocityY(width/2+xx, width/2+yy, width/2+zz, vy);
         solver->addDensity(width/2+xx, width/2+yy, width/2+zz, 200.0);
     }
-
+    //solver->addDensity(width/2, width/2, width/2, 200.0);
     solver->solve(dt);
     solver->fillDensityData(textureData);
 
@@ -157,7 +162,7 @@ void init(void) {
     scene = new Scene();
 
     scene->camera.perspective(-1.0f, 1.0f, -1.0f, 1.0f, 4.0f, 10.0f);
-    scene->camera.translate(0.0, 3.0, 5.0);
+    scene->camera.translate(0.0, 2.2, 4.0);
     scene->camera.rotate(-30, 0, 0);
 
     float vertexData[cubeSize()];
@@ -229,6 +234,7 @@ int main(int argc, char **argv) {
 
     GLUI *gui = GLUI_Master.create_glui_subwindow(mainWindow, GLUI_SUBWINDOW_BOTTOM);
     gui->add_statictext("le GUI");
+    computeTimeText = gui->add_statictext(computeTimeString);
     gui->add_column();
 
     glutDisplayFunc(render);
