@@ -141,8 +141,8 @@ void render(void) {
 
     densityTexture->initData<float>(densityTextureData);
     glBindFramebuffer(GL_FRAMEBUFFER, windowFramebuffer);
-    //scene->render();
-    computeScene->render();
+    scene->render();
+    //computeScene->render();
     glutSwapBuffers();
 }
 
