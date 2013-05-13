@@ -10,7 +10,7 @@
 
 namespace mcjee {
 
-    Terrain::Terrain(float size) : curDepth(0), size(size) {
+    Terrain::Terrain(float size, float height) : curDepth(0), size(size), height(height) {
         reset();
     }
     
@@ -98,7 +98,7 @@ namespace mcjee {
     // during generation, depth goes from targetDepth -> 0
     float Terrain::calculateOffset(unsigned int depth) {
         float attenuate = 1.0/(targetDepth-depth+1);
-        return (1.0*rand()/RAND_MAX-0.5)*pow(attenuate, 1.8);
+        return (height*rand()/RAND_MAX-height*0.5)*pow(attenuate, 2);
     }
 
     Vector3 Terrain::midpoint(Vector3 &a, Vector3 &b) {

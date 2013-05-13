@@ -12,29 +12,37 @@
 #include "mjlight.h"
 #include "mjrenderable.h"
 #include "mjcamera.h"
+#include "mjframebuffer.h"
 
 namespace mcjee {
 
     class Scene {
     private:
-        std::vector<Light *> lights;
-        std::vector<Renderable *> renderables;
+        
     public:
         static const int MAX_LIGHTS = 8;
+        std::vector<Light *> lights;
+        std::vector<Renderable *> renderables;
+
+        Framebuffer *framebuffer;
         Vector3 ambientColor;
         float diffuseMultiplier;
         float specularMultiplier;
-
         Camera camera;
-        Scene();
+
+        Scene(Framebuffer *);
         ~Scene();
         void add(Renderable *);
         void add(Light *);
         //void remove();
         void deleteMembers();
         void render();
-    };
 
+        void eachRenderable(void (*)(Renderable *));
+        void eachLight();
+
+        Renderable *pickObject(int x, int y);
+    };
 }
 
 #endif

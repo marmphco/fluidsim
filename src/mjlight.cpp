@@ -8,4 +8,9 @@
 
 namespace mcjee {
 
+Material::Material()  :
+            diffuseColor(Vector3(1.0, 1.0, 1.0)),
+            specularColor(Vector3(1.0, 1.0, 1.0)),
+            specularPower(1.0) {}
+
 }

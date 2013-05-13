@@ -12,6 +12,7 @@
 #define MJ_RENDERABLE_H
 
 #include "mjutil.h"
+#include "mjmatrix.h"
 #include "mjshader.h"
 #include "mjlight.h"
 #include "mjgeometry.h"
@@ -21,12 +22,6 @@ namespace mcjee {
     friend class Scene;
     private:
         GLuint vertexArrayObject;
-        // local rotation axes
-        Vector3 localAxisX;
-        Vector3 localAxisY;
-        Vector3 localAxisZ;
-        Matrix4 rotation;
-        Matrix4 inverseRotation;
 
     public:
         Geometry *geometry;
@@ -35,6 +30,7 @@ namespace mcjee {
         GLenum drawType;
         GLenum polygonMode;
 
+        Matrix4 rotation;
         Vector3 center;
         Vector3 scale;
         Vector3 position;
@@ -44,13 +40,14 @@ namespace mcjee {
         void init();
         void render(void);
 
-        // rotation can not be directly manipulated
-        // in the way scale and translate can
         void resetRotation();
-        void rotate(float angle, Vector3 axis);
-        void rotateLocalX(float angle);
-        void rotateLocalY(float angle);
-        void rotateLocalZ(float angle);
+        void rotateGlobal(float angle, Vector3 axis);
+        void rotateLocal(float angle, Vector3 axis);
+        void scaleUniform(float s);
+        void addScaleUniform(float s);
+
+        Matrix4 modelMatrix();
+        Matrix4 inverseModelMatrix();
 
         // To be overridden by subclasses
         virtual void setupVertexAttributes() = 0;

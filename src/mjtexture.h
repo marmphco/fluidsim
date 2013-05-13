@@ -16,13 +16,14 @@ namespace mcjee {
 
 class Texture {
 protected:
-    GLuint texture;
     GLenum target;
     GLint internalFormat;
     GLenum format;
     GLenum type;
 
 public:
+    GLuint texture;
+
     Texture(GLenum target, GLint internalFormat, GLenum format, GLenum type);
     ~Texture();
     void bind(void);

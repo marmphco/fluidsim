@@ -35,7 +35,7 @@ namespace mcjee {
         fs.close();
     }
 
-    void Shader::compileProgram(const char *vSrcPath, const char *fSrcPath) {
+    void Shader::compile(const char *vSrcPath, const char *fSrcPath) {
 
         program = glCreateProgram();
         GLuint vertexShader, fragShader;

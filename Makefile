@@ -19,11 +19,11 @@ OBJDIR = obj
 BINDIR = bin
 
 _CSRC = final.cpp mjterrain.cpp mjshader.cpp mjrenderable.cpp\
-        mjutil.cpp mjmath.cpp mjscene.cpp mjcamera.cpp mjlight.cpp\
+        mjutil.cpp mjscene.cpp mjcamera.cpp mjlight.cpp\
         mjprimitive.cpp mjloader.cpp mjgeometry.cpp mjfluid.cpp\
-        mjtexture.cpp
+        mjtexture.cpp mjmatrix.cpp mjvector.cpp mjframebuffer.cpp
 
-_SHADERS = shader.fsh shader.vsh
+_SHADERS = shader.fsh shader.vsh display.vsh display.fsh
 
 EXECUTABLE = ${BINDIR}/${EXECNAME}
 BUNDLE = ${BINDIR}/${BUNDLENAME}.app

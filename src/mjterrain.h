@@ -4,9 +4,13 @@
     mcjee@ucsc.edu
 */
 
+#ifndef MJ_TERRAIN_H
+#define MJ_TERRAIN_H
+
 #include <vector>
 #include <map>
-#include "mjmath.h"
+#include "mjutil.h"
+#include "mjvector.h"
 
 namespace mcjee {
 
@@ -32,6 +36,7 @@ namespace mcjee {
         unsigned int curDepth;
         unsigned int targetDepth;
         float size;
+        float height;
         void subdivide(index_t a,
                        index_t b,
                        index_t c,
@@ -45,7 +50,7 @@ namespace mcjee {
         float calculateOffset(unsigned int depth);
         void reset(void);
     public:
-        explicit Terrain(float size);
+        explicit Terrain(float size, float height);
         void generate(unsigned int depth, unsigned int seed);
         long vertexCount(void);
         long indexCount(void);
@@ -54,3 +59,5 @@ namespace mcjee {
         index_t *indexData(void);
     };
 }
+
+#endif

@@ -39,7 +39,7 @@ namespace mcjee {
         GLuint program;
         Shader();
         ~Shader();
-        void compileProgram(const char *vSrcPath, const char *fSrcPath);
+        void compile(const char *vSrcPath, const char *fSrcPath);
         GLint getAttribLocation(const GLchar *name);
         GLint getUniformLocation(const GLchar *name);
         void use(void);

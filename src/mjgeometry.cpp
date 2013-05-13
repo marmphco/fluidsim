@@ -36,6 +36,30 @@ void Geometry::modifyData(GLfloat *vertexData,
     glBufferData(GL_ARRAY_BUFFER, vertexSize, vertexData, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexSize, indexData, GL_DYNAMIC_DRAW);
+
+    // find bounds
+    // hacky, assuming first 3 attributes represent position
+    _min = Vector3(99999999, 99999999, 99999999);
+    _max = Vector3(-99999999, -99999999, -99999999);
+    for (int i = 0; i < vertexCount*vertexElements; i += vertexElements) {
+        if (vertexData[i] < _min.x)
+            _min.x = vertexData[i];
+
+        if (vertexData[i+1] < _min.y)
+            _min.y = vertexData[i+1];
+
+        if (vertexData[i+2] < _min.z)
+            _min.z = vertexData[i+2];
+
+        if (vertexData[i] > _max.x)
+            _max.x = vertexData[i];
+
+        if (vertexData[i+1] > _max.y)
+            _max.y = vertexData[i+1];
+
+        if (vertexData[i+2] > _max.z)
+            _max.z = vertexData[i+2];
+    }
 }
 
 void Geometry::bind(void) {
@@ -45,6 +69,14 @@ void Geometry::bind(void) {
 
 int Geometry::elementCount(void) {
     return indexCount;
+}
+
+Vector3 Geometry::boundMin() {
+    return _min;
+}
+
+Vector3 Geometry::boundMax() {
+    return _max;
 }
 
 }

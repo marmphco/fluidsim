@@ -6,6 +6,7 @@
 
 #include "mjprimitive.h"
 #include "mjutil.h"
+#include "mjvector.h"
 
 namespace mcjee {
 
@@ -76,6 +77,10 @@ int cubeIndicesSize() {
     return 36;
 }
 
+int cubeWireframeIndicesSize() {
+    return 24;
+}
+
 void cubeVertices(float *out,
                   float width, float height, float depth) {
     out[0] = 0.0; out[1] = 0.0; out[2] = 0.0;
@@ -102,6 +107,23 @@ void cubeIndices(unsigned int *out) {
     out[27] = 7; out[28] = 5; out[29] = 6;
     out[30] = 0; out[31] = 1; out[32] = 4;
     out[33] = 1; out[34] = 5; out[35] = 4;
+}
+
+void cubeWireframeIndices(unsigned int *out) {
+    out[0] = 0; out[1] = 1;
+    out[2] = 1; out[3] = 2;
+    out[4] = 2; out[5] = 3;
+    out[6] = 3; out[7] = 0;
+
+    out[8] = 4; out[9] = 5;
+    out[10] = 5; out[11] = 6;
+    out[12] = 6; out[13] = 7;
+    out[14] = 7; out[15] = 4;
+
+    out[16] = 1; out[17] = 5;
+    out[18] = 2; out[19] = 6;
+    out[20] = 3; out[21] = 7;
+    out[22] = 0; out[23] = 4;
 }
 
 int squareVerticesSize() {

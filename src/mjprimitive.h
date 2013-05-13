@@ -34,11 +34,13 @@ void generateNormals(float *normals,
 
 int cubeVerticesSize();
 int cubeIndicesSize();
+int cubeWireframeIndicesSize();
 void cubeVertices(float *out,
                   float width,
                   float height,
                   float depth);
 void cubeIndices(unsigned int *out);
+void cubeWireframeIndices(unsigned int *out);
 
 int squareVerticesSize();
 int squareIndicesSize();

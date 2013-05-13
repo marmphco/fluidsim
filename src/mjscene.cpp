@@ -6,12 +6,12 @@
 
 namespace mcjee {
 
-    Scene::Scene() : diffuseMultiplier(1.0), specularMultiplier(1.0 ){
-
+    Scene::Scene(Framebuffer *framebuffer) :
+        framebuffer(framebuffer), diffuseMultiplier(1.0), specularMultiplier(1.0 ) {
     }
 
     Scene::~Scene() {
-        // delete all objects
+        // delete all objects?
     }
 
     void Scene::add(Renderable *object) {
@@ -23,10 +23,11 @@ namespace mcjee {
     }
 
     void Scene::deleteMembers() {
-
+        // delete all data held in renderables and lights
     }
 
     void Scene::render() {
+        framebuffer->bind();
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // create light arrays
@@ -40,9 +41,8 @@ namespace mcjee {
         }
 
         // render objects
-        std::vector<Renderable *>::iterator j;
-        for (j = renderables.begin(); j != renderables.end(); ++j) {
-            Renderable &object = **j;
+        for (unsigned int i = 0; i != renderables.size(); ++i) {
+            Renderable &object = *renderables[i];
             Shader &shader = *object.shader;
             shader.use();
             // matrix uniforms
@@ -75,8 +75,28 @@ namespace mcjee {
                 GLint lightSpeLoc = shader.getUniformLocation("lightSpecularColors");
                 glUniform3fv(lightSpeLoc, MAX_LIGHTS, (const GLfloat *)lightSpecularColors);
             }
+            //object ID
+            if (shader.uniformEnabled("objectID")) {
+                GLint loc = shader.getUniformLocation("objectID");
+                glUniform1i(loc, i+1);
+            }
             object.render();
         }
+        framebuffer->unbind();
     }
 
+    Renderable *Scene::pickObject(int x, int y) {
+        framebuffer->bind();
+        unsigned int id;
+        glReadBuffer(GL_COLOR_ATTACHMENT1);
+        glReadPixels(x, y, 1, 1, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, &id);
+        glReadBuffer(GL_NONE);
+        framebuffer->unbind();
+        id = (id & 0xff)-1;
+        if (id < renderables.size()) {
+            return renderables[id];
+        } else {
+            return NULL;
+        }
+    }
 }

@@ -10,10 +10,6 @@
 #include <iostream>
 
 #ifdef __APPLE__
-/*#   pragma clang diagnostic push
-#   pragma clang diagnostic ignored "-W#warnings"
-#       include <OpenGL/gl3.h>
-#   pragma clang diagnostic pop*/
 #   include <GLUT/glut.h>
 #   define glGenVertexArrays glGenVertexArraysAPPLE
 #   define glBindVertexArray glBindVertexArrayAPPLE
@@ -22,8 +18,6 @@
 #   include "libglew/glew.h"
 #   include <GL/glut.h>
 #endif
-
-#include "mjmath.h"
 
 long getTimeMillis(void);
 

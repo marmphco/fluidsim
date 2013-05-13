@@ -8,7 +8,7 @@
 #define MJ_LIGHT
 
 #include <vector>
-#include "mjmath.h"
+#include "mjvector.h"
 #include "mjtexture.h"
 
 namespace mcjee {
@@ -32,10 +32,7 @@ namespace mcjee {
         Vector3 specularColor;
         float specularPower;
         std::vector<Texture *> textures;
-        Material() :
-            diffuseColor(Vector3(1.0, 1.0, 1.0)),
-            specularColor(Vector3(1.0, 1.0, 1.0)),
-            specularPower(1.0) {};
+        Material();
     };
 }
 

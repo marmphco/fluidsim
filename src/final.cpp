@@ -12,17 +12,10 @@
 #pragma clang diagnostic ignored "-Wunused-comparison"
 #include "libglui/glui.h"
 #pragma clang diagnostic pop
-#include "mjutil.h"
-#include "mjshader.h"
-#include "mjrenderable.h"
-#include "mjmath.h"
-#include "mjscene.h"
-#include "mjprimitive.h"
+#include "mj.h"
 #include "mjfluid.h"
 #include <cmath>
 #include <iostream>
-
-#include "mjtexture.h"
 
 using namespace mcjee;
 using namespace std;
@@ -61,6 +54,7 @@ static GLUI_StaticText *computeTimeText;
 static char computeTimeString[16];
 static GLuint windowFramebuffer;
 
+static Framebuffer *fb;
 static Scene *computeScene;
 static Geometry *quadGeometry;
 static Model *fullScreenQuad;
@@ -101,7 +95,7 @@ void mouseMove(int x, int y) {
     Vector3 rotationAxis(y-lastY, x-lastX, 0.0);
     float rotationAmount = rotationAxis.length();
     rotationAxis.normalize();
-    model->rotate(rotationAmount, rotationAxis);
+    model->rotateGlobal(rotationAmount, rotationAxis);
     lastX = x;
     lastY = y;
 }
@@ -143,6 +137,7 @@ void render(void) {
     glBindFramebuffer(GL_FRAMEBUFFER, windowFramebuffer);
     scene->render();
     //computeScene->render();
+    fb->present();
     glutSwapBuffers();
 }
 
@@ -159,13 +154,14 @@ void init(void) {
 
     shader = new Shader();
     try {
-        shader->compileProgram("shaders/shader.vsh",
-                               "shaders/shader.fsh");
+        shader->compile("shaders/shader.vsh", "shaders/shader.fsh");
     } catch (mcjee::ShaderError &e) {
         cout << e.what() << endl;
     }
 
-    scene = new Scene();
+    fb = new Framebuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
+
+    scene = new Scene(fb);
     scene->camera.perspective(-1.0f, 1.0f, -1.0f, 1.0f, 4.0f, 10.0f);
     scene->camera.translate(0.0, 2.2, 4.0);
     scene->camera.rotate(-30, 0, 0);
@@ -190,7 +186,7 @@ void init(void) {
 }
 
 void initCompute(void) {
-    computeScene = new Scene();
+    /*computeScene = new Scene();
     computeScene->camera.orthographic(-1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
     computeScene->camera.translate(0.0, 0.0, 1.0);
 
@@ -208,7 +204,7 @@ void initCompute(void) {
 
     //setup frambuffers
     glGenFramebuffers(1, &advectStepFramebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, advectStepFramebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, advectStepFramebuffer);*/
 }
 
 void reshapeWindow(int, int) {
@@ -228,7 +224,7 @@ int main(int argc, char **argv) {
     init();
     initCompute();
 
-    GLUI *gui = GLUI_Master.create_glui_subwindow(mainWindow, GLUI_SUBWINDOW_BOTTOM);
+    GLUI *gui = GLUI_Master.create_glui("Tools");
     gui->add_statictext("le GUI");
     computeTimeText = gui->add_statictext(computeTimeString);
     gui->add_column();

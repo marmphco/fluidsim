@@ -1,8 +1,11 @@
 /*
-    mjmath.cpp
+    mjmatrix.cpp
+    Matthew Jee
+    mcjee@ucsc.edu
 */
 
-#include "mjmath.h"
+#include "mjmatrix.h"
+#define SWAP(x, y) {float temp = (x); (x) = (y); (y) = temp;}
 
 namespace mcjee {
 
@@ -43,12 +46,31 @@ Matrix4 Matrix4::operator*(Matrix4 &m) {
     return temp;
 }
 
+Vector3 Matrix4::operator*(Vector3 that) {
+    Vector3 temp;
+    temp.x = that.x*data[0]+that.y*data[4]+that.z*data[8]+data[12];
+    temp.y = that.x*data[1]+that.y*data[5]+that.z*data[9]+data[13];
+    temp.z = that.x*data[2]+that.y*data[6]+that.z*data[10]+data[14];
+    return temp;
+}
+
 void Matrix4::identity() {
     data[0] = 1;   data[1] = 0;  data[2] = 0;  data[3] = 0;
     data[4] = 0;   data[5] = 1;  data[6] = 0;  data[7] = 0;
     data[8] = 0;   data[9] = 0; data[10] = 1; data[11] = 0;
     data[12] = 0; data[13] = 0; data[14] = 0; data[15] = 1;
 }
+
+Matrix4 &Matrix4::transpose() {
+    SWAP(data[1], data[4]);
+    SWAP(data[2], data[8]);
+    SWAP(data[6], data[9]);
+    SWAP(data[3], data[12]);
+    SWAP(data[7], data[13]);
+    SWAP(data[11], data[14]);
+    return *this;
+}
+
 void Matrix4::ortho(float left,
                     float right,
                     float bottom,
@@ -245,12 +267,9 @@ Vector3 Matrix3::operator*(Vector3 that) {
 }
 
 Matrix3 &Matrix3::transpose() {
-    data[1] = data[3];
-    data[2] = data[6];
-    data[3] = data[1];
-    data[5] = data[7];
-    data[6] = data[2];
-    data[7] = data[7];
+    SWAP(data[1], data[3]);
+    SWAP(data[2], data[6]);
+    SWAP(data[5], data[7]);
     return *this;
 }
 
@@ -272,15 +291,6 @@ std::ostream &operator<<(std::ostream &out,
         << mat.data[7] << ", "
         << mat.data[11] << ", "
         << mat.data[15] << std::endl;
-    return out;
-}
-
-
-std::ostream &operator<<(std::ostream &out,
-                         mcjee::Vector3 &vec) {
-    out << "[" << vec.x << ", "
-        << vec.y << ", "
-        << vec.z << "]";
     return out;
 }
 
