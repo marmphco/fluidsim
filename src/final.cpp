@@ -99,7 +99,6 @@ void mouseEvent(int, int state, int x, int y) {
 }
 
 void render(void) {
-    GLUI_Master.auto_set_viewport();
     static long ox = 0;
     long x = glutGet(GLUT_ELAPSED_TIME);
     sprintf(computeTimeString, "%ldms", x-ox);
@@ -125,6 +124,8 @@ void render(void) {
     solver->fillDensityData(densityTextureData);
 
     densityTexture->initData(densityTextureData);
+    GLUI_Master.auto_set_viewport();
+
     scene->render();
     colorTarget->present(displayShader);
     glutSwapBuffers();

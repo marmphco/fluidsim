@@ -52,6 +52,7 @@ void Texture2D::present(Shader *shader) {
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     shader->use();
+    glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, texture);
     GLint loc = shader->getAttribLocation("vPosition");
     glEnableVertexAttribArray(loc);

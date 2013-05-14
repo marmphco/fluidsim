@@ -120,7 +120,7 @@ namespace mcjee {
                 name[nameSize] = '\0'; // just in case
             }
             uniformMap[name] = glGetUniformLocation(program, name);
-            //std::cerr << name << ", " << uniformMap[name] << std::endl;
+            std::cerr << name << ", " << uniformMap[name] << std::endl;
         }
     }
 

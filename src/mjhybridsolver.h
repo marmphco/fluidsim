@@ -31,6 +31,7 @@ private:
 
     Scene *advectScene;
     Shader *advectKernel;
+    Renderable *model;
 
     void project(float *vel, float *div, float *temp);
 
