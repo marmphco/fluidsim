@@ -12,6 +12,7 @@
 #pragma clang diagnostic pop
 #include "mj.h"
 #include "mjfluid.h"
+#include "mjhybridsolver.h"
 #include <cmath>
 #include <iostream>
 
@@ -123,7 +124,7 @@ void render(void) {
     solver->solve(dt);
     solver->fillDensityData(densityTextureData);
 
-    densityTexture->initData<float>(densityTextureData);
+    densityTexture->initData(densityTextureData);
     scene->render();
     colorTarget->present(displayShader);
     glutSwapBuffers();
@@ -171,6 +172,7 @@ void init(void) {
 
     densityTextureData = new GLfloat[width*width*width*3];
     densityTexture = new Texture3D(GL_RGB, GL_RGB, GL_FLOAT, width, width, width);
+    densityTexture->interpolation(GL_LINEAR);
     densityTexture->initData(densityTextureData);
 
     fluidDomain = new Model(fluidDomainGeo, smokeShader, GL_TRIANGLES);
@@ -178,7 +180,7 @@ void init(void) {
     fluidDomain->center = Vector3(0.5, 0.5, 0.5);
     scene->add(fluidDomain);
 
-    solver = new CPUSolver(width, width, width);
+    solver = new HybridSolver(width, width, width);
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint *)&windowFramebuffer);
 }
 

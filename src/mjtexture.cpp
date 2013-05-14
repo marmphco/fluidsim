@@ -13,8 +13,8 @@ Texture::Texture(GLenum target, GLint internalFormat, GLenum format, GLenum type
     glGenTextures(1, &texture);
     bind();
     // non-sensical defaults, temporary
-    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
     glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
@@ -26,6 +26,11 @@ Texture::~Texture() {
 
 void Texture::bind(void) {
     glBindTexture(target, texture);
+}
+
+void Texture::interpolation(GLint interpol) {
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, interpol);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, interpol);
 }
 
 Texture2D::Texture2D(GLint internalFormat, GLenum format, GLenum type,

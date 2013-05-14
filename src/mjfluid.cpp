@@ -5,7 +5,7 @@
 */
 
 #include "mjfluid.h"
-    #include <iostream>
+#include <iostream>
 
 #define idx(x, y, z) (_width*_height*(z)+_width*(y)+x)
 #define swap(x, y) {float *t = (x); (x) = (y); (y) = t;}
@@ -122,7 +122,7 @@ void CPUSolver::project(float *vx, float *vy, float *vz, float *div, float *temp
                 div[idx(i, j, k)] = 0.5*b*(
                     vx[idx(i+1, j, k)]-vx[idx(i-1, j, k)]+
                     vy[idx(i, j+1, k)]-vy[idx(i, j-1, k)]+
-                    vz[idx(i, j, k+1)]-vz[idx(i, j, k)-1]
+                    vz[idx(i, j, k+1)]-vz[idx(i, j, k-1)]
                 );
                 temp[idx(i, j, k)] = 0.0;
             }
@@ -188,14 +188,12 @@ void CPUSolver::solve(float dt) {
     //swap(vz1, vz0);
 
     project(vx0, vy0, vz0, vx1, vy1);
-    //swap(vx1, vx0);
-    //swap(vy1, vy0);
-    //swap(vz1, vz0);
+
     advect(vx1, vx0, vx0, vy0, vz0, dt);
     advect(vy1, vy0, vx0, vy0, vz0, dt);
     advect(vz1, vz0, vx0, vy0, vz0, dt);
-    
-    //project(vx1, vy1, vz1, vx0, vy0);
+
+    project(vx1, vy1, vz1, vx0, vy0);
     swap(vx1, vx0);
     swap(vy1, vy0);
     swap(vz1, vz0);

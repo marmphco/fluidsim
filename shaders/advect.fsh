@@ -4,13 +4,11 @@
 #version 120
 
 varying vec4 fPosition;
-varying vec4 fTexCoord;
-uniform sampler3D texture0;
-
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
+uniform sampler2D inBuffer;
+uniform sampler2D velocityBuffer;
 
 void main() {    
-    
-    gl_FragColor = vec4(0.0, 0.00, 0.00, 0.1)+color; 
+    vec2 texSpace = fPosition.xy;
+    vec4 stuff = texture2D(velocityBuffer, texSpace);
+    gl_FragColor = texture2D(inBuffer, texSpace); 
 }

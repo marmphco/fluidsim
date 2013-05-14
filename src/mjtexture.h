@@ -28,6 +28,7 @@ public:
     Texture(GLenum target, GLint internalFormat, GLenum format, GLenum type);
     ~Texture();
     void bind(void);
+    void interpolation(GLint interpol);
 };
 
 class Texture2D : public Texture {

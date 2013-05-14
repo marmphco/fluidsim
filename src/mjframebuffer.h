@@ -17,9 +17,6 @@ class Framebuffer {
 private:
     std::vector<GLuint> renderbuffers;
 	GLuint framebuffer;
-    GLuint colorbuffer;
-    GLuint depthbuffer;
-    GLuint pickbuffer;
     int _width;
     int _height;
 
