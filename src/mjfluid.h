@@ -12,6 +12,7 @@
 
 namespace mcjee {
 
+// fluid solver interface
 class FluidSolver {
 protected:
     int _width;
@@ -29,7 +30,7 @@ public:
     virtual void fillDensityData(float *out) = 0;
 };
 
-class CPUSolver : FluidSolver {
+class CPUSolver : public FluidSolver {
 private:
     float *density0;
     float *density1;
@@ -39,9 +40,6 @@ private:
     float *vy1;
     float *vz0;
     float *vz1;
-
-    float *density;
-    float *velocity;
 
     void diffuse(float *next, float *prev, float dt);
     void advect(float *next, float *prev, float *vx, float *vy, float *vz, float dt);

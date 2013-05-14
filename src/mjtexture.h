@@ -11,6 +11,7 @@
 #define MJ_TEXTURE_H
 
 #include "mjutil.h"
+#include "mjshader.h"
 
 namespace mcjee {
 
@@ -38,6 +39,7 @@ public:
               int width, int height);
     template <typename dataType>
     void initData(dataType *data);
+    void present(Shader *shader);
 };
 
 class Texture3D : public Texture {

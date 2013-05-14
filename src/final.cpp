@@ -41,20 +41,20 @@ public:
     }
 };
 
+static Shader *displayShader;
 static Shader *smokeShader;
 static Geometry *fluidDomainGeo;
 static Model *fluidDomain;
 static Scene *scene;
-static CPUSolver *solver;
+static FluidSolver *solver;
 static int width = 32; // power of 2 plz
 static int mainWindow;
 static GLUI_StaticText *computeTimeText;
 static char computeTimeString[16];
 static GLuint windowFramebuffer;
 
-static Framebuffer *fb;
-static Scene *computeScene;
-static Shader *advectShader;
+static Texture2D *colorTarget;
+static Framebuffer *mainFrameBuffer;
 static Texture3D *densityTexture;
 static GLfloat *densityTextureData;
 
@@ -125,7 +125,7 @@ void render(void) {
 
     densityTexture->initData<float>(densityTextureData);
     scene->render();
-    fb->present();
+    colorTarget->present(displayShader);
     glutSwapBuffers();
 }
 
@@ -136,8 +136,10 @@ void idle(void) {
 
 void compileShaders(void) {
     smokeShader = new Shader();
+    displayShader = new Shader();
     try {
         smokeShader->compile("shaders/shader.vsh", "shaders/shader.fsh");
+        displayShader->compile("shaders/display.vsh", "shaders/display.fsh");
     } catch (mcjee::ShaderError &e) {
         cout << e.what() << endl;
     }
@@ -149,9 +151,14 @@ void init(void) {
     glCullFace(GL_BACK);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
-    fb = new Framebuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
+    colorTarget = new Texture2D(GL_RGBA, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, WINDOW_WIDTH, WINDOW_HEIGHT);
+    colorTarget->initData((float *)0);
 
-    scene = new Scene(fb);
+    mainFrameBuffer = new Framebuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
+    mainFrameBuffer->addRenderTarget(colorTarget, GL_COLOR_ATTACHMENT0);
+    mainFrameBuffer->addRenderTarget(GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT);
+
+    scene = new Scene(mainFrameBuffer);
     scene->camera.perspective(-1.0f, 1.0f, -1.0f, 1.0f, 4.0f, 10.0f);
     scene->camera.translate(0.0, 2.2, 4.0);
     scene->camera.rotate(-30, 0, 0);
@@ -175,17 +182,13 @@ void init(void) {
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint *)&windowFramebuffer);
 }
 
-void initCompute(void) {
-    
-}
-
 void reshapeWindow(int, int) {
     GLUI_Master.reshape();
 }
 
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
     glutInitWindowPosition(100, 100);
     mainWindow = glutCreateWindow("Fluid Simulator");
@@ -195,7 +198,6 @@ int main(int argc, char **argv) {
 #endif
     compileShaders();
     init();
-    initCompute();
 
     GLUI *gui = GLUI_Master.create_glui("Tools");
     gui->add_statictext("le GUI");

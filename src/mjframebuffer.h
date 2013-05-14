@@ -8,24 +8,30 @@
 #define MJ_FRAMEBUFFER_H
 
 #include "mjutil.h"
-#include "mjshader.h"
+#include "mjtexture.h"
+#include <vector>
 
 namespace mcjee {
 
 class Framebuffer {
 private:
+    std::vector<GLuint> renderbuffers;
 	GLuint framebuffer;
     GLuint colorbuffer;
     GLuint depthbuffer;
     GLuint pickbuffer;
+    int _width;
+    int _height;
 
 public:
 	Framebuffer(float width, float height);
 	~Framebuffer();
 
+    void addRenderTarget(GLenum format, GLenum attachment);
+    void addRenderTarget(Texture2D *, GLenum attachment);
+
 	void bind();
 	void unbind();
-	void present();
 };
 
 }
