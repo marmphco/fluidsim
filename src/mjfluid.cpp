@@ -13,7 +13,16 @@
 namespace mcjee {
 
 FluidSolver::FluidSolver(int width, int height, int depth) :
-    _width(width), _height(height), _depth(depth), iterations(4) {
+    _width(width), _height(height), _depth(depth) {
+
+}
+
+FluidSolver::~FluidSolver() {
+
+}
+
+CPUSolver::CPUSolver(int width, int height, int depth) :
+    FluidSolver(width, height, depth), iterations(4) {
     density1 = new float[width*height*depth];
     density0 = new float[width*height*depth];
     vx1 = new float[width*height*depth];
@@ -39,7 +48,7 @@ FluidSolver::FluidSolver(int width, int height, int depth) :
     }
 }
 
-FluidSolver::~FluidSolver() {
+CPUSolver::~CPUSolver() {
     delete density1;
     delete density0;
     delete vx1;
@@ -50,7 +59,7 @@ FluidSolver::~FluidSolver() {
     delete vz0;
 }
 
-void FluidSolver::diffuse(float *next, float *prev, float dt) {
+void CPUSolver::diffuse(float *next, float *prev, float dt) {
     float f = dt*0.02;
 
     for (int n = 0; n < iterations; ++n) {
@@ -69,7 +78,7 @@ void FluidSolver::diffuse(float *next, float *prev, float dt) {
 }
 
 // move stuff along a velocity field
-void FluidSolver::advect(float *next, float *prev, float *vx, float *vy, float *vz, float dt) {
+void CPUSolver::advect(float *next, float *prev, float *vx, float *vy, float *vz, float dt) {
     for (int i = 1; i < _width-1; ++i) {
         for (int j = 1; j < _height-1; ++j) {
             for (int k = 1; k < _depth-1; ++k) {
@@ -104,7 +113,7 @@ void FluidSolver::advect(float *next, float *prev, float *vx, float *vy, float *
 }
 
 // some of these scalars may be wrong
-void FluidSolver::project(float *vx, float *vy, float *vz, float *div, float *temp) {
+void CPUSolver::project(float *vx, float *vy, float *vz, float *div, float *temp) {
     //compute divergence
     float b = 1.0; // arbitrary scaling term
     for (int i = 1; i < _width-1; ++i) {
@@ -152,20 +161,20 @@ void FluidSolver::project(float *vx, float *vy, float *vz, float *div, float *te
     }
 }
 
-void FluidSolver::addDensity(int x, int y, int z, float amount) {
+void CPUSolver::addDensity(int x, int y, int z, float amount) {
     density0[idx(x, y, z)] += amount;
 }
 
-void FluidSolver::addVelocityX(int x, int y, int z, float amount) {
+void CPUSolver::addVelocityX(int x, int y, int z, float amount) {
     vx0[idx(x, y, z)] += amount;
 }
 
-void FluidSolver::addVelocityY(int x, int y, int z, float amount) {
+void CPUSolver::addVelocityY(int x, int y, int z, float amount) {
     vy0[idx(x, y, z)] += amount;
 }
 
 
-void FluidSolver::solve(float dt) {
+void CPUSolver::solve(float dt) {
     //diffuse(density1, density0, dt);
     //swap(density1, density0);
     advect(density1, density0, vx0, vy0, vz0, dt);
@@ -192,20 +201,7 @@ void FluidSolver::solve(float dt) {
     swap(vz1, vz0);
 }
 
-// until I figure out whether we can use float textures
-void FluidSolver::fillDensityData(unsigned int *out) {
-    for (int i = 0; i < _width; ++i) {
-        for (int j = 0; j < _height; ++j) {
-            for (int k = 0; k < _depth; ++k) {
-                float c =  density1[idx(i, j, k)] > 1.0 ? 1.0 : density1[idx(i, j, k)];
-                int num = (int)(c*0xff);
-                out[idx(i, j, k)] = (num<<8) | (num<<16) | (num<<24) | 0xff;
-            }
-        }
-    }
-}
-
-void FluidSolver::fillDensityData(float *out) {
+void CPUSolver::fillDensityData(float *out) {
     for (int i = 0; i < _width; ++i) {
         for (int j = 0; j < _height; ++j) {
             for (int k = 0; k < _depth; ++k) {

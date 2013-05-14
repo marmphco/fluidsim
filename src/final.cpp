@@ -1,9 +1,7 @@
 /*
-  prog1.cpp
+  final.cpp
   Matthew Jee
   mcjee@ucsc.edu
-
-  Putting together all the pieces of this wondrous machine!
 */
 
 #pragma clang diagnostic push
@@ -43,11 +41,11 @@ public:
     }
 };
 
-static Shader *shader;
-static Geometry *geo;
-static Model *model;
+static Shader *smokeShader;
+static Geometry *fluidDomainGeo;
+static Model *fluidDomain;
 static Scene *scene;
-static FluidSolver *solver;
+static CPUSolver *solver;
 static int width = 32; // power of 2 plz
 static int mainWindow;
 static GLUI_StaticText *computeTimeText;
@@ -56,17 +54,9 @@ static GLuint windowFramebuffer;
 
 static Framebuffer *fb;
 static Scene *computeScene;
-static Geometry *quadGeometry;
-static Model *fullScreenQuad;
-static Shader *diffuseShader;
 static Shader *advectShader;
-static Shader *projectShader;
 static Texture3D *densityTexture;
-static Texture3D *velocityTexture;
 static GLfloat *densityTextureData;
-static GLfloat *velocityTextureData;
-static GLfloat *pressureTextureData;
-static GLuint advectStepFramebuffer;
 
 static int lastX = 0;
 static int lastY = 0;
@@ -95,7 +85,7 @@ void mouseMove(int x, int y) {
     Vector3 rotationAxis(y-lastY, x-lastX, 0.0);
     float rotationAmount = rotationAxis.length();
     rotationAxis.normalize();
-    model->rotateGlobal(rotationAmount, rotationAxis);
+    fluidDomain->rotateGlobal(rotationAmount, rotationAxis);
     lastX = x;
     lastY = y;
 }
@@ -134,9 +124,7 @@ void render(void) {
     solver->fillDensityData(densityTextureData);
 
     densityTexture->initData<float>(densityTextureData);
-    glBindFramebuffer(GL_FRAMEBUFFER, windowFramebuffer);
     scene->render();
-    //computeScene->render();
     fb->present();
     glutSwapBuffers();
 }
@@ -146,18 +134,20 @@ void idle(void) {
     glutPostRedisplay();
 }
 
+void compileShaders(void) {
+    smokeShader = new Shader();
+    try {
+        smokeShader->compile("shaders/shader.vsh", "shaders/shader.fsh");
+    } catch (mcjee::ShaderError &e) {
+        cout << e.what() << endl;
+    }
+}
+
 void init(void) {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-    shader = new Shader();
-    try {
-        shader->compile("shaders/shader.vsh", "shaders/shader.fsh");
-    } catch (mcjee::ShaderError &e) {
-        cout << e.what() << endl;
-    }
 
     fb = new Framebuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
 
@@ -170,41 +160,23 @@ void init(void) {
     GLuint indexData[cubeIndicesSize()];
     cubeVertices(vertexData, 1.0, 1.0, 1.0);
     cubeIndices(indexData);
-    geo = new Geometry(vertexData, indexData, 8, 36, 3);
+    fluidDomainGeo = new Geometry(vertexData, indexData, 8, 36, 3);
 
     densityTextureData = new GLfloat[width*width*width*3];
     densityTexture = new Texture3D(GL_RGB, GL_RGB, GL_FLOAT, width, width, width);
     densityTexture->initData(densityTextureData);
 
-    model = new Model(geo, shader, GL_TRIANGLES);
-    model->init();
-    model->center = Vector3(0.5, 0.5, 0.5);
-    scene->add(model);
+    fluidDomain = new Model(fluidDomainGeo, smokeShader, GL_TRIANGLES);
+    fluidDomain->init();
+    fluidDomain->center = Vector3(0.5, 0.5, 0.5);
+    scene->add(fluidDomain);
 
-    solver = new FluidSolver(width, width, width);
+    solver = new CPUSolver(width, width, width);
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint *)&windowFramebuffer);
 }
 
 void initCompute(void) {
-    /*computeScene = new Scene();
-    computeScene->camera.orthographic(-1.0, 1.0, -1.0, 1.0, 0.0, 1.0);
-    computeScene->camera.translate(0.0, 0.0, 1.0);
-
-    //compile shaders
-
-    //setup quad
-    float vertices[squareVerticesSize()];
-    GLuint indices[squareIndicesSize()];
-    squareVertices(vertices, 1, 1);
-    squareIndices(indices);
-    quadGeometry = new Geometry(vertices, indices, 4, 6, 3);
-    fullScreenQuad = new Model(quadGeometry, shader, GL_TRIANGLES);
-    model->init();
-    computeScene->add(fullScreenQuad);
-
-    //setup frambuffers
-    glGenFramebuffers(1, &advectStepFramebuffer);
-    glBindFramebuffer(GL_FRAMEBUFFER, advectStepFramebuffer);*/
+    
 }
 
 void reshapeWindow(int, int) {
@@ -221,6 +193,7 @@ int main(int argc, char **argv) {
 #ifndef __APPLE__
     glewInit();
 #endif
+    compileShaders();
     init();
     initCompute();
 
@@ -238,6 +211,6 @@ int main(int argc, char **argv) {
     GLUI_Master.set_glutKeyboardFunc(keyboardEvent);
     glutMainLoop();
 
-    delete shader;
+    delete smokeShader;
     return 0;
 }
