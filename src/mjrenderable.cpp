@@ -56,10 +56,10 @@ void Renderable::render(void) {
         loc = shader->getUniformLocation("matSpecularPower");
         glUniform1f(loc, material.specularPower);
     }
-    for (unsigned int i = 0; i < material.textures.size(); ++i) {
+    /*for (unsigned int i = 0; i < material.textures.size(); ++i) {
         glActiveTexture(GL_TEXTURE0+i);
         material.textures[i]->bind();
-    }
+    }*/
     glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
     glBindVertexArray(vertexArrayObject);
     glDrawElements(drawType, geometry->elementCount(), GL_UNSIGNED_INT, 0);

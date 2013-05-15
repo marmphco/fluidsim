@@ -43,5 +43,5 @@ void main() {
         //tag = max(tag-color.a*9999.0, 0.0);
     }
     //color = texture3D(texture0, (fPosition).xyz*0.99);
-    gl_FragColor = vec4(0.2, 0.00, 0.00, 0.1)+color; 
+    gl_FragColor = vec4(0.1, 0.00, 0.00, 0.1)+color; 
 }

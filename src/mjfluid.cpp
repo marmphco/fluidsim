@@ -107,6 +107,7 @@ void CPUSolver::advect(float *next, float *prev, float *vx, float *vy, float *vz
                     yr*(xl*prev[idx(x0, y1, z0)]+xr*prev[idx(x1, y1, z0)]))+
                 zr*(yl*(xl*prev[idx(x0, y0, z1)]+xr*prev[idx(x1, y0, z1)])+
                     yr*(xl*prev[idx(x0, y1, z1)]+xr*prev[idx(x1, y1, z1)]));
+                    //prev[idx(i, j, k)];
             }
         }
     }

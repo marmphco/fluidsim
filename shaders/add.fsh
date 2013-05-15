@@ -8,8 +8,7 @@ uniform sampler2D inBuffer;
 uniform sampler2D velocityBuffer;
 
 void main() {    
-    vec2 texSpace = fPosition.xy;
-    vec4 stuff = texture2D(velocityBuffer, texSpace);
-    vec4 crap = texture2D(inBuffer, texSpace);
-    gl_FragData[0] = crap;
+    vec4 stuff = texture2D(inBuffer, fPosition.xy);
+    vec4 crap = texture2D(velocityBuffer, fPosition.xy);
+    gl_FragData[0] = stuff+crap;
 }

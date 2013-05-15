@@ -113,8 +113,8 @@ void render(void) {
         int xx = cosf(angle)*width/4;
         int yy = sinf(angle)*width/4;
         int zz = sinf(beta)*width/4;
-        float vx = -sinf(angle)*1000.0;
-        float vy = -cosf(angle)*1000.0;
+        float vx = -sinf(angle)*10.0;
+        float vy = -cosf(angle)*10.0;
         solver->addVelocityX(width/2+xx, width/2+yy, width/2+zz, vx);
         solver->addVelocityY(width/2+xx, width/2+yy, width/2+zz, vy);
         solver->addDensity(width/2+xx, width/2+yy, width/2+zz, 200.0);
