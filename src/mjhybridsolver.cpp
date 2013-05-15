@@ -30,12 +30,23 @@ HybridSolver::HybridSolver(int width, int height, int depth) :
 
     densityTex0 = new Texture2D(GL_RGB, GL_RGB, GL_FLOAT, width, height*depth);
     densityTex0->initData(densityBuffer);
+    densityTex0->interpolation(GL_LINEAR);
+    densityTex0->wrap(GL_CLAMP_TO_EDGE);
+
     densityTex1 = new Texture2D(GL_RGB, GL_RGB, GL_FLOAT, width, height*depth);
     densityTex1->initData(densityBuffer);
+    densityTex1->interpolation(GL_LINEAR);
+    densityTex1->wrap(GL_CLAMP_TO_EDGE);
+
     velocityTex0 = new Texture2D(GL_RGB, GL_RGB, GL_FLOAT, width, height*depth);
     velocityTex0->initData(densityBuffer);
+    velocityTex0->interpolation(GL_LINEAR);
+    velocityTex0->wrap(GL_CLAMP_TO_EDGE);
+
     velocityTex1 = new Texture2D(GL_RGB, GL_RGB, GL_FLOAT, width, height*depth);
     velocityTex1->initData(densityBuffer);
+    velocityTex1->interpolation(GL_LINEAR);
+    velocityTex1->wrap(GL_CLAMP_TO_EDGE);
 
     GLenum drawTarget = GL_COLOR_ATTACHMENT0;
 
@@ -139,7 +150,7 @@ void HybridSolver::solve(float dt) {
 
     //project velocities
     velocity0->bind();
-    glReadPixels(0, 0, _width, _height, GL_RGB, GL_FLOAT, velocityBuffer);
+    glReadPixels(0, 0, _width, _height*_depth, GL_RGB, GL_FLOAT, velocityBuffer);
     velocity0->unbind();
     project(velocityBuffer, temp0, temp1);
     velocityTex0->initData(velocityBuffer);
@@ -155,7 +166,7 @@ void HybridSolver::solve(float dt) {
 
     //project velocities
     velocity0->bind();
-    glReadPixels(0, 0, _width, _height, GL_RGB, GL_FLOAT, velocityBuffer);
+    glReadPixels(0, 0, _width, _height*_depth, GL_RGB, GL_FLOAT, velocityBuffer);
     velocity0->unbind();
     project(velocityBuffer, temp0, temp1);
     velocityTex0->initData(velocityBuffer);

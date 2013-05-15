@@ -29,6 +29,7 @@ public:
     ~Texture();
     void bind(void);
     void interpolation(GLint interpol);
+    void wrap(GLint wrap);
 };
 
 class Texture2D : public Texture {

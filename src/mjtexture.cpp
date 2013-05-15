@@ -33,6 +33,12 @@ void Texture::interpolation(GLint interpol) {
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, interpol);
 }
 
+void Texture::wrap(GLint wrap) {
+    glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap);
+    glTexParameteri(target, GL_TEXTURE_WRAP_R, wrap);
+    glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap);
+}
+
 Texture2D::Texture2D(GLint internalFormat, GLenum format, GLenum type,
                      int width, int height) :
     Texture(GL_TEXTURE_2D, internalFormat, format, type),
