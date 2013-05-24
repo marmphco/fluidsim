@@ -164,8 +164,8 @@ void init(void) {
 
     scene = new Scene(mainFrameBuffer);
     scene->camera.perspective(-1.0f, 1.0f, -1.0f, 1.0f, 4.0f, 10.0f);
-    scene->camera.translate(0.0, 2.2, 4.0);
-    scene->camera.rotate(-30, 0, 0);
+    scene->camera.position = Vector3(0.0, 2.2, 4.0);
+    scene->camera.rotateLocal(-30, X_AXIS);
 
     float vertexData[cubeVerticesSize()];
     GLuint indexData[cubeIndicesSize()];

@@ -14,19 +14,23 @@ Vector3::Vector3() : x(0), y(0), z(0) {}
 Vector3::Vector3(float sx, float sy, float sz):
     x(sx), y(sy), z(sz) {}
 
-Vector3 Vector3::operator+(Vector3 that) {
+Vector3 Vector3::operator-() const {
+    return Vector3(-x, -y, -z);
+}
+
+Vector3 Vector3::operator+(Vector3 that) const {
     return Vector3(x+that.x, y+that.y, z+that.z);
 }
 
-Vector3 Vector3::operator-(Vector3 that) {
+Vector3 Vector3::operator-(Vector3 that) const {
     return Vector3(x-that.x, y-that.y, z-that.z);
 }
 
-Vector3 Vector3::operator*(Vector3 that) { //component-wise
+Vector3 Vector3::operator*(Vector3 that) const { //component-wise
     return Vector3(x*that.x, y*that.y, z*that.z);
 }
 
-Vector3 Vector3::operator*(float scalar) {
+Vector3 Vector3::operator*(float scalar) const {
     return Vector3(x*scalar, y*scalar, z*scalar);
 }
 
@@ -44,7 +48,7 @@ Vector3 &Vector3::operator+=(float that) {
     return *this;
 }
 
-Vector3 &Vector3::operator*=(Vector3 &that) {
+Vector3 &Vector3::operator*=(Vector3 that) {
     x *= that.x;
     y *= that.y;
     z *= that.z;
@@ -62,24 +66,23 @@ float Vector3::length() {
     return sqrtf(x*x+y*y+z*z);
 }
 
-float Vector3::dot(Vector3 &that) {
+float Vector3::dot(Vector3 that) {
     return x*that.x+y*that.y+z*that.z;
 }
 
-Vector3 Vector3::cross(Vector3 &that) {
+Vector3 Vector3::cross(Vector3 that) {
     return Vector3(y*that.z-z*that.y, z*that.x-x*that.z, x*that.y-y*that.x);
 }
 
 Vector3 Vector3::normalized() {
     float l = length();
-    return Vector3(x/l, y/l, z/l);
+    return std::isfinite(1/l) ? Vector3(x/l, y/l, z/l) : *this;
 }
 
-void Vector3::normalize() {
+Vector3 &Vector3::normalize() {
     float linverse = 1/length();
-    *this *= linverse;
-}
-
+    if (std::isfinite(linverse)) *this *= linverse;
+    return *this;
 }
 
 std::ostream &operator<<(std::ostream &out,
@@ -88,4 +91,6 @@ std::ostream &operator<<(std::ostream &out,
         << vec.y << ", "
         << vec.z << "]";
     return out;
+}
+
 }

@@ -14,9 +14,17 @@ class Camera {
 private:
     Matrix4 _projectionMatrix;
     Matrix4 _viewMatrix;
+    float _left;
+    float _right;
+    float _bottom;
+    float _top;
+    float _near;
+    float _far;
 public:
-    Vector3 translation;
-    Vector3 rotation;
+    Vector3 position;
+    Matrix4 rotation;
+    float zoom;
+
     Camera();
     void perspective(float left,
                      float right,
@@ -30,9 +38,14 @@ public:
                      float top,
                      float near,
                      float far);
-    void translate(float x, float y, float z);
-    void rotate(float x, float y, float z);
-    void lookAt();
+
+    void resetRotation();
+    void rotateGlobal(float angle, Vector3 axis);
+    void rotateLocal(float angle, Vector3 axis);
+    void translateGlobal(float amount, Vector3 axis);
+    void translateLocal(float amount, Vector3 axis);
+
+    void lookAt(Vector3 target, Vector3 up);
     Matrix4 &projectionMatrix();
     Matrix4 &viewMatrix();
     Matrix4 &inverseViewMatrix();

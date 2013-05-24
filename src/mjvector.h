@@ -30,19 +30,20 @@ union Vector3 {
     };
     Vector3();
     Vector3(float sx, float sy, float sz);
-    Vector3 operator+(Vector3 that);
-    Vector3 operator-(Vector3 that);
-    Vector3 operator*(Vector3 that);
-    Vector3 operator*(float scalar);
+    Vector3 operator-() const;
+    Vector3 operator+(Vector3 that) const;
+    Vector3 operator-(Vector3 that) const;
+    Vector3 operator*(Vector3 that) const;
+    Vector3 operator*(float scalar) const;
     Vector3 &operator+=(Vector3 that);
     Vector3 &operator+=(float that);
-    Vector3 &operator*=(Vector3 &that);
+    Vector3 &operator*=(Vector3 that);
     Vector3 &operator*=(float scalar);
     float length();
-    float dot(Vector3 &that);
-    Vector3 cross(Vector3 &that);
+    float dot(Vector3 that);
+    Vector3 cross(Vector3 that);
     Vector3 normalized();
-    void normalize();
+    Vector3 &normalize();
     friend std::ostream &operator<<(std::ostream &out,
                                     Vector3 mat);
 };
