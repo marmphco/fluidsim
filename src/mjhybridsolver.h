@@ -43,10 +43,7 @@ private:
     Texture2D *velocityTex0;
     Texture2D *velocityTex1;
 
-    Framebuffer *density0;
-    Framebuffer *density1;
-    Framebuffer *velocity0;
-    Framebuffer *velocity1;
+    Framebuffer *outputFramebuffer;
 
     Texture2D *densityBufferTex;
     Texture2D *velocityBufferTex;
@@ -68,6 +65,7 @@ public:
     virtual void addVelocityY(int x, int y, int z, float amount);
     virtual void addVelocityZ(int x, int y, int z, float amount);
     virtual void addDensity(int x, int y, int z, float amount);
+    virtual void addDensity(int x, int y, int z, float r, float g, float b);
     virtual void solve(float dt);
 
     virtual void fillDensityData(float *out);

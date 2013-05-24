@@ -26,6 +26,7 @@ public:
     virtual void addVelocityY(int x, int y, int z, float amount) = 0;
     virtual void addVelocityZ(int x, int y, int z, float amount) = 0;
     virtual void addDensity(int x, int y, int z, float amount) = 0;
+    virtual void addDensity(int x, int y, int z, float r, float g, float b) = 0;
     virtual void solve(float dt) = 0;
 
     virtual void fillDensityData(float *out) = 0;
@@ -55,6 +56,7 @@ public:
     void addVelocityY(int x, int y, int z, float amount);
     void addVelocityZ(int x, int y, int z, float amount);
     void addDensity(int x, int y, int z, float amount);
+    void addDensity(int x, int y, int z, float r, float g, float b);
     void solve(float dt);
 
     void fillDensityData(float *out);

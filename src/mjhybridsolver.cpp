@@ -49,28 +49,17 @@ HybridSolver::HybridSolver(int width, int height, int depth) :
     velocityTex1->wrap(GL_CLAMP_TO_EDGE);
 
     GLenum drawTarget = GL_COLOR_ATTACHMENT0;
-
-    density0 = new Framebuffer(width, height*depth);
-    density0->addRenderTarget(densityTex0, GL_COLOR_ATTACHMENT0);
+    outputFramebuffer = new Framebuffer(width, height*depth);
+    outputFramebuffer->bind();
     glDrawBuffers(1, &drawTarget);
-    density1 = new Framebuffer(width, height*depth);
-    density1->addRenderTarget(densityTex1, GL_COLOR_ATTACHMENT0);
-    glDrawBuffers(1, &drawTarget);
-
-    velocity0 = new Framebuffer(width, height*depth);
-    velocity0->addRenderTarget(velocityTex0, GL_COLOR_ATTACHMENT0);
-    glDrawBuffers(1, &drawTarget);
-
-    velocity1 = new Framebuffer(width, height*depth);
-    velocity1->addRenderTarget(velocityTex1, GL_COLOR_ATTACHMENT0);
-    glDrawBuffers(1, &drawTarget);
+    outputFramebuffer->unbind();
 
     densityBufferTex = new Texture2D(GL_RGB, GL_RGB, GL_FLOAT, width, height*depth);
     densityBufferTex->initData(densityBuffer);
     velocityBufferTex = new Texture2D(GL_RGB, GL_RGB, GL_FLOAT, width, height*depth);
     velocityBufferTex->initData(velocityBuffer);
 
-    advectScene = new Scene(density0);
+    advectScene = new Scene(outputFramebuffer);
     advectKernel = new Shader();
     addKernel = new Shader();
     try {
@@ -114,6 +103,12 @@ void HybridSolver::addDensity(int x, int y, int z, float amount) {
     densityBuffer[idv(x, y, z, 2)] += amount;
 }
 
+void HybridSolver::addDensity(int x, int y, int z, float r, float g, float b) {
+    densityBuffer[idv(x, y, z, 0)] += r;
+    densityBuffer[idv(x, y, z, 1)] += g;
+    densityBuffer[idv(x, y, z, 2)] += b;
+}
+
 void HybridSolver::solve(float dt) {
     glViewport(0, 0, _width, _height*_depth);
 
@@ -121,53 +116,49 @@ void HybridSolver::solve(float dt) {
     densityBufferTex->initData(densityBuffer);
 
     model->shader = addKernel;
-    advectScene->framebuffer = density1;
+    outputFramebuffer->addRenderTarget(densityTex1, GL_COLOR_ATTACHMENT0);
     model->texture0 = densityTex0;
     model->texture1 = densityBufferTex;
     advectScene->render();
-    swapf(density0, density1);
     swapt(densityTex0, densityTex1);
 
     //advect densities
     model->shader = advectKernel;
-    advectScene->framebuffer = density1;
+    outputFramebuffer->addRenderTarget(densityTex1, GL_COLOR_ATTACHMENT0);
     model->texture0 = densityTex0;
     model->texture1 = velocityTex0;
     advectScene->render();
-    swapf(density0, density1);
     swapt(densityTex0, densityTex1);
 
     //add velocitybuffer
     velocityBufferTex->initData(velocityBuffer);
 
     model->shader = addKernel;
-    advectScene->framebuffer = velocity1;
+    outputFramebuffer->addRenderTarget(velocityTex1, GL_COLOR_ATTACHMENT0);
     model->texture0 = velocityTex0;
     model->texture1 = velocityBufferTex;
     advectScene->render();
-    swapf(velocity0, velocity1);
     swapt(velocityTex0, velocityTex1);
 
     //project velocities
-    velocity0->bind();
+    outputFramebuffer->bind();
     glReadPixels(0, 0, _width, _height*_depth, GL_RGB, GL_FLOAT, velocityBuffer);
-    velocity0->unbind();
+    outputFramebuffer->unbind();
     project(velocityBuffer, temp0, temp1);
     velocityTex0->initData(velocityBuffer);
 
     //advect velocities
     model->shader = advectKernel;
-    advectScene->framebuffer = velocity1;
+    outputFramebuffer->addRenderTarget(velocityTex1, GL_COLOR_ATTACHMENT0);
     model->texture0 = velocityTex0;
     model->texture1 = velocityTex0;
     advectScene->render();
-    swapf(velocity0, velocity1);
     swapt(velocityTex0, velocityTex1);
 
     //project velocities
-    velocity0->bind();
+    outputFramebuffer->bind();
     glReadPixels(0, 0, _width, _height*_depth, GL_RGB, GL_FLOAT, velocityBuffer);
-    velocity0->unbind();
+    outputFramebuffer->unbind();
     project(velocityBuffer, temp0, temp1);
     velocityTex0->initData(velocityBuffer);
 
@@ -177,18 +168,10 @@ void HybridSolver::solve(float dt) {
 }
 
 void HybridSolver::fillDensityData(float *out) {
-    density0->bind();
+    outputFramebuffer->addRenderTarget(densityTex0, GL_COLOR_ATTACHMENT0);
+    outputFramebuffer->bind();
     glReadPixels(0, 0, _width, _height*_depth, GL_RGB, GL_FLOAT, out);
-    /*for (int i = 0; i < _width; ++i) {
-        for (int j = 0; j < _height; ++j) {
-            for (int k = 0; k < _depth; ++k) {
-                out[idv(i, j, k, 0)] = densityBuffer[idv(i, j, k, 0)];
-                out[idv(i, j, k, 1)] = densityBuffer[idv(i, j, k, 1)];
-                out[idv(i, j, k, 2)] = densityBuffer[idv(i, j, k, 2)];
-            }
-        }
-    }*/
-    density0->unbind();
+    outputFramebuffer->unbind();
 }
 
 void HybridSolver::project(float *vel, float *div, float *temp) {
