@@ -32,10 +32,13 @@ void Geometry::modifyData(GLfloat *vertexData,
     indexCount = indexCounti;
     int vertexSize = vertexElements*vertexCount*sizeof(GLfloat);
     int indexSize = indexCount*sizeof(GLuint);
+
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
-    glBufferData(GL_ARRAY_BUFFER, vertexSize, vertexData, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
+    glBufferData(GL_ARRAY_BUFFER, vertexSize, vertexData, GL_DYNAMIC_DRAW);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexSize, indexData, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
     // find bounds
     // hacky, assuming first 3 attributes represent position
@@ -65,6 +68,11 @@ void Geometry::modifyData(GLfloat *vertexData,
 void Geometry::bind(void) {
     glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBufferObject);
+}
+
+void Geometry::unbind(void) {
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 int Geometry::elementCount(void) {

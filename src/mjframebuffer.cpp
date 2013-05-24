@@ -8,7 +8,6 @@
 
 namespace mcjee {
 
-
 Framebuffer::Framebuffer(float width, float height) {
 	glGenFramebuffers(1, &framebuffer);
     _width = width;

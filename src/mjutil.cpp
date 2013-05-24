@@ -5,6 +5,7 @@
 */
 
 #include "mjutil.h"
+#define _USE_MATH_DEFINES
 #ifdef __APPLE__
 #   include <mach/mach_time.h>
 #else

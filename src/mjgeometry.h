@@ -35,6 +35,7 @@ public:
                     int indexCount,
                     int vertexElements);
     void bind(void);
+    void unbind(void);
     int elementCount(void);
 
     Vector3 boundMin();

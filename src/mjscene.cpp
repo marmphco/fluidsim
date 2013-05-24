@@ -98,5 +98,6 @@ namespace mcjee {
         } else {
             return NULL;
         }
+        framebuffer->unbind();
     }
 }

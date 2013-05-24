@@ -20,7 +20,7 @@ namespace mcjee {
     private:
         
     public:
-        static const int MAX_LIGHTS = 8;
+        static const unsigned int MAX_LIGHTS = 8;
         std::vector<Light *> lights;
         std::vector<Renderable *> renderables;
 

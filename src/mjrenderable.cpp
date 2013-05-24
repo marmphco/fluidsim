@@ -17,7 +17,8 @@ Renderable::Renderable(Geometry *geometryi, Shader *shaderi, GLenum drawTypei) :
     polygonMode(GL_FILL),
     center(Vector3(0.0, 0.0, 0.0)),
     scale(Vector3(1.0, 1.0, 1.0)),
-    position(Vector3(0.0, 0.0, 0.0)) {
+    position(Vector3(0.0, 0.0, 0.0)),
+    visible(true) {
 }
 
 Renderable::~Renderable() {
@@ -30,9 +31,11 @@ void Renderable::init() {
     geometry->bind();
     setupVertexAttributes();
     glBindVertexArray(0);
+    geometry->unbind();
 }
 
 void Renderable::render(void) {
+    if (!visible) return;
     shader->use();
     setupUniforms();
     if (shader->uniformEnabled("modelMatrix")) {
@@ -56,13 +59,15 @@ void Renderable::render(void) {
         loc = shader->getUniformLocation("matSpecularPower");
         glUniform1f(loc, material.specularPower);
     }
-    /*for (unsigned int i = 0; i < material.textures.size(); ++i) {
-        glActiveTexture(GL_TEXTURE0+i);
-        material.textures[i]->bind();
-    }*/
+    std::vector<Texture *>::iterator i;
+    for (i = material.textures.begin(); i != material.textures.end(); ++i) {
+        (*i)->bind();
+    }
     glPolygonMode(GL_FRONT_AND_BACK, polygonMode);
     glBindVertexArray(vertexArrayObject);
+    geometry->bind();
     glDrawElements(drawType, geometry->elementCount(), GL_UNSIGNED_INT, 0);
+    geometry->unbind();
     glBindVertexArray(0);
 }
 
@@ -77,6 +82,16 @@ void Renderable::rotateGlobal(float angle, Vector3 axis) {
 void Renderable::rotateLocal(float angle, Vector3 axis) {
     Vector3 realAxis = rotation.matrix3() * axis;
     rotation.rotate(angle, realAxis);
+}
+
+void Renderable::translateGlobal(float amount, Vector3 axis) {
+    position += axis*amount;
+}
+
+void Renderable::translateLocal(float amount, Vector3 axis) {
+    Vector3 realAxis = rotation.matrix3() * axis;
+    position += realAxis*amount;
+    
 }
 
 void Renderable::scaleUniform(float s) {

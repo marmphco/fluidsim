@@ -35,6 +35,8 @@ namespace mcjee {
         Vector3 scale;
         Vector3 position;
 
+        int visible;
+
         Renderable(Geometry *, Shader *, GLenum drawType);
         virtual ~Renderable();
         void init();
@@ -43,6 +45,8 @@ namespace mcjee {
         void resetRotation();
         void rotateGlobal(float angle, Vector3 axis);
         void rotateLocal(float angle, Vector3 axis);
+        void translateGlobal(float amount, Vector3 axis);
+        void translateLocal(float amount, Vector3 axis);
         void scaleUniform(float s);
         void addScaleUniform(float s);
 

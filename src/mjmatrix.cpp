@@ -148,7 +148,7 @@ Matrix4 &Matrix4::scale(float x, float y, float z) {
 
 // inefficient
 Matrix4 &Matrix4::rotate(float angle, Vector3 axis) {
-    float rad = angle*3.141592654/180;
+    float rad = angle*M_PI/180;
     float f = sinf(rad/2.0);
     float w = cosf(rad/2.0);
     float x = f*axis.x;
@@ -176,8 +176,8 @@ Matrix4 &Matrix4::rotate(float angle, Vector3 axis) {
 }
 
 Matrix4 &Matrix4::rotateX(float angle) {
-    float c = cosf(angle*3.141592654/180);
-    float s = sinf(angle*3.141592654/180);
+    float c = cosf(angle*M_PI/180);
+    float s = sinf(angle*M_PI/180);
 
     float d1 = data[1];
     float d5 = data[5];
@@ -201,8 +201,8 @@ Matrix4 &Matrix4::rotateX(float angle) {
 }
 
 Matrix4 &Matrix4::rotateY(float angle) {
-    float c = cosf(angle*3.141592654/180);
-    float s = sinf(angle*3.141592654/180);
+    float c = cosf(angle*M_PI/180);
+    float s = sinf(angle*M_PI/180);
 
     float d0 = data[0];
     float d4 = data[4];
@@ -226,8 +226,8 @@ Matrix4 &Matrix4::rotateY(float angle) {
 }
 
 Matrix4 &Matrix4::rotateZ(float angle) {
-    float c = cosf(angle*3.141592654/180);
-    float s = sinf(angle*3.141592654/180);
+    float c = cosf(angle*M_PI/180);
+    float s = sinf(angle*M_PI/180);
 
     float d0 = data[0];
     float d4 = data[4];
