@@ -13,5 +13,4 @@
 #include "mjframebuffer.h"
 #include "mjscene.h"
 #include "mjtexture.h"
-#include "mjprimitive.h"
 #include "mjloader.h"

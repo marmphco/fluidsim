@@ -166,7 +166,7 @@ void CPUSolver::addDensity(int x, int y, int z, float amount) {
     density0[idx(x, y, z)] += amount;
 }
 
-void CPUSolver::addDensity(int x, int y, int z, float r, float g, float b) {
+void CPUSolver::addDensity(int x, int y, int z, float r, float, float) {
     density0[idx(x, y, z)] += r;
 }
 

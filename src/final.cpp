@@ -167,11 +167,7 @@ void init(void) {
     scene->camera.position = Vector3(0.0, 2.2, 4.0);
     scene->camera.rotateLocal(-30, X_AXIS);
 
-    float vertexData[cubeVerticesSize()];
-    GLuint indexData[cubeIndicesSize()];
-    cubeVertices(vertexData, 1.0, 1.0, 1.0);
-    cubeIndices(indexData);
-    fluidDomainGeo = new Geometry(vertexData, indexData, 8, 36, 3);
+    fluidDomainGeo = loadCube(1.0, 1.0, 1.0);
 
     densityTextureData = new GLfloat[width*width*width*3];
     densityTexture = new Texture3D(GL_RGB, GL_RGB, GL_FLOAT, width, width, width);

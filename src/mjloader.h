@@ -25,6 +25,9 @@ int loadTrisAndNormals(unsigned int **indices,
                        const char *path);
 
 Geometry *loadModel(const char *coorpath, const char *polypath);
+Geometry *loadCube(float width, float height, float depth);
+Geometry *loadWireCube(float width, float height, float depth);
+Geometry *loadSquare(float width, float height);
 
 }
 #endif

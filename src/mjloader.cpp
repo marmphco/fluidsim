@@ -6,7 +6,6 @@
 
 #include "mjloader.h"
 #include "mjvector.h"
-#include "mjprimitive.h"
 #include <vector>
 #include <stdio.h> //i like this better
 #include <string.h>
@@ -156,5 +155,66 @@ Geometry *loadModel(const char *coorpath, const char *polypath) {
     return geo;
 }
 
+Geometry *loadCube(float width, float height, float depth) {
+    float vertexData[] = {
+        0.0, 0.0, 0.0,
+        width, 0.0, 0.0,
+        width, height, 0.0,
+        0.0, height, 0.0,
+
+        0.0, 0.0, depth,
+        width, 0.0, depth,
+        width, height, depth,
+        0.0, height, depth,
+    };
+    GLuint indexData[] = {
+        0, 3, 1,
+        3, 2, 1,
+        1, 2, 5,
+        2, 6, 5,
+        0, 7, 3,
+        0, 4, 7,
+        3, 7, 2,
+        7, 6, 2,
+        4, 5, 7,
+        7, 5, 6,
+        0, 1, 4,
+        1, 5, 4,
+    };
+    return new Geometry(vertexData, indexData, 8, 36, 3);
 }
 
+Geometry *loadWireCube(float width, float height, float depth) {
+    float vertexData[] = {
+        0.0, 0.0, 0.0,
+        width, 0.0, 0.0,
+        width, height, 0.0,
+        0.0, height, 0.0,
+
+        0.0, 0.0, depth,
+        width, 0.0, depth,
+        width, height, depth,
+        0.0, height, depth,
+    };
+    GLuint indexData[] = {
+        0, 1, 1, 2, 2, 3, 3, 0,
+        4, 5, 5, 6, 6, 7, 7, 4,
+        1, 5, 2, 6, 3, 7, 0, 4,
+    };
+    return new Geometry(vertexData, indexData, 8, 24, 3);
+}
+
+Geometry *loadSquare(float width, float height) {
+    float vertexData[] = {
+        0.0, 0.0, 0.0,
+        width, 0.0, 0.0,
+        width, height, 0.0,
+        0.0, height, 0.0,
+    };
+    GLuint indexData[] = {
+        0, 1, 2, 0, 2, 3,
+    };
+    return new Geometry(vertexData, indexData, 4, 6, 3);
+}
+
+}
