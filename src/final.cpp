@@ -49,7 +49,7 @@ static Geometry *fluidDomainGeo;
 static Model *fluidDomain;
 static Scene *scene;
 static FluidSolver *solver;
-static int width = 32; // power of 2 plz
+static int width = 48; // power of 2 plz
 static int mainWindow;
 static GLUI_StaticText *computeTimeText;
 static char computeTimeString[16];

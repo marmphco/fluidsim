@@ -12,26 +12,15 @@ uniform sampler3D texture0;
 
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
+uniform mat4 inverseViewMatrix;
+uniform mat4 inverseModelMatrix;
 
-const int samples = 30;
-const float fsamples = 30.0;
-
-// only works on matrices with just rotate and translate
-// isomorphic?
-mat4 inverse(mat4 matrix) {
-    mat4 rotation = mat4(1.0);
-    rotation[0].xyz = matrix[0].xyz;
-    rotation[1].xyz = matrix[1].xyz;
-    rotation[2].xyz = matrix[2].xyz;
-    mat4 inverseTranslate = mat4(1.0);
-    inverseTranslate[3].xyz = -matrix[3].xyz;
-    mat4 inverseRotation = transpose(rotation);
-    return inverseRotation * inverseTranslate;
-}
+const int samples = 40;
+const float fsamples = 40.0;
 
 // oh yeah shitty ray marching
 void main() {    
-    mat4 inverseModelViewMatrix = transpose(inverse(viewMatrix * modelMatrix));
+    mat4 inverseModelViewMatrix = transpose(inverseModelMatrix * inverseViewMatrix);
 
     vec4 eyeCoord = vec4(0, 0, 0, 1.0) * inverseModelViewMatrix;
     vec4 ray = normalize(fPosition-eyeCoord);
