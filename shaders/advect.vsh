@@ -1,6 +1,9 @@
-// terrainShader.vsh
-// Matthew Jee
-// mcjee@ucsc.edu
+/*
+    terrainShader.vsh
+    Matthew Jee
+    mcjee@ucsc.edu
+*/
+
 #version 120
 
 attribute vec4 vPosition;

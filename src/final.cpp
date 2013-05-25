@@ -13,6 +13,7 @@
 #include "mj.h"
 #include "mjfluid.h"
 #include "mjhybridsolver.h"
+#include "mjgpusolver.h"
 #include <cmath>
 #include <iostream>
 
@@ -119,7 +120,9 @@ void render(void) {
         solver->addVelocityX(width/2+xx, width/2+yy, width/2+zz, vx);
         solver->addVelocityY(width/2+xx, width/2+yy, width/2+zz, vy);
         solver->addVelocityZ(width/2+xx, width/2+yy, width/2+zz, vy);
-        solver->addDensity(width/2+xx, width/2+yy, width/2+zz, 20.0, vx/32, vy/32);
+        float g = vx < 0 ? 0 : vx/32;
+        float b = vy < 0 ? 0 : vy/32;
+        solver->addDensity(width/2+xx, width/2+yy, width/2+zz, 20.0, g, b);
     }
 
     solver->solve(dt);
@@ -179,7 +182,7 @@ void init(void) {
     fluidDomain->center = Vector3(0.5, 0.5, 0.5);
     scene->add(fluidDomain);
 
-    solver = new HybridSolver(width, width, width);
+    solver = new GPUSolver(width, width, width);
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint *)&windowFramebuffer);
 }
 

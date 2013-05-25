@@ -1,6 +1,9 @@
-// terrainShader.fsh
-// Matthew Jee
-// mcjee@ucsc.edu
+/*
+    terrainShader.fsh
+    Matthew Jee
+    mcjee@ucsc.edu
+*/
+
 #version 120
 
 varying vec4 fPosition;

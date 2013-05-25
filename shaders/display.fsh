@@ -1,6 +1,9 @@
-// display.fsh
-// Matthew Jee
-// mcjee@ucsc.edu
+/*
+    display.fsh
+    Matthew Jee
+    mcjee@ucsc.edu
+*/
+
 #version 120
 
 varying vec4 fPosition;
