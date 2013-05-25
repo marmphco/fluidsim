@@ -1,5 +1,5 @@
 /*
-    project.fsh
+    divergence.fsh
     Matthew Jee
     mcjee@ucsc.edu
 */

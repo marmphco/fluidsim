@@ -19,13 +19,13 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
 
     densityBuffer = new float[width*height*depth*3];
     velocityBuffer = new float[width*height*depth*3];
-    temp0 = new float[width*height*depth];
-    temp1 = new float[width*height*depth];
+    divergence = new float[width*height*depth];
+    gradient = new float[width*height*depth];
 
     memset(densityBuffer, 0, sizeof(float)*width*height*depth*3);
     memset(velocityBuffer, 0, sizeof(float)*width*height*depth*3);
-    memset(temp0, 0, sizeof(float)*width*height*depth);
-    memset(temp1, 0, sizeof(float)*width*height*depth);
+    memset(divergence, 0, sizeof(float)*width*height*depth);
+    memset(gradient, 0, sizeof(float)*width*height*depth);
 
     densityTex0 = new Texture2D(GL_RGB, GL_RGB, GL_FLOAT, width, height*depth);
     densityTex0->initData(densityBuffer);
@@ -64,7 +64,7 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     addKernel = new Shader();
     try {
         advectKernel->compile("shaders/advect.vsh", "shaders/advect.fsh");
-        projectKernel->compile("shaders/project.vsh", "shaders/project.fsh");
+        projectKernel->compile("shaders/divergence.vsh", "shaders/divergence.fsh");
         addKernel->compile("shaders/add.vsh", "shaders/add.fsh");
     } catch (ShaderError &e) {
         std::cerr << e.what() << std::endl;
@@ -113,59 +113,57 @@ void GPUSolver::addDensity(int x, int y, int z, float r, float g, float b) {
     densityBuffer[idv(x, y, z, 2)] += b;
 }
 
+void GPUSolver::addStep(Texture2D *in0, Texture2D *in1, Texture2D *out) {
+    model->shader = addKernel;
+    model->texture0 = in0;
+    model->texture1 = in1;
+    outputFramebuffer->addRenderTarget(out, GL_COLOR_ATTACHMENT0);
+    computeScene->render();
+}
+
+void GPUSolver::advectStep(Texture2D *in, Texture2D *out) {
+    model->shader = advectKernel;
+    model->texture0 = in;
+    model->texture1 = velocityTex0;
+    outputFramebuffer->addRenderTarget(out, GL_COLOR_ATTACHMENT0);
+    computeScene->render();
+}
+
+void GPUSolver::projectStep(Texture2D *vel) {
+    vel->bind();
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, velocityBuffer);
+    vel->unbind();
+    project(velocityBuffer, divergence, gradient);
+    vel->initData(velocityBuffer);
+}
+
 void GPUSolver::solve(float dt) {
     glViewport(0, 0, _width, _height*_depth);
     model->dt = dt;
 
     //add densitybuffer
     densityBufferTex->initData(densityBuffer);
-
-    model->shader = addKernel;
-    model->texture0 = densityTex0;
-    model->texture1 = densityBufferTex;
-    outputFramebuffer->addRenderTarget(densityTex1, GL_COLOR_ATTACHMENT0);
-    computeScene->render();
+    addStep(densityTex0, densityBufferTex, densityTex1);
     swapt(densityTex0, densityTex1);
 
     //advect densities
-    model->shader = advectKernel;
-    model->texture0 = densityTex0;
-    model->texture1 = velocityTex0;
-    outputFramebuffer->addRenderTarget(densityTex1, GL_COLOR_ATTACHMENT0);
-    computeScene->render();
+    advectStep(densityTex0, densityTex1);
     swapt(densityTex0, densityTex1);
 
     //add velocitybuffer
     velocityBufferTex->initData(velocityBuffer);
-
-    model->shader = addKernel;
-    model->texture0 = velocityTex0;
-    model->texture1 = velocityBufferTex;
-    outputFramebuffer->addRenderTarget(velocityTex1, GL_COLOR_ATTACHMENT0);
-    computeScene->render();
+    addStep(velocityTex0, velocityBufferTex, velocityTex1);
     swapt(velocityTex0, velocityTex1);
 
     //project velocities
-    outputFramebuffer->bind();
-    glReadPixels(0, 0, _width, _height*_depth, GL_RGB, GL_FLOAT, velocityBuffer);
-    outputFramebuffer->unbind();
-    project(velocityBuffer, temp0, temp1);
-    velocityTex0->initData(velocityBuffer);
+    projectStep(velocityTex0);
 
     //advect velocities
-    model->shader = advectKernel;
-    model->texture0 = velocityTex0;
-    model->texture1 = velocityTex0;
-    outputFramebuffer->addRenderTarget(velocityTex1, GL_COLOR_ATTACHMENT0);
-    computeScene->render();
+    advectStep(velocityTex0, velocityTex1);
     swapt(velocityTex0, velocityTex1);
 
     //project velocities
-    outputFramebuffer->bind();
-    glReadPixels(0, 0, _width, _height*_depth, GL_RGB, GL_FLOAT, velocityBuffer);
-    outputFramebuffer->unbind();
-    project(velocityBuffer, temp0, temp1);
-    velocityTex0->initData(velocityBuffer);
+    projectStep(velocityTex0);
 
     //clear add buffers
     memset(densityBuffer, 0, sizeof(float)*_width*_height*_depth*3);
@@ -173,10 +171,15 @@ void GPUSolver::solve(float dt) {
 }
 
 void GPUSolver::fillDensityData(float *out) {
-    outputFramebuffer->addRenderTarget(densityTex0, GL_COLOR_ATTACHMENT0);
-    outputFramebuffer->bind();
-    glReadPixels(0, 0, _width, _height*_depth, GL_RGB, GL_FLOAT, out);
-    outputFramebuffer->unbind();
+    densityTex0->bind();
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, out);
+    densityTex0->unbind();
+}
+
+void GPUSolver::fillVelocityData(float *out) {
+    velocityTex0->bind();
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, out);
+    velocityTex0->unbind();
 }
 
 void GPUSolver::project(float *vel, float *div, float *temp) {

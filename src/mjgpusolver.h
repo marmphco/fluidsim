@@ -91,6 +91,8 @@ private:
     Texture2D *densityTex1;
     Texture2D *velocityTex0;
     Texture2D *velocityTex1;
+    Texture2D *gradientTex;
+    Texture2D *divergenceTex;
 
     Framebuffer *outputFramebuffer;
 
@@ -98,8 +100,8 @@ private:
     Texture2D *velocityBufferTex;
     float *densityBuffer;
     float *velocityBuffer;
-    float *temp0;
-    float *temp1;
+    float *gradient;
+    float *divergence;
 
     Scene *computeScene;
     Shader *addKernel;
@@ -107,6 +109,9 @@ private:
     Shader *projectKernel;
     GPUComputeModel *model;
 
+    void addStep(Texture2D *in0, Texture2D *in1, Texture2D *out);
+    void advectStep(Texture2D *in, Texture2D *out);
+    void projectStep(Texture2D *vel);
     void project(float *vel, float *div, float *temp);
 
 public:
@@ -119,6 +124,7 @@ public:
     virtual void solve(float dt);
 
     virtual void fillDensityData(float *out);
+    virtual void fillVelocityData(float *out);
 };
 
 }

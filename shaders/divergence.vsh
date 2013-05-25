@@ -1,5 +1,5 @@
 /*
-    project.vsh
+    divergence.vsh
     Matthew Jee
     mcjee@ucsc.edu
 */

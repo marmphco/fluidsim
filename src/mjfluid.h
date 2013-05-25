@@ -30,6 +30,7 @@ public:
     virtual void solve(float dt) = 0;
 
     virtual void fillDensityData(float *out) = 0;
+    virtual void fillVelocityData(float *out) = 0;
 };
 
 class CPUSolver : public FluidSolver {

@@ -28,6 +28,10 @@ void Texture::bind(void) {
     glBindTexture(target, texture);
 }
 
+void Texture::unbind(void) {
+    glBindTexture(target, 0);
+}
+
 void Texture::interpolation(GLint interpol) {
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, interpol);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, interpol);
