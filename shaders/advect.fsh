@@ -30,11 +30,14 @@ vec2 to2SpaceZCeil(vec3 vec) {
     return vec2(vec.x, vec.y*sliceHeight+sliceHeight*ceil(vec.z*depth));
 }
 
-//needs lerp across z axis
 void main() {
-    vec3 origin = to3Space(fPosition.xy); 
+    //shitty fix to the y-bleeding problem
+    if (mod(fPosition.y, sliceHeight) < sliceHeight/32.0) {
+        discard;
+    }
+    
+    vec3 origin = to3Space(fPosition.xy);
     vec4 stuff = texture2D(velocityBuffer, fPosition.xy);
-    vec4 crap = texture2D(inBuffer, fPosition.xy);
 
     vec3 velocity = texture2D(velocityBuffer, fPosition.xy).xyz;
     vec3 source = origin-velocity*dt;

@@ -30,37 +30,37 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     densityTex0 = new Texture2D(GL_RGB, GL_RGB, GL_FLOAT, width, height*depth);
     densityTex0->initData(densityBuffer);
     densityTex0->interpolation(GL_LINEAR);
-    densityTex0->wrap(GL_CLAMP_TO_EDGE);
+    densityTex0->wrap(GL_CLAMP_TO_BORDER);
 
     densityTex1 = new Texture2D(GL_RGB, GL_RGB, GL_FLOAT, width, height*depth);
     densityTex1->initData(densityBuffer);
     densityTex1->interpolation(GL_LINEAR);
-    densityTex1->wrap(GL_CLAMP_TO_EDGE);
+    densityTex1->wrap(GL_CLAMP_TO_BORDER);
 
     velocityTex0 = new Texture2D(GL_RGB, GL_RGB, GL_FLOAT, width, height*depth);
     velocityTex0->initData(densityBuffer);
     velocityTex0->interpolation(GL_LINEAR);
-    velocityTex0->wrap(GL_CLAMP_TO_EDGE);
+    velocityTex0->wrap(GL_CLAMP_TO_BORDER);
 
     velocityTex1 = new Texture2D(GL_RGB, GL_RGB, GL_FLOAT, width, height*depth);
     velocityTex1->initData(densityBuffer);
     velocityTex1->interpolation(GL_LINEAR);
-    velocityTex1->wrap(GL_CLAMP_TO_EDGE);
+    velocityTex1->wrap(GL_CLAMP_TO_BORDER);
 
     tempTex0 = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
     tempTex0->initData(temp);
     tempTex0->interpolation(GL_NEAREST);
-    tempTex0->wrap(GL_CLAMP_TO_EDGE);
+    tempTex0->wrap(GL_CLAMP_TO_BORDER);
 
     tempTex1 = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
     tempTex1->initData(temp);
     tempTex1->interpolation(GL_NEAREST);
-    tempTex1->wrap(GL_CLAMP_TO_EDGE);
+    tempTex1->wrap(GL_CLAMP_TO_BORDER);
 
     divergenceTex = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
     divergenceTex->initData(divergence);
     divergenceTex->interpolation(GL_NEAREST);
-    divergenceTex->wrap(GL_CLAMP_TO_EDGE);
+    divergenceTex->wrap(GL_CLAMP_TO_BORDER);
 
     GLenum drawTarget = GL_COLOR_ATTACHMENT0;
     outputFramebuffer = new Framebuffer(width, height*depth);
@@ -163,9 +163,6 @@ void GPUSolver::projectStep() {
         computeScene->render();
         swapt(tempTex0, tempTex1);
     }
-    tempTex0->bind();
-    glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_FLOAT, temp);
-    tempTex0->unbind();
 
     model->shader = subgradientKernel;
     model->texture0 = tempTex0;
