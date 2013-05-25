@@ -100,7 +100,7 @@ void CPUSolver::advect(float *next, float *prev, float *vx, float *vy, float *vz
                 float yl = y1-srcy; float yr = 1-yl;
                 float zl = z1-srcz; float zr = 1-zl;
 
-                //if (x0 < 0 || y0 < 0 || z0 < 0 || x1 >= _width || y1 >= _height || z1 >= _depth) continue;
+                if (x0 < 0 || y0 < 0 || z0 < 0 || x1 >= _width || y1 >= _height || z1 >= _depth) continue;
 
                 next[idx(i, j, k)] = 
                 zl*(yl*(xl*prev[idx(x0, y0, z0)]+xr*prev[idx(x1, y0, z0)])+
@@ -181,7 +181,6 @@ void CPUSolver::addVelocityY(int x, int y, int z, float amount) {
 void CPUSolver::addVelocityZ(int x, int y, int z, float amount) {
     vy0[idx(x, y, z)] += amount;
 }
-
 
 void CPUSolver::solve(float dt) {
     //diffuse(density1, density0, dt);

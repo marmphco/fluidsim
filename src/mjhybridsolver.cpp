@@ -11,7 +11,6 @@
 #define idv(x, y, z, e) ((_width*_height*(z)+_width*(y)+(x))*3+(e))
 #define idx(x, y, z) (_width*_height*(z)+_width*(y)+(x))
 #define swapt(x, y) {Texture2D *t = (x); (x) = (y); (y) = t;}
-#define swapf(x, y) {Framebuffer *t = (x); (x) = (y); (y) = t;}
 
 namespace mcjee {
 
@@ -59,7 +58,7 @@ HybridSolver::HybridSolver(int width, int height, int depth) :
     velocityBufferTex = new Texture2D(GL_RGB, GL_RGB, GL_FLOAT, width, height*depth);
     velocityBufferTex->initData(velocityBuffer);
 
-    advectScene = new Scene(outputFramebuffer);
+    computeScene = new Scene(outputFramebuffer);
     advectKernel = new Shader();
     addKernel = new Shader();
     try {
@@ -82,19 +81,22 @@ HybridSolver::HybridSolver(int width, int height, int depth) :
 
     model = new ComputeModel(geo, advectKernel);
     model->init();
-    advectScene->add(model);
+    model->width = width;
+    model->height = height;
+    model->depth = depth;
+    computeScene->add(model);
 }
 
 void HybridSolver::addVelocityX(int x, int y, int z, float amount) {
-    velocityBuffer[idv(x, y, z, 0)] += amount;
+    velocityBuffer[idv(x, y, z, 0)] += amount/_width;
 }
 
 void HybridSolver::addVelocityY(int x, int y, int z, float amount) {
-    velocityBuffer[idv(x, y, z, 1)] += amount;
+    velocityBuffer[idv(x, y, z, 1)] += amount/_height;
 }
 
 void HybridSolver::addVelocityZ(int x, int y, int z, float amount) {
-    velocityBuffer[idv(x, y, z, 2)] += amount;
+    velocityBuffer[idv(x, y, z, 2)] += amount/_depth;
 }
 
 void HybridSolver::addDensity(int x, int y, int z, float amount) {
@@ -111,33 +113,34 @@ void HybridSolver::addDensity(int x, int y, int z, float r, float g, float b) {
 
 void HybridSolver::solve(float dt) {
     glViewport(0, 0, _width, _height*_depth);
+    model->dt = dt;
 
     //add densitybuffer
     densityBufferTex->initData(densityBuffer);
 
     model->shader = addKernel;
-    outputFramebuffer->addRenderTarget(densityTex1, GL_COLOR_ATTACHMENT0);
     model->texture0 = densityTex0;
     model->texture1 = densityBufferTex;
-    advectScene->render();
+    outputFramebuffer->addRenderTarget(densityTex1, GL_COLOR_ATTACHMENT0);
+    computeScene->render();
     swapt(densityTex0, densityTex1);
 
     //advect densities
     model->shader = advectKernel;
-    outputFramebuffer->addRenderTarget(densityTex1, GL_COLOR_ATTACHMENT0);
     model->texture0 = densityTex0;
     model->texture1 = velocityTex0;
-    advectScene->render();
+    outputFramebuffer->addRenderTarget(densityTex1, GL_COLOR_ATTACHMENT0);
+    computeScene->render();
     swapt(densityTex0, densityTex1);
 
     //add velocitybuffer
     velocityBufferTex->initData(velocityBuffer);
 
     model->shader = addKernel;
-    outputFramebuffer->addRenderTarget(velocityTex1, GL_COLOR_ATTACHMENT0);
     model->texture0 = velocityTex0;
     model->texture1 = velocityBufferTex;
-    advectScene->render();
+    outputFramebuffer->addRenderTarget(velocityTex1, GL_COLOR_ATTACHMENT0);
+    computeScene->render();
     swapt(velocityTex0, velocityTex1);
 
     //project velocities
@@ -149,10 +152,10 @@ void HybridSolver::solve(float dt) {
 
     //advect velocities
     model->shader = advectKernel;
-    outputFramebuffer->addRenderTarget(velocityTex1, GL_COLOR_ATTACHMENT0);
     model->texture0 = velocityTex0;
     model->texture1 = velocityTex0;
-    advectScene->render();
+    outputFramebuffer->addRenderTarget(velocityTex1, GL_COLOR_ATTACHMENT0);
+    computeScene->render();
     swapt(velocityTex0, velocityTex1);
 
     //project velocities
