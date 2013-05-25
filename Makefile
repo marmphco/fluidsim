@@ -28,7 +28,8 @@ _SHADERS = shader.fsh shader.vsh\
            display.vsh display.fsh\
            add.vsh add.fsh\
            advect.vsh advect.fsh\
-           divergence.vsh divergence.fsh
+           divergence.vsh divergence.fsh\
+           project2.vsh project2.fsh
 
 EXECUTABLE = ${BINDIR}/${EXECNAME}
 BUNDLE = ${BINDIR}/${BUNDLENAME}.app

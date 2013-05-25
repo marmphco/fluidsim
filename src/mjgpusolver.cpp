@@ -20,12 +20,12 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     densityBuffer = new float[width*height*depth*3];
     velocityBuffer = new float[width*height*depth*3];
     divergence = new float[width*height*depth];
-    gradient = new float[width*height*depth];
+    temp = new float[width*height*depth];
 
     memset(densityBuffer, 0, sizeof(float)*width*height*depth*3);
     memset(velocityBuffer, 0, sizeof(float)*width*height*depth*3);
     memset(divergence, 0, sizeof(float)*width*height*depth);
-    memset(gradient, 0, sizeof(float)*width*height*depth);
+    memset(temp, 0, sizeof(float)*width*height*depth);
 
     densityTex0 = new Texture2D(GL_RGB, GL_RGB, GL_FLOAT, width, height*depth);
     densityTex0->initData(densityBuffer);
@@ -47,6 +47,21 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     velocityTex1->interpolation(GL_LINEAR);
     velocityTex1->wrap(GL_CLAMP_TO_EDGE);
 
+    tempTex0 = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
+    tempTex0->initData(temp);
+    tempTex0->interpolation(GL_NEAREST);
+    tempTex0->wrap(GL_CLAMP_TO_EDGE);
+
+    tempTex1 = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
+    tempTex1->initData(temp);
+    tempTex1->interpolation(GL_NEAREST);
+    tempTex1->wrap(GL_CLAMP_TO_EDGE);
+
+    divergenceTex = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
+    divergenceTex->initData(divergence);
+    divergenceTex->interpolation(GL_NEAREST);
+    divergenceTex->wrap(GL_CLAMP_TO_EDGE);
+
     GLenum drawTarget = GL_COLOR_ATTACHMENT0;
     outputFramebuffer = new Framebuffer(width, height*depth);
     outputFramebuffer->bind();
@@ -60,11 +75,13 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
 
     computeScene = new Scene(outputFramebuffer);
     advectKernel = new Shader();
-    projectKernel = new Shader();
+    divergenceKernel = new Shader();
+    project2Kernel = new Shader();
     addKernel = new Shader();
     try {
         advectKernel->compile("shaders/advect.vsh", "shaders/advect.fsh");
-        projectKernel->compile("shaders/divergence.vsh", "shaders/divergence.fsh");
+        divergenceKernel->compile("shaders/divergence.vsh", "shaders/divergence.fsh");
+        project2Kernel->compile("shaders/project2.vsh", "shaders/project2.fsh");
         addKernel->compile("shaders/add.vsh", "shaders/add.fsh");
     } catch (ShaderError &e) {
         std::cerr << e.what() << std::endl;
@@ -133,7 +150,26 @@ void GPUSolver::projectStep(Texture2D *vel) {
     vel->bind();
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, velocityBuffer);
     vel->unbind();
-    project(velocityBuffer, divergence, gradient);
+
+    model->shader = divergenceKernel;
+    model->texture1 = vel;
+    outputFramebuffer->addRenderTarget(divergenceTex, GL_COLOR_ATTACHMENT0);
+    computeScene->render();
+
+    tempTex0->initData((float *)0);
+    model->shader = project2Kernel;
+    for (int n = 0; n < 8; ++n) {
+        model->texture0 = divergenceTex;
+        model->texture1 = tempTex0;
+        outputFramebuffer->addRenderTarget(tempTex1, GL_COLOR_ATTACHMENT0);
+        computeScene->render();
+        swapt(tempTex0, tempTex1);
+    }
+    tempTex0->bind();
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RED, GL_FLOAT, temp);
+    tempTex0->unbind();
+
+    project(velocityBuffer, divergence, temp);
     vel->initData(velocityBuffer);
 }
 
@@ -141,28 +177,22 @@ void GPUSolver::solve(float dt) {
     glViewport(0, 0, _width, _height*_depth);
     model->dt = dt;
 
-    //add densitybuffer
     densityBufferTex->initData(densityBuffer);
     addStep(densityTex0, densityBufferTex, densityTex1);
     swapt(densityTex0, densityTex1);
 
-    //advect densities
     advectStep(densityTex0, densityTex1);
     swapt(densityTex0, densityTex1);
 
-    //add velocitybuffer
     velocityBufferTex->initData(velocityBuffer);
     addStep(velocityTex0, velocityBufferTex, velocityTex1);
     swapt(velocityTex0, velocityTex1);
 
-    //project velocities
     projectStep(velocityTex0);
 
-    //advect velocities
     advectStep(velocityTex0, velocityTex1);
     swapt(velocityTex0, velocityTex1);
 
-    //project velocities
     projectStep(velocityTex0);
 
     //clear add buffers
@@ -185,38 +215,6 @@ void GPUSolver::fillVelocityData(float *out) {
 void GPUSolver::project(float *vel, float *div, float *temp) {
     //compute divergence
     float b = 1.0; // arbitrary scaling term
-    for (int i = 1; i < _width-1; ++i) {
-        for (int j = 1; j < _height-1; ++j) {
-            for (int k = 1; k < _depth-1; ++k) {
-                div[idx(i, j, k)] = 0.5*b*(
-                    vel[idv(i+1, j, k, 0)]-vel[idv(i-1, j, k, 0)]+
-                    vel[idv(i, j+1, k, 1)]-vel[idv(i, j-1, k, 1)]+
-                    vel[idv(i, j, k+1, 2)]-vel[idv(i, j, k-1, 2)]
-                );
-                temp[idx(i, j, k)] = 0.0;
-            }
-        }
-    }
-
-    //compute base scalar field of gradient component somehow
-    for (int n = 0; n < 4; ++n) {
-        for (int i = 1; i < _width-1; ++i) {
-            for (int j = 1; j < _height-1; ++j) {
-                for (int k = 1; k < _depth-1; ++k) {
-                    temp[idx(i, j, k)] = (
-                        -div[idx(i, j, k)]+
-                        temp[idx(i-1, j, k)]+
-                        temp[idx(i+1, j, k)]+
-                        temp[idx(i, j-1, k)]+
-                        temp[idx(i, j+1, k)]+
-                        temp[idx(i, j, k+1)]+
-                        temp[idx(i, j, k-1)]
-                    )/8;
-                }
-            }
-        }
-    }
-
     // subtract gradient field from velocities to get
     // zero divergence field.
     for (int i = 1; i < _width-1; ++i) {

@@ -30,9 +30,6 @@ public:
         glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
     }
     virtual void setupUniforms() {
-        width = 32.0;
-        height = 32.0;
-        depth = 32.0;
         if (shader->uniformEnabled("width")) {
             GLint loc = shader->getUniformLocation("width");
             glUniform1f(loc, width);
@@ -68,6 +65,9 @@ public:
         } else if (shader->uniformEnabled("buffer0")) {
             GLint tex0loc = shader->getUniformLocation("buffer0");
             glUniform1i(tex0loc, 0);
+        } else if (shader->uniformEnabled("divergenceBuffer")) {
+            GLint tex0loc = shader->getUniformLocation("divergenceBuffer");
+            glUniform1i(tex0loc, 0);
         }
 
         if (shader->uniformEnabled("velocityBuffer")) {
@@ -75,6 +75,9 @@ public:
             glUniform1i(tex1loc, 1);
         } else if (shader->uniformEnabled("buffer1")) {
             GLint tex1loc = shader->getUniformLocation("buffer1");
+            glUniform1i(tex1loc, 1);
+        } else if (shader->uniformEnabled("tempBuffer")) {
+            GLint tex1loc = shader->getUniformLocation("tempBuffer");
             glUniform1i(tex1loc, 1);
         }
 
@@ -91,7 +94,8 @@ private:
     Texture2D *densityTex1;
     Texture2D *velocityTex0;
     Texture2D *velocityTex1;
-    Texture2D *gradientTex;
+    Texture2D *tempTex0;
+    Texture2D *tempTex1;
     Texture2D *divergenceTex;
 
     Framebuffer *outputFramebuffer;
@@ -100,13 +104,14 @@ private:
     Texture2D *velocityBufferTex;
     float *densityBuffer;
     float *velocityBuffer;
-    float *gradient;
+    float *temp;
     float *divergence;
 
     Scene *computeScene;
     Shader *addKernel;
     Shader *advectKernel;
-    Shader *projectKernel;
+    Shader *divergenceKernel;
+    Shader *project2Kernel;
     GPUComputeModel *model;
 
     void addStep(Texture2D *in0, Texture2D *in1, Texture2D *out);

@@ -180,6 +180,7 @@ void init(void) {
     fluidDomain = new Model(fluidDomainGeo, smokeShader, GL_TRIANGLES);
     fluidDomain->init();
     fluidDomain->center = Vector3(0.5, 0.5, 0.5);
+    fluidDomain->scaleUniform(1.0);
     scene->add(fluidDomain);
 
     solver = new GPUSolver(width, width, width);

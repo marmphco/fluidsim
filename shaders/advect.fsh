@@ -19,15 +19,15 @@ uniform float yunit;
 uniform float sliceHeight;
 
 vec3 to3Space(vec2 vec) {
-    return vec3(vec.x, mod(vec.y, sliceHeight)*32.0, floor(vec.y/sliceHeight)/32.0);
+    return vec3(vec.x, mod(vec.y, sliceHeight)/sliceHeight, floor(vec.y/sliceHeight)/depth);
 }
 
 vec2 to2SpaceZFloor(vec3 vec) {
-    return vec2(vec.x, vec.y*sliceHeight+sliceHeight*floor(vec.z*32.0));
+    return vec2(vec.x, vec.y*sliceHeight+sliceHeight*floor(vec.z*depth));
 }
 
 vec2 to2SpaceZCeil(vec3 vec) {
-    return vec2(vec.x, vec.y*sliceHeight+sliceHeight*ceil(vec.z*32.0));
+    return vec2(vec.x, vec.y*sliceHeight+sliceHeight*ceil(vec.z*depth));
 }
 
 //needs lerp across z axis

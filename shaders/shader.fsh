@@ -13,6 +13,9 @@ uniform sampler3D texture0;
 uniform mat4 viewMatrix;
 uniform mat4 modelMatrix;
 
+const int samples = 30;
+const float fsamples = 30.0;
+
 // only works on matrices with just rotate and translate
 // isomorphic?
 mat4 inverse(mat4 matrix) {
@@ -34,8 +37,6 @@ void main() {
     vec4 ray = normalize(fPosition-eyeCoord);
     vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
     float tag = 1.0;
-    int samples = 40;
-    float fsamples = 40.0;
     for (int i = 0; i < samples; ++i) {
         float s = float(i)*1.73/fsamples; //should travel sqrt(2) distance
         vec3 pos = (fPosition+ray*s).xyz;

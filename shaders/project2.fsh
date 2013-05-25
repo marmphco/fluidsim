@@ -7,7 +7,8 @@
 #version 120
 
 varying vec4 fPosition;
-uniform sampler2D velocityBuffer;
+uniform sampler2D divergenceBuffer;
+uniform sampler2D tempBuffer;
 
 uniform int iterations;
 uniform float width;
@@ -35,8 +36,9 @@ void main() {
     vec3 yu = vec3(0.0, xunit, 0.0);
     vec3 zu = vec3(0.0, 0.0, xunit);
 
-    float dx = texture2D(velocityBuffer, to2SpaceZFloor(p+xu)).x-texture2D(velocityBuffer, to2SpaceZFloor(p-xu)).x;
-    float dy = texture2D(velocityBuffer, to2SpaceZFloor(p+yu)).y-texture2D(velocityBuffer, to2SpaceZFloor(p-yu)).y;
-    float dz = texture2D(velocityBuffer, to2SpaceZFloor(p+zu)).z-texture2D(velocityBuffer, to2SpaceZFloor(p-zu)).z;
-    gl_FragData[0] = vec4(0.5*dx+dy+dz);
+    float dx = texture2D(tempBuffer, to2SpaceZFloor(p+xu)).x+texture2D(tempBuffer, to2SpaceZFloor(p-xu)).x;
+    float dy = texture2D(tempBuffer, to2SpaceZFloor(p+yu)).x+texture2D(tempBuffer, to2SpaceZFloor(p-yu)).x;
+    float dz = texture2D(tempBuffer, to2SpaceZFloor(p+zu)).x+texture2D(tempBuffer, to2SpaceZFloor(p-zu)).x;
+    float divergence = texture2D(divergenceBuffer, fPosition.xy).r;
+    gl_FragData[0] = vec4((dx+dy+dz-divergence)/8);
 }
