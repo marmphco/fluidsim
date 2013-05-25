@@ -68,6 +68,9 @@ public:
         } else if (shader->uniformEnabled("divergenceBuffer")) {
             GLint tex0loc = shader->getUniformLocation("divergenceBuffer");
             glUniform1i(tex0loc, 0);
+        } else if (shader->uniformEnabled("scalarBuffer")) {
+            GLint tex0loc = shader->getUniformLocation("scalarBuffer");
+            glUniform1i(tex0loc, 0);
         }
 
         if (shader->uniformEnabled("velocityBuffer")) {
@@ -112,12 +115,12 @@ private:
     Shader *advectKernel;
     Shader *divergenceKernel;
     Shader *project2Kernel;
+    Shader *subgradientKernel;
     GPUComputeModel *model;
 
     void addStep(Texture2D *in0, Texture2D *in1, Texture2D *out);
     void advectStep(Texture2D *in, Texture2D *out);
-    void projectStep(Texture2D *vel);
-    void project(float *vel, float *div, float *temp);
+    void projectStep();
 
 public:
     GPUSolver(int width, int height, int depth);
