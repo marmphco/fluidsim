@@ -19,7 +19,7 @@ const int samples = 40;
 const float fsamples = 40.0;
 
 // oh yeah shitty ray marching
-void main() {    
+void main() {
     mat4 inverseModelViewMatrix = transpose(inverseModelMatrix * inverseViewMatrix);
 
     vec4 eyeCoord = vec4(0, 0, 0, 1.0) * inverseModelViewMatrix;

@@ -22,7 +22,7 @@ long getTimeMillis(void) {
     if (timebaseInfo.denom == 0) {
         mach_timebase_info(&timebaseInfo);
     }
-    unsigned long long elapsed = mach_absolute_time();
+    unsigned long elapsed = mach_absolute_time();
     return elapsed*timebaseInfo.numer/timebaseInfo.denom/1000000;
 #else
     struct timespec now;

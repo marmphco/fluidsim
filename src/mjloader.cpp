@@ -134,8 +134,8 @@ Geometry *loadModel(const char *coorpath, const char *polypath) {
     float *vertices;
     unsigned int *indices;
     int vertexCount = loadVertices(&vertices, coorpath);
-    float normals[vertexCount*3];
-    GLfloat interleaved[vertexCount*3*2];
+    float *normals = new float[vertexCount*3];
+    float *interleaved = new float[vertexCount*3*2];
     int indexCount = loadTrisAndNormals(&indices,
                                         normals,
                                         vertices,
@@ -152,6 +152,8 @@ Geometry *loadModel(const char *coorpath, const char *polypath) {
                                  3*2);
     delete vertices;
     delete indices;
+    delete normals;
+    delete interleaved;
     return geo;
 }
 

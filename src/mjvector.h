@@ -11,23 +11,11 @@
 
 namespace mcjee {
 
-union Vector3 {
-    float data[3];
-    struct {
-        float x;
-        float y;
-        float z;
-    };
-    struct {
-        float r;
-        float g;
-        float b;
-    };
-    struct {
-        float t;
-        float u;
-        float v;
-    };
+class Vector3 {
+public:
+    float x;
+    float y;
+    float z;
     Vector3();
     Vector3(float sx, float sy, float sz);
     Vector3 operator-() const;

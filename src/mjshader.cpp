@@ -82,7 +82,7 @@ namespace mcjee {
             GLint length;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
 
-            char log[length];
+            char *log = new char[length];
             glGetShaderInfoLog(shader, length, &status, log);
             string message("Shader Compile Failed: ");
             message += srcPath;
@@ -91,7 +91,7 @@ namespace mcjee {
 
             glDeleteShader(shader);
             delete source;
-
+            delete log;
             throw ShaderError(message);
         }
 

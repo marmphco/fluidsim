@@ -15,7 +15,7 @@ namespace mcjee {
 
     enum LightType {
         POINT_LIGHT       = 0,
-        DIRECTIONAL_LIGHT = 1,
+        DIRECTIONAL_LIGHT = 1
     };
 
     class Light {

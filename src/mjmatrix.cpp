@@ -22,31 +22,74 @@ Matrix4::Matrix4(float a, float b, float c, float d,
     data[12] = d; data[13] = h; data[14] = l; data[15] = q;
 }
 
-Matrix4 Matrix4::operator*(Matrix4 &m) {
+Matrix4 Matrix4::operator*(Matrix4 &m) const {
     Matrix4 temp;
-    temp.c0[0] = c0[0]*m.c0[0]+c1[0]*m.c0[1]+c2[0]*m.c0[2]+c3[0]*m.c0[3];
-    temp.c0[1] = c0[1]*m.c0[0]+c1[1]*m.c0[1]+c2[1]*m.c0[2]+c3[1]*m.c0[3];
-    temp.c0[2] = c0[2]*m.c0[0]+c1[2]*m.c0[1]+c2[2]*m.c0[2]+c3[2]*m.c0[3];
-    temp.c0[3] = c0[3]*m.c0[0]+c1[3]*m.c0[1]+c2[3]*m.c0[2]+c3[3]*m.c0[3];
+    temp.data[0] = data[0]*m.data[0]+data[4]*m.data[1]+data[8]*m.data[2]+data[12]*m.data[3];
+    temp.data[1] = data[1]*m.data[0]+data[5]*m.data[1]+data[9]*m.data[2]+data[13]*m.data[3];
+    temp.data[2] = data[2]*m.data[0]+data[6]*m.data[1]+data[10]*m.data[2]+data[14]*m.data[3];
+    temp.data[3] = data[3]*m.data[0]+data[7]*m.data[1]+data[11]*m.data[2]+data[15]*m.data[3];
 
-    temp.c1[0] = c0[0]*m.c1[0]+c1[0]*m.c1[1]+c2[0]*m.c1[2]+c3[0]*m.c1[3];
-    temp.c1[1] = c0[1]*m.c1[0]+c1[1]*m.c1[1]+c2[1]*m.c1[2]+c3[1]*m.c1[3];
-    temp.c1[2] = c0[2]*m.c1[0]+c1[2]*m.c1[1]+c2[2]*m.c1[2]+c3[2]*m.c1[3];
-    temp.c1[3] = c0[3]*m.c1[0]+c1[3]*m.c1[1]+c2[3]*m.c1[2]+c3[3]*m.c1[3];
+    temp.data[4] = data[0]*m.data[4]+data[4]*m.data[5]+data[8]*m.data[6]+data[12]*m.data[7];
+    temp.data[5] = data[1]*m.data[4]+data[5]*m.data[5]+data[9]*m.data[6]+data[13]*m.data[7];
+    temp.data[6] = data[2]*m.data[4]+data[6]*m.data[5]+data[10]*m.data[6]+data[14]*m.data[7];
+    temp.data[7] = data[3]*m.data[4]+data[7]*m.data[5]+data[11]*m.data[6]+data[15]*m.data[7];
 
-    temp.c2[0] = c0[0]*m.c2[0]+c1[0]*m.c2[1]+c2[0]*m.c2[2]+c3[0]*m.c2[3];
-    temp.c2[1] = c0[1]*m.c2[0]+c1[1]*m.c2[1]+c2[1]*m.c2[2]+c3[1]*m.c2[3];
-    temp.c2[2] = c0[2]*m.c2[0]+c1[2]*m.c2[1]+c2[2]*m.c2[2]+c3[2]*m.c2[3];
-    temp.c2[3] = c0[3]*m.c2[0]+c1[3]*m.c2[1]+c2[3]*m.c2[2]+c3[3]*m.c2[3];
+    temp.data[8] = data[0]*m.data[8]+data[4]*m.data[9]+data[8]*m.data[10]+data[12]*m.data[11];
+    temp.data[9] = data[1]*m.data[8]+data[5]*m.data[9]+data[9]*m.data[10]+data[13]*m.data[11];
+    temp.data[10] = data[2]*m.data[8]+data[6]*m.data[9]+data[10]*m.data[10]+data[14]*m.data[11];
+    temp.data[11] = data[3]*m.data[8]+data[7]*m.data[9]+data[11]*m.data[10]+data[15]*m.data[11];
 
-    temp.c3[0] = c0[0]*m.c3[0]+c1[0]*m.c3[1]+c2[0]*m.c3[2]+c3[0]*m.c3[3];
-    temp.c3[1] = c0[1]*m.c3[0]+c1[1]*m.c3[1]+c2[1]*m.c3[2]+c3[1]*m.c3[3];
-    temp.c3[2] = c0[2]*m.c3[0]+c1[2]*m.c3[1]+c2[2]*m.c3[2]+c3[2]*m.c3[3];
-    temp.c3[3] = c0[3]*m.c3[0]+c1[3]*m.c3[1]+c2[3]*m.c3[2]+c3[3]*m.c3[3];
+    temp.data[12] = data[0]*m.data[12]+data[4]*m.data[13]+data[8]*m.data[14]+data[12]*m.data[15];
+    temp.data[13] = data[1]*m.data[12]+data[5]*m.data[13]+data[9]*m.data[14]+data[13]*m.data[15];
+    temp.data[14] = data[2]*m.data[12]+data[6]*m.data[13]+data[10]*m.data[14]+data[14]*m.data[15];
+    temp.data[15] = data[3]*m.data[12]+data[7]*m.data[13]+data[11]*m.data[14]+data[15]*m.data[15];
     return temp;
 }
 
-Vector3 Matrix4::operator*(Vector3 that) {
+Matrix4 &Matrix4::operator*=(Matrix4 &m) {
+    float temp0 = data[0]*m.data[0]+data[4]*m.data[1]+data[8]*m.data[2]+data[12]*m.data[3];
+    float temp1 = data[1]*m.data[0]+data[5]*m.data[1]+data[9]*m.data[2]+data[13]*m.data[3];
+    float temp2 = data[2]*m.data[0]+data[6]*m.data[1]+data[10]*m.data[2]+data[14]*m.data[3];
+    float temp3 = data[3]*m.data[0]+data[7]*m.data[1]+data[11]*m.data[2]+data[15]*m.data[3];
+
+    float temp4 = data[0]*m.data[4]+data[4]*m.data[5]+data[8]*m.data[6]+data[12]*m.data[7];
+    float temp5 = data[1]*m.data[4]+data[5]*m.data[5]+data[9]*m.data[6]+data[13]*m.data[7];
+    float temp6 = data[2]*m.data[4]+data[6]*m.data[5]+data[10]*m.data[6]+data[14]*m.data[7];
+    float temp7 = data[3]*m.data[4]+data[7]*m.data[5]+data[11]*m.data[6]+data[15]*m.data[7];
+
+    float temp8 = data[0]*m.data[8]+data[4]*m.data[9]+data[8]*m.data[10]+data[12]*m.data[11];
+    float temp9 = data[1]*m.data[8]+data[5]*m.data[9]+data[9]*m.data[10]+data[13]*m.data[11];
+    float temp10 = data[2]*m.data[8]+data[6]*m.data[9]+data[10]*m.data[10]+data[14]*m.data[11];
+    float temp11 = data[3]*m.data[8]+data[7]*m.data[9]+data[11]*m.data[10]+data[15]*m.data[11];
+
+    float temp12 = data[0]*m.data[12]+data[4]*m.data[13]+data[8]*m.data[14]+data[12]*m.data[15];
+    float temp13 = data[1]*m.data[12]+data[5]*m.data[13]+data[9]*m.data[14]+data[13]*m.data[15];
+    float temp14 = data[2]*m.data[12]+data[6]*m.data[13]+data[10]*m.data[14]+data[14]*m.data[15];
+    float temp15 = data[3]*m.data[12]+data[7]*m.data[13]+data[11]*m.data[14]+data[15]*m.data[15];
+
+    data[0] = temp0;
+    data[1] = temp1;
+    data[2] = temp2;
+    data[3] = temp3;
+
+    data[4] = temp4;
+    data[5] = temp5;
+    data[6] = temp6;
+    data[7] = temp7;
+
+    data[8] = temp8;
+    data[9] = temp9;
+    data[10] = temp10;
+    data[11] = temp11;
+
+    data[12] = temp12;
+    data[13] = temp13;
+    data[14] = temp14;
+    data[15] = temp15;
+    return *this;
+}
+
+Vector3 Matrix4::operator*(Vector3 that) const {
     Vector3 temp;
     temp.x = that.x*data[0]+that.y*data[4]+that.z*data[8]+data[12];
     temp.y = that.x*data[1]+that.y*data[5]+that.z*data[9]+data[13];
@@ -80,12 +123,12 @@ void Matrix4::ortho(float left,
     float xlength = right-left;
     float ylength = top-bottom;
     float zlength = far-near;
-    sx = 2/xlength;
-    sy = 2/ylength;
-    sz = 2/zlength;
-    tx = (right+left)/xlength;
-    ty = (top+bottom)/ylength;
-    tz = (far+near)/zlength;
+    data[0] = 2/xlength;
+    data[5] = 2/ylength;
+    data[10] = 2/zlength;
+    data[12] = (right+left)/xlength;
+    data[13] = (top+bottom)/ylength;
+    data[14] = (far+near)/zlength;
 }
 void Matrix4::frustum(float left,
                       float right,
@@ -98,13 +141,13 @@ void Matrix4::frustum(float left,
     float zlength = far-near;
     float near2 = 2*near;
     //this shorthand is not good semantically
-    sx = near2/xlength;
-    sy = near2/ylength;
-    sz = -(far+near)/zlength;
-    g = (right+left)/xlength;
-    h = (top+bottom)/ylength;
-    tz = -near2*far/zlength;
-    i = -1;
+    data[0] = near2/xlength;
+    data[5] = near2/ylength;
+    data[10] = -(far+near)/zlength;
+    data[8] = (right+left)/xlength;
+    data[9] = (top+bottom)/ylength;
+    data[14] = -near2*far/zlength;
+    data[11] = -1;
 }
 
 Matrix4 &Matrix4::translate(float x, float y, float z) {
@@ -294,4 +337,4 @@ std::ostream &operator<<(std::ostream &out,
     return out;
 }
 
-};
+}

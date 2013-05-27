@@ -39,7 +39,7 @@ CSRC = ${patsubst %,${SRCDIR}/%,${_CSRC}}
 OBJ = ${patsubst %.cpp,${OBJDIR}/%.o,${_CSRC}}
 SHADERS = ${patsubst %,${SHADERDIR}/%,${_SHADERS}}
 
-OPTIONS = -Wall -Wextra
+OPTIONS = -Wall -Wextra -ansi -pedantic
 ifeq "${UNAME}" "Darwin"
 # OS X/Darwin, using clang and stuff.
 	COMPILER = clang++
