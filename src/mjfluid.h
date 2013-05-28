@@ -65,8 +65,6 @@ public:
     void addDensity(int x, int y, int z, float amount);
     void addDensity(int x, int y, int z, float r, float g, float b);
     void solve(float dt);
-    void solveDensities(float dt);
-    void solveVelocities(float dt);
 
     void fillDensityData(float *out);
     void fillVelocityData(float *out);
