@@ -3,14 +3,13 @@
   Matthew Jee
   mcjee@ucsc.edu
 */
-
+#include "mj.h"
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wunused-parameter"
 #pragma clang diagnostic ignored "-Woverloaded-virtual"
 #pragma clang diagnostic ignored "-Wunused-comparison"
 #include "libglui/glui.h"
 #pragma clang diagnostic pop
-#include "mj.h"
 #include "mjfluid.h"
 #include "mjhybridsolver.h"
 #include "mjgpusolver.h"
