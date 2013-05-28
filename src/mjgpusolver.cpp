@@ -120,6 +120,12 @@ void GPUSolver::addVelocityZ(int x, int y, int z, float amount) {
     velocityBuffer[idv(x, y, z, 2)] += amount/_depth;
 }
 
+void GPUSolver::addVelocity(Vector3 pos, Vector3 amount) {
+    velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 0)] += amount.x/_width;
+    velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 1)] += amount.y/_height;
+    velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 2)] += amount.z/_depth;
+}
+
 void GPUSolver::addDensity(int x, int y, int z, float amount) {
     densityBuffer[idv(x, y, z, 0)] += amount;
     densityBuffer[idv(x, y, z, 1)] += amount;
@@ -130,6 +136,12 @@ void GPUSolver::addDensity(int x, int y, int z, float r, float g, float b) {
     densityBuffer[idv(x, y, z, 0)] += r;
     densityBuffer[idv(x, y, z, 1)] += g;
     densityBuffer[idv(x, y, z, 2)] += b;
+}
+
+void GPUSolver::addDensity(Vector3 pos, Vector3 amount) {
+    densityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 0)] += amount.x;
+    densityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 1)] += amount.y;
+    densityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 2)] += amount.z;
 }
 
 void GPUSolver::addStep(Texture2D *in0, Texture2D *in1, Texture2D *out) {
@@ -156,7 +168,7 @@ void GPUSolver::projectStep() {
 
     tempTex0->initData((float *)0);
     model->shader = project2Kernel;
-    for (int n = 0; n < 8; ++n) {
+    for (int n = 0; n < 16; ++n) {
         model->texture0 = divergenceTex;
         model->texture1 = tempTex0;
         outputFramebuffer->addRenderTarget(tempTex1, GL_COLOR_ATTACHMENT0);

@@ -127,8 +127,10 @@ public:
     virtual void addVelocityX(int x, int y, int z, float amount);
     virtual void addVelocityY(int x, int y, int z, float amount);
     virtual void addVelocityZ(int x, int y, int z, float amount);
+    virtual void addVelocity(Vector3 pos, Vector3 amount);
     virtual void addDensity(int x, int y, int z, float amount);
     virtual void addDensity(int x, int y, int z, float r, float g, float b);
+    virtual void addDensity(Vector3 pos, Vector3 amount);
     virtual void solve(float dt);
 
     virtual void fillDensityData(float *out);

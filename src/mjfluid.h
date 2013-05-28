@@ -10,6 +10,8 @@
 #ifndef MJ_FLUID_H
 #define MJ_FLUID_H
 
+#include "mjvector.h"
+
 namespace mcjee {
 
 // fluid solver interface
@@ -25,8 +27,10 @@ public:
     virtual void addVelocityX(int x, int y, int z, float amount) = 0;
     virtual void addVelocityY(int x, int y, int z, float amount) = 0;
     virtual void addVelocityZ(int x, int y, int z, float amount) = 0;
+    virtual void addVelocity(Vector3 pos, Vector3 amount) = 0;
     virtual void addDensity(int x, int y, int z, float amount) = 0;
     virtual void addDensity(int x, int y, int z, float r, float g, float b) = 0;
+    virtual void addDensity(Vector3 pos, Vector3 amount) = 0;
     virtual void solve(float dt) = 0;
 
     virtual void fillDensityData(float *out) = 0;

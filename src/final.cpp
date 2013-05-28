@@ -63,6 +63,11 @@ static int lastX = 0;
 static int lastY = 0;
 static bool filling = false;
 
+static Vector3 fillPos;
+static Vector3 fillVel;
+static bool leftDown;
+static bool rightDown;
+
 void keyboardEvent(unsigned char key, int, int) {
     switch(key) {
         case 32:
@@ -83,18 +88,41 @@ void keyboardUpEvent(unsigned char key, int, int) {
 
 void mouseMove(int x, int y) {
     if (-y+lastY == 0 && -x+lastX == 0) return;
-    Vector3 rotationAxis(y-lastY, x-lastX, 0.0);
-    float rotationAmount = rotationAxis.length();
-    rotationAxis.normalize();
-    fluidDomain->rotateGlobal(rotationAmount, rotationAxis);
+    if (leftDown) {
+        Vector3 rotationAxis(y-lastY, x-lastX, 0.0);
+        float rotationAmount = rotationAxis.length();
+        rotationAxis.normalize();
+        fluidDomain->rotateGlobal(rotationAmount, rotationAxis);
+    }
+    if (rightDown) {
+        fillVel = Vector3(x-lastX, y-lastY, 0);
+        fillPos += fillVel;
+        if (fillPos.x > WINDOW_WIDTH) {
+            fillPos.x = WINDOW_WIDTH;
+        }
+        if (fillPos.x < 0) {
+            fillPos.x = 0;
+        }
+        if (fillPos.y > WINDOW_HEIGHT) {
+            fillPos.y = WINDOW_HEIGHT;
+        }
+        if (fillPos.y < 0) {
+            fillPos.y = 0;
+        }
+    }
     lastX = x;
     lastY = y;
 }
 
-void mouseEvent(int, int state, int x, int y) {
+void mouseEvent(int button, int state, int x, int y) {
     if (state == GLUT_DOWN) {
         lastX = x;
         lastY = y;
+        if (button == GLUT_LEFT_BUTTON) leftDown = true;
+        if (button == GLUT_RIGHT_BUTTON) rightDown = true;
+    } else {
+        if (button == GLUT_LEFT_BUTTON) leftDown = false;
+        if (button == GLUT_RIGHT_BUTTON) rightDown = false;
     }
 }
 
@@ -105,22 +133,22 @@ void render(void) {
     long x = glutGet(GLUT_ELAPSED_TIME);
     float dt = (x-ox)/1000.0;
     ox = x;
-
     float angle = x*0.005;
     float beta = x*0.006+1;
-    filling = true;
     if (filling) {
         int xx = cosf(angle)*width/4;
         int yy = sinf(angle)*width/4;
         int zz = sinf(beta)*width/4;
         float vx = -sinf(angle)*3200.0;
         float vy = -cosf(angle)*3200.0;
-        solver->addVelocityX(width/2+xx, width/2+yy, width/2+zz, vx);
-        solver->addVelocityY(width/2+xx, width/2+yy, width/2+zz, vy);
-        solver->addVelocityZ(width/2+xx, width/2+yy, width/2+zz, vy);
-        float g = vx < 0 ? 0 : vx/32;
-        float b = vy < 0 ? 0 : vy/32;
-        solver->addDensity(width/2+xx, width/2+yy, width/2+zz, 20.0, g, b);
+        //solver->addVelocityX(width/2+xx, width/2+yy, width/2+zz, vx);
+        //solver->addVelocityY(width/2+xx, width/2+yy, width/2+zz, vy);
+        //solver->addVelocityZ(width/2+xx, width/2+yy, width/2+zz, vy);
+        solver->addVelocity(Vector3(fillPos.x*width/640, fillPos.y*width/640, fillPos.z*width/640), fillVel*100);
+        float g = vx < 0 ? 0 : vx/10;
+        float b = vy < 0 ? 0 : vy/10;
+        //solver->addDensity(width/2+xx, width/2+yy, width/2+zz, 20.0, g, b);
+        solver->addDensity(Vector3(fillPos.x*width/640, fillPos.y*width/640, fillPos.z*width/640), Vector3(40, g, b));
     }
 
     profiler->end("ui");
@@ -129,11 +157,14 @@ void render(void) {
 
     profiler->start("solve");
     solver->solve(dt);
-    solver->fillDensityData(densityTextureData);
     profiler->end("solve");
 
-    profiler->start("render");
+    profiler->start("transfer voxels");
+    solver->fillDensityData(densityTextureData);
     densityTexture->initData(densityTextureData);
+    profiler->end("transfer voxels");
+
+    profiler->start("render");
     GLUI_Master.auto_set_viewport();
 
     scene->render();
@@ -171,8 +202,8 @@ void init(void) {
     mainFrameBuffer->addRenderTarget(GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT);
 
     scene = new Scene(mainFrameBuffer);
-    scene->camera.perspective(-1.0f, 1.0f, -1.0f, 1.0f, 4.0f, 10.0f);
-    scene->camera.position = Vector3(0.0, 2.2, 4.0);
+    scene->camera.perspective(-1.0f, 1.0f, -1.0f, 1.0f, 8.0f, 10.0f);
+    scene->camera.position = Vector3(0.0, 4.4, 8.0);
     scene->camera.rotateLocal(-30, X_AXIS);
 
     fluidDomainGeo = loadCube(1.0, 1.0, 1.0);
@@ -190,6 +221,8 @@ void init(void) {
 
     solver = new GPUSolver(width, width, width);
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint *)&windowFramebuffer);
+
+    fillPos = Vector3(width/2, width/2, width/2);
 }
 
 void reshapeWindow(int, int) {
@@ -215,6 +248,7 @@ int main(int argc, char **argv) {
     profiler->addProfile(gui, "solve");
     profiler->addProfile(gui, "render");
     profiler->addProfile(gui, "ui");
+    profiler->addProfile(gui, "transfer voxels");
     profiler->addProfile(gui, "total");
     gui->add_column();
 
