@@ -40,5 +40,5 @@ void main() {
     float dy = texture2D(tempBuffer, to2SpaceZFloor(p+yu)).x+texture2D(tempBuffer, to2SpaceZFloor(p-yu)).x;
     float dz = texture2D(tempBuffer, to2SpaceZFloor(p+zu)).x+texture2D(tempBuffer, to2SpaceZFloor(p-zu)).x;
     float divergence = texture2D(divergenceBuffer, fPosition.xy).r;
-    gl_FragData[0] = vec4((dx+dy+dz-divergence)/8);
+    gl_FragData[0] = vec4((dx+dy+dz-divergence)/6);
 }

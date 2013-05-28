@@ -27,7 +27,7 @@ void main() {
     for (int i = 0; i < samples; ++i) {
         float s = float(i)*1.73/fsamples; //should travel sqrt(3) distance
         vec3 pos = (fPosition+ray*s).xyz;
-        color = min(color+texture3D(texture0, pos)*0.05, 1.0);
+        color = min(color+texture3D(texture0, pos)*0.1, 1.0);
     }
     gl_FragColor = vec4(0.0, 0.00, 0.00, 0.1)+color; 
 }
