@@ -22,7 +22,7 @@ _CSRC = final.cpp mjterrain.cpp mjshader.cpp mjrenderable.cpp\
         mjutil.cpp mjscene.cpp mjcamera.cpp mjlight.cpp\
         mjloader.cpp mjgeometry.cpp mjfluid.cpp\
         mjtexture.cpp mjmatrix.cpp mjvector.cpp mjframebuffer.cpp\
-        mjhybridsolver.cpp mjgpusolver.cpp
+        mjhybridsolver.cpp mjgpusolver.cpp mjprofiler.cpp
 
 _SHADERS = shader.fsh shader.vsh\
            display.vsh display.fsh\

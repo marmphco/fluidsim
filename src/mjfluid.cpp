@@ -219,4 +219,16 @@ void CPUSolver::fillDensityData(float *out) {
     }
 }
 
+void CPUSolver::fillVelocityData(float *out) {
+    for (int i = 0; i < _width; ++i) {
+        for (int j = 0; j < _height; ++j) {
+            for (int k = 0; k < _depth; ++k) {
+                out[idx(i, j, k)*3] = vx1[idx(i, j, k)];
+                out[idx(i, j, k)*3+1] = vy1[idx(i, j, k)];
+                out[idx(i, j, k)*3+2] = vz1[idx(i, j, k)];
+            }
+        }
+    }
+}
+
 }

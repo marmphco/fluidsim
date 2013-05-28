@@ -1,5 +1,5 @@
 /*
-    terrainShader.fsh
+    shader.fsh
     Matthew Jee
     mcjee@ucsc.edu
 */
@@ -10,8 +10,6 @@ varying vec4 fPosition;
 varying vec4 fTexCoord;
 uniform sampler3D texture0;
 
-uniform mat4 viewMatrix;
-uniform mat4 modelMatrix;
 uniform mat4 inverseViewMatrix;
 uniform mat4 inverseModelMatrix;
 
@@ -20,21 +18,16 @@ const float fsamples = 40.0;
 
 // oh yeah shitty ray marching
 void main() {
+    //transform to model space
     mat4 inverseModelViewMatrix = transpose(inverseModelMatrix * inverseViewMatrix);
-
     vec4 eyeCoord = vec4(0, 0, 0, 1.0) * inverseModelViewMatrix;
     vec4 ray = normalize(fPosition-eyeCoord);
     vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
     float tag = 1.0;
     for (int i = 0; i < samples; ++i) {
-        float s = float(i)*1.73/fsamples; //should travel sqrt(2) distance
+        float s = float(i)*1.73/fsamples; //should travel sqrt(3) distance
         vec3 pos = (fPosition+ray*s).xyz;
-        //if (texture3D(texture0, pos).a != 0.0) {
         color = min(color+texture3D(texture0, pos)*0.05, 1.0);
-        //tag = max(tag-color.a*99.0, 0.0);
-        //}
-        //tag = max(tag-color.a*9999.0, 0.0);
     }
-    //color = texture3D(texture0, (fPosition).xyz*0.99);
     gl_FragColor = vec4(0.0, 0.00, 0.00, 0.1)+color; 
 }

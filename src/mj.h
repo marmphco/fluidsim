@@ -14,3 +14,4 @@
 #include "mjscene.h"
 #include "mjtexture.h"
 #include "mjloader.h"
+#include "mjprofiler.h"

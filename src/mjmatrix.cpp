@@ -166,7 +166,6 @@ Matrix4 &Matrix4::translate(float x, float y, float z) {
     data[12] += data[15]*x;
     data[13] += data[15]*y;
     data[14] += data[15]*z;
-
     return *this;
 }
 

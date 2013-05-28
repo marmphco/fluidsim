@@ -61,6 +61,7 @@ public:
     void solve(float dt);
 
     void fillDensityData(float *out);
+    void fillVelocityData(float *out);
 };
 
 }

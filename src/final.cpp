@@ -51,9 +51,8 @@ static Scene *scene;
 static FluidSolver *solver;
 static int width = 48; // power of 2 plz
 static int mainWindow;
-static GLUI_StaticText *computeTimeText;
-static char computeTimeString[16];
 static GLuint windowFramebuffer;
+static Profiler *profiler;
 
 static Texture2D *colorTarget;
 static Framebuffer *mainFrameBuffer;
@@ -100,11 +99,10 @@ void mouseEvent(int, int state, int x, int y) {
 }
 
 void render(void) {
+    profiler->end("render");
+    profiler->start("ui");
     static long ox = 0;
     long x = glutGet(GLUT_ELAPSED_TIME);
-    sprintf(computeTimeString, "%ldms", x-ox);
-    computeTimeText->set_text(computeTimeString);
-    computeTimeText->draw_text();
     float dt = (x-ox)/1000.0;
     ox = x;
 
@@ -125,9 +123,16 @@ void render(void) {
         solver->addDensity(width/2+xx, width/2+yy, width/2+zz, 20.0, g, b);
     }
 
+    profiler->end("ui");
+    profiler->end("total");
+    profiler->start("total");
+
+    profiler->start("solve");
     solver->solve(dt);
     solver->fillDensityData(densityTextureData);
+    profiler->end("solve");
 
+    profiler->start("render");
     densityTexture->initData(densityTextureData);
     GLUI_Master.auto_set_viewport();
 
@@ -206,7 +211,11 @@ int main(int argc, char **argv) {
 
     GLUI *gui = GLUI_Master.create_glui("Tools");
     gui->add_statictext("le GUI");
-    computeTimeText = gui->add_statictext(computeTimeString);
+    profiler = new Profiler();
+    profiler->addProfile(gui, "solve");
+    profiler->addProfile(gui, "render");
+    profiler->addProfile(gui, "ui");
+    profiler->addProfile(gui, "total");
     gui->add_column();
 
     glutDisplayFunc(render);
