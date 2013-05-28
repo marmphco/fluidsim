@@ -211,6 +211,38 @@ void GPUSolver::solve(float dt) {
     memset(velocityBuffer, 0, sizeof(float)*_width*_height*_depth*3);
 }
 
+void GPUSolver::solveDensities(float dt) {
+    glViewport(0, 0, _width, _height*_depth);
+    model->dt = dt;
+
+    densityBufferTex->initData(densityBuffer);
+    addStep(densityTex0, densityBufferTex, densityTex1);
+    swapt(densityTex0, densityTex1);
+
+    advectStep(densityTex0, densityTex1);
+    swapt(densityTex0, densityTex1);
+
+    memset(densityBuffer, 0, sizeof(float)*_width*_height*_depth*3);
+}
+
+void GPUSolver::solveVelocities(float dt) {
+    glViewport(0, 0, _width, _height*_depth);
+    model->dt = dt;
+
+    velocityBufferTex->initData(velocityBuffer);
+    addStep(velocityTex0, velocityBufferTex, velocityTex1);
+    swapt(velocityTex0, velocityTex1);
+
+    projectStep();
+
+    advectStep(velocityTex0, velocityTex1);
+    swapt(velocityTex0, velocityTex1);
+
+    projectStep();
+
+    memset(velocityBuffer, 0, sizeof(float)*_width*_height*_depth*3);
+}
+
 void GPUSolver::fillDensityData(float *out) {
     densityTex0->bind();
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, out);

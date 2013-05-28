@@ -49,7 +49,7 @@ static Geometry *fluidDomainGeo;
 static Model *fluidDomain;
 static Scene *scene;
 static FluidSolver *solver;
-static int width = 48; // power of 2 plz
+static int width = 64; // power of 2 plz
 static int mainWindow;
 static GLuint windowFramebuffer;
 static Profiler *profiler;
@@ -67,6 +67,8 @@ static Vector3 fillPos;
 static Vector3 fillVel;
 static bool leftDown;
 static bool rightDown;
+
+static GLuint pbo;
 
 void keyboardEvent(unsigned char key, int, int) {
     switch(key) {
@@ -155,13 +157,22 @@ void render(void) {
     profiler->end("total");
     profiler->start("total");
 
-    profiler->start("solve");
-    solver->solve(dt);
-    profiler->end("solve");
+    profiler->start("solve density");
+    solver->solveDensities(dt);
+    profiler->end("solve density");
+
+    profiler->start("solve velocity");
+    solver->solveVelocities(dt);
+    profiler->end("solve velocity");
 
     profiler->start("transfer voxels");
-    solver->fillDensityData(densityTextureData);
-    densityTexture->initData(densityTextureData);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
+    solver->fillDensityData((float *)0);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
+    densityTexture->initData((float *)0);
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);  
     profiler->end("transfer voxels");
 
     profiler->start("render");
@@ -223,6 +234,11 @@ void init(void) {
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint *)&windowFramebuffer);
 
     fillPos = Vector3(width/2, width/2, width/2);
+
+    glGenBuffers(1, &pbo);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
+    glBufferData(GL_PIXEL_PACK_BUFFER, width*width*width*3*sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);    
 }
 
 void reshapeWindow(int, int) {
@@ -245,7 +261,8 @@ int main(int argc, char **argv) {
     GLUI *gui = GLUI_Master.create_glui("Tools");
     gui->add_statictext("le GUI");
     profiler = new Profiler();
-    profiler->addProfile(gui, "solve");
+    profiler->addProfile(gui, "solve density");
+    profiler->addProfile(gui, "solve velocity");
     profiler->addProfile(gui, "render");
     profiler->addProfile(gui, "ui");
     profiler->addProfile(gui, "transfer voxels");

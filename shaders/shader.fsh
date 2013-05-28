@@ -23,10 +23,10 @@ void main() {
     vec4 eyeCoord = vec4(0, 0, 0, 1.0) * inverseModelViewMatrix;
     vec4 ray = normalize(fPosition-eyeCoord);
     vec4 color = vec4(0.0, 0.0, 0.0, 0.0);
-    float tag = 1.0;
     for (int i = 0; i < samples; ++i) {
         float s = float(i)*1.73/fsamples; //should travel sqrt(3) distance
         vec3 pos = (fPosition+ray*s).xyz;
+        if (pos.x > 1.0 || pos.y > 1.0 || pos.z > 1.0) break; // outside the volume
         color = min(color+texture3D(texture0, pos)*0.1, 1.0);
     }
     gl_FragColor = vec4(0.0, 0.00, 0.00, 0.1)+color; 

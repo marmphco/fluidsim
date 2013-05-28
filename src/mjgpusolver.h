@@ -124,17 +124,19 @@ private:
 
 public:
     GPUSolver(int width, int height, int depth);
-    virtual void addVelocityX(int x, int y, int z, float amount);
-    virtual void addVelocityY(int x, int y, int z, float amount);
-    virtual void addVelocityZ(int x, int y, int z, float amount);
-    virtual void addVelocity(Vector3 pos, Vector3 amount);
-    virtual void addDensity(int x, int y, int z, float amount);
-    virtual void addDensity(int x, int y, int z, float r, float g, float b);
-    virtual void addDensity(Vector3 pos, Vector3 amount);
-    virtual void solve(float dt);
+    void addVelocityX(int x, int y, int z, float amount);
+    void addVelocityY(int x, int y, int z, float amount);
+    void addVelocityZ(int x, int y, int z, float amount);
+    void addVelocity(Vector3 pos, Vector3 amount);
+    void addDensity(int x, int y, int z, float amount);
+    void addDensity(int x, int y, int z, float r, float g, float b);
+    void addDensity(Vector3 pos, Vector3 amount);
+    void solve(float dt);
+    void solveDensities(float dt);
+    void solveVelocities(float dt);
 
-    virtual void fillDensityData(float *out);
-    virtual void fillVelocityData(float *out);
+    void fillDensityData(float *out);
+    void fillVelocityData(float *out);
 };
 
 }
