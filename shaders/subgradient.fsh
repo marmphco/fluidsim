@@ -18,28 +18,18 @@ uniform float xunit;
 uniform float yunit;
 uniform float sliceHeight;
 
-vec3 to3Space(vec2 vec) {
-    return vec3(vec.x, mod(vec.y, sliceHeight)/sliceHeight, floor(vec.y/sliceHeight)/depth);
-}
-
-vec2 to2SpaceZFloor(vec3 vec) {
-    return vec2(vec.x, vec.y*sliceHeight+sliceHeight*floor(vec.z*depth));
-}
-
-vec2 to2SpaceZCeil(vec3 vec) {
-    return vec2(vec.x, vec.y*sliceHeight+sliceHeight*ceil(vec.z*depth));
-}
-
 void main() {
     float b = 1.0; // scaling term that should be uniformed
 
-    vec3 p = to3Space(fPosition.xy);
-    vec3 xu = vec3(xunit, 0.0, 0.0);
-    vec3 yu = vec3(0.0, xunit, 0.0);
-    vec3 zu = vec3(0.0, 0.0, xunit);
+    vec2 left = vec2(fPosition.x-xunit, fPosition.y);
+    vec2 right = vec2(fPosition.x+xunit, fPosition.y);
+    vec2 up = vec2(fPosition.x, fPosition.y+yunit);
+    vec2 down = vec2(fPosition.x, fPosition.y-yunit);
+    vec2 forward = vec2(fPosition.x, fPosition.y+sliceHeight);
+    vec2 backward = vec2(fPosition.x, fPosition.y-sliceHeight);
 
-    float dx = (texture2D(scalarBuffer, to2SpaceZFloor(p+xu)).x-texture2D(scalarBuffer, to2SpaceZFloor(p-xu)).x)*0.5/b;
-    float dy = (texture2D(scalarBuffer, to2SpaceZFloor(p+yu)).x-texture2D(scalarBuffer, to2SpaceZFloor(p-yu)).x)*0.5/b;
-    float dz = (texture2D(scalarBuffer, to2SpaceZFloor(p+zu)).x-texture2D(scalarBuffer, to2SpaceZFloor(p-zu)).x)*0.5/b;
+    float dx = (texture2D(scalarBuffer, right).x-texture2D(scalarBuffer, left).x)*0.5/b;
+    float dy = (texture2D(scalarBuffer, up).x-texture2D(scalarBuffer, down).x)*0.5/b;
+    float dz = (texture2D(scalarBuffer, forward).x-texture2D(scalarBuffer, backward).x)*0.5/b;
     gl_FragData[0] = texture2D(velocityBuffer, fPosition.xy)-vec4(dx, dy, dz, 0.0);
 }

@@ -52,7 +52,9 @@ Texture2D::Texture2D(GLint internalFormat, GLenum format, GLenum type,
 
 void Texture2D::present(Shader *shader) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
+    glBlendFunc(GL_ONE, GL_ZERO);
     GLfloat vertices[] = {
         -1.0, -1.0, 0.0,
         1.0, -1.0, 0.0,

@@ -98,6 +98,7 @@ void mouseMove(int x, int y) {
     if (rightDown) {
         fillVel = Vector3(x-lastX, y-lastY, 0);
         fillPos += fillVel;
+        fillVel = Vector3(0, 0, 10);
         if (fillPos.x > WINDOW_WIDTH) {
             fillPos.x = WINDOW_WIDTH;
         }
@@ -146,10 +147,11 @@ void render(void) {
         //solver->addVelocityY(width/2+xx, width/2+yy, width/2+zz, vy);
         //solver->addVelocityZ(width/2+xx, width/2+yy, width/2+zz, vy);
         solver->addVelocity(Vector3(fillPos.x*width/640, fillPos.y*width/640, fillPos.z*width/640), fillVel*100);
-        float g = vx < 0 ? 0 : vx/10;
-        float b = vy < 0 ? 0 : vy/10;
+        float g = vx < 0 ? 0 : vx/2;
+        float b = vy < 0 ? 0 : vy/2;
         //solver->addDensity(width/2+xx, width/2+yy, width/2+zz, 20.0, g, b);
-        solver->addDensity(Vector3(fillPos.x*width/640, fillPos.y*width/640, fillPos.z*width/640), Vector3(40, g, b));
+        solver->addDensity(Vector3(fillPos.x*width/640, fillPos.y*width/640, fillPos.z*width/640), Vector3(100, g, b));
+        //solver->addDensity(Vector3(fillPos.x*width/640, fillPos.y*width/640, fillPos.z*width/640), Vector3(0, 100, 100));
     }
 
     profiler->end("ui");
@@ -177,7 +179,14 @@ void render(void) {
     profiler->start("render");
     GLUI_Master.auto_set_viewport();
 
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    //glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     scene->render();
+    glDisable(GL_CULL_FACE);
     colorTarget->present(displayShader);
     glutSwapBuffers();
 }
@@ -199,10 +208,7 @@ void compileShaders(void) {
 }
 
 void init(void) {
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glEnable(GL_BLEND);
 
     colorTarget = new Texture2D(GL_RGBA, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, WINDOW_WIDTH, WINDOW_HEIGHT);
     colorTarget->initData((float *)0);
@@ -218,8 +224,9 @@ void init(void) {
 
     fluidDomainGeo = loadCube(1.0, 1.0, 1.0);
 
-    densityTextureData = new GLfloat[width*width*width*3];
-    densityTexture = new Texture3D(GL_RGB, GL_RGB, GL_FLOAT, width, width, width);
+    densityTextureData = new GLfloat[width*width*width*4];
+    memset(densityTextureData, 0, sizeof(float)*width*width*width*4);
+    densityTexture = new Texture3D(GL_RGBA32F_ARB, GL_RGBA, GL_FLOAT, width, width, width);
     densityTexture->interpolation(GL_LINEAR);
     densityTexture->initData(densityTextureData);
 
@@ -236,7 +243,7 @@ void init(void) {
 
     glGenBuffers(1, &pbo);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
-    glBufferData(GL_PIXEL_PACK_BUFFER, width*width*width*3*sizeof(GLfloat), NULL, GL_DYNAMIC_DRAW);
+    glBufferData(GL_PIXEL_PACK_BUFFER, width*width*width*4*sizeof(GLfloat), NULL, GL_DYNAMIC_COPY);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);    
 }
 

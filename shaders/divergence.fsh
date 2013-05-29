@@ -17,26 +17,16 @@ uniform float xunit;
 uniform float yunit;
 uniform float sliceHeight;
 
-vec3 to3Space(vec2 vec) {
-    return vec3(vec.x, mod(vec.y, sliceHeight)/sliceHeight, floor(vec.y/sliceHeight)/depth);
-}
-
-vec2 to2SpaceZFloor(vec3 vec) {
-    return vec2(vec.x, vec.y*sliceHeight+sliceHeight*floor(vec.z*depth));
-}
-
-vec2 to2SpaceZCeil(vec3 vec) {
-    return vec2(vec.x, vec.y*sliceHeight+sliceHeight*ceil(vec.z*depth));
-}
-
 void main() {
-    vec3 p = to3Space(fPosition.xy);
-    vec3 xu = vec3(xunit, 0.0, 0.0);
-    vec3 yu = vec3(0.0, xunit, 0.0);
-    vec3 zu = vec3(0.0, 0.0, xunit);
+    vec2 left = vec2(fPosition.x-xunit, fPosition.y);
+    vec2 right = vec2(fPosition.x+xunit, fPosition.y);
+    vec2 up = vec2(fPosition.x, fPosition.y+yunit);
+    vec2 down = vec2(fPosition.x, fPosition.y-yunit);
+    vec2 forward = vec2(fPosition.x, fPosition.y+sliceHeight);
+    vec2 backward = vec2(fPosition.x, fPosition.y-sliceHeight);
 
-    float dx = texture2D(velocityBuffer, to2SpaceZFloor(p+xu)).x-texture2D(velocityBuffer, to2SpaceZFloor(p-xu)).x;
-    float dy = texture2D(velocityBuffer, to2SpaceZFloor(p+yu)).y-texture2D(velocityBuffer, to2SpaceZFloor(p-yu)).y;
-    float dz = texture2D(velocityBuffer, to2SpaceZFloor(p+zu)).z-texture2D(velocityBuffer, to2SpaceZFloor(p-zu)).z;
+    float dx = texture2D(velocityBuffer, right).x-texture2D(velocityBuffer, left).x;
+    float dy = texture2D(velocityBuffer, up).y-texture2D(velocityBuffer, down).y;
+    float dz = texture2D(velocityBuffer, forward).z-texture2D(velocityBuffer, backward).z;
     gl_FragData[0] = vec4(0.5*dx+dy+dz);
 }
