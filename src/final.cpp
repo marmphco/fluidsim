@@ -143,15 +143,11 @@ void render(void) {
         int zz = sinf(beta)*width/4;
         float vx = -sinf(angle)*3200.0;
         float vy = -cosf(angle)*3200.0;
-        //solver->addVelocityX(width/2+xx, width/2+yy, width/2+zz, vx);
-        //solver->addVelocityY(width/2+xx, width/2+yy, width/2+zz, vy);
-        //solver->addVelocityZ(width/2+xx, width/2+yy, width/2+zz, vy);
         solver->addVelocity(Vector3(fillPos.x*width/640, fillPos.y*width/640, fillPos.z*width/640), fillVel*100);
         float g = vx < 0 ? 0 : vx/2;
         float b = vy < 0 ? 0 : vy/2;
-        //solver->addDensity(width/2+xx, width/2+yy, width/2+zz, 20.0, g, b);
-        solver->addDensity(Vector3(fillPos.x*width/640, fillPos.y*width/640, fillPos.z*width/640), Vector3(100, g, b));
-        //solver->addDensity(Vector3(fillPos.x*width/640, fillPos.y*width/640, fillPos.z*width/640), Vector3(0, 100, 100));
+        float r = zz*3200 < 0 ? 0 : zz*3200;
+        solver->addDensity(Vector3(fillPos.x*width/640, fillPos.y*width/640, fillPos.z*width/640), Vector3(r, g, b));
     }
 
     profiler->end("ui");
@@ -181,10 +177,6 @@ void render(void) {
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    //glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     scene->render();
     glDisable(GL_CULL_FACE);
     colorTarget->present(displayShader);
@@ -208,8 +200,6 @@ void compileShaders(void) {
 }
 
 void init(void) {
-    glEnable(GL_BLEND);
-
     colorTarget = new Texture2D(GL_RGBA, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, WINDOW_WIDTH, WINDOW_HEIGHT);
     colorTarget->initData((float *)0);
 
@@ -221,6 +211,8 @@ void init(void) {
     scene->camera.perspective(-1.0f, 1.0f, -1.0f, 1.0f, 8.0f, 10.0f);
     scene->camera.position = Vector3(0.0, 4.4, 8.0);
     scene->camera.rotateLocal(-30, X_AXIS);
+    scene->backgroundColor = Vector4(0.0, 0.0, 0.0, 1.0);
+    scene->blendEnabled = true;
 
     fluidDomainGeo = loadCube(1.0, 1.0, 1.0);
 

@@ -30,6 +30,11 @@ namespace mcjee {
         float specularMultiplier;
         Camera camera;
 
+        Vector4 backgroundColor;
+        bool blendEnabled;
+        GLenum sFactor;
+        GLenum dFactor;
+
         Scene(Framebuffer *);
         ~Scene();
         void add(Renderable *);

@@ -75,6 +75,8 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     velocityBufferTex->initData(velocityBuffer);
 
     computeScene = new Scene(outputFramebuffer);
+    computeScene->backgroundColor = Vector4();
+    computeScene->blendEnabled = false;
     advectKernel = new Shader();
     divergenceKernel = new Shader();
     project2Kernel = new Shader();
@@ -217,9 +219,6 @@ void GPUSolver::solve(float dt) {
 
 void GPUSolver::solveDensities(float dt) {
     glViewport(0, 0, _width, _height*_depth);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-    glDisable(GL_BLEND);
-    glBlendFunc(GL_ONE, GL_ZERO);
     model->dt = dt;
 
     densityBufferTex->initData(densityBuffer);
@@ -234,8 +233,6 @@ void GPUSolver::solveDensities(float dt) {
 
 void GPUSolver::solveVelocities(float dt) {
     glViewport(0, 0, _width, _height*_depth);
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    glBlendFunc(GL_ONE, GL_ZERO);
     model->dt = dt;
 
     velocityBufferTex->initData(velocityBuffer);

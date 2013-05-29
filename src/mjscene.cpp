@@ -7,7 +7,14 @@
 namespace mcjee {
 
     Scene::Scene(Framebuffer *framebuffer) :
-        framebuffer(framebuffer), diffuseMultiplier(1.0), specularMultiplier(1.0 ) {
+        framebuffer(framebuffer),
+        ambientColor(Vector3()),
+        diffuseMultiplier(1.0),
+        specularMultiplier(1.0),
+        backgroundColor(Vector4()),
+        blendEnabled(false),
+        sFactor(GL_SRC_ALPHA),
+        dFactor(GL_ONE_MINUS_SRC_ALPHA) {
     }
 
     Scene::~Scene() {
@@ -28,7 +35,14 @@ namespace mcjee {
 
     void Scene::render() {
         framebuffer->bind();
+        glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        if (blendEnabled) {
+            glEnable(GL_BLEND);
+            glBlendFunc(sFactor, dFactor);
+        } else {
+            glDisable(GL_BLEND);
+        }
 
         // create light arrays
         Vector3 lightPositions[MAX_LIGHTS];
