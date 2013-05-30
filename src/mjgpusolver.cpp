@@ -21,12 +21,12 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     densityBuffer = new float[width*height*depth*4];
     velocityBuffer = new float[width*height*depth*3];
     divergence = new float[width*height*depth];
-    temp = new float[width*height*depth];
+    pressure = new float[width*height*depth];
 
     memset(densityBuffer, 0, sizeof(float)*width*height*depth*4);
     memset(velocityBuffer, 0, sizeof(float)*width*height*depth*3);
     memset(divergence, 0, sizeof(float)*width*height*depth);
-    memset(temp, 0, sizeof(float)*width*height*depth);
+    memset(pressure, 0, sizeof(float)*width*height*depth);
 
     densityTex0 = new Texture2D(GL_RGBA32F_ARB, GL_RGBA, GL_FLOAT, width, height*depth);
     densityTex0->initData(densityBuffer);
@@ -48,15 +48,15 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     velocityTex1->interpolation(GL_LINEAR);
     velocityTex1->wrap(GL_CLAMP_TO_BORDER);
 
-    tempTex0 = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
-    tempTex0->initData(temp);
-    tempTex0->interpolation(GL_NEAREST);
-    tempTex0->wrap(GL_CLAMP_TO_BORDER);
+    pressureTex0 = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
+    pressureTex0->initData(pressure);
+    pressureTex0->interpolation(GL_NEAREST);
+    pressureTex0->wrap(GL_CLAMP_TO_BORDER);
 
-    tempTex1 = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
-    tempTex1->initData(temp);
-    tempTex1->interpolation(GL_NEAREST);
-    tempTex1->wrap(GL_CLAMP_TO_BORDER);
+    pressureTex1 = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
+    pressureTex1->initData(pressure);
+    pressureTex1->interpolation(GL_NEAREST);
+    pressureTex1->wrap(GL_CLAMP_TO_BORDER);
 
     divergenceTex = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
     divergenceTex->initData(divergence);
@@ -147,7 +147,7 @@ void GPUSolver::addDensity(Vector3 pos, Vector3 amount) {
     densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 0)] += amount.x;
     densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 1)] += amount.y;
     densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 2)] += amount.z;
-    densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 3)] += 1.0;
+    densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 3)] += 10.0;
 }
 
 void GPUSolver::addStep(Texture2D *in0, Texture2D *in1, Texture2D *out) {
@@ -172,18 +172,18 @@ void GPUSolver::projectStep() {
     outputFramebuffer->addRenderTarget(divergenceTex, GL_COLOR_ATTACHMENT0);
     computeScene->render();
 
-    tempTex0->initData((float *)0);
+    pressureTex0->initData((float *)0);
     model->shader = project2Kernel;
     for (int n = 0; n < 16; ++n) {
         model->texture0 = divergenceTex;
-        model->texture1 = tempTex0;
-        outputFramebuffer->addRenderTarget(tempTex1, GL_COLOR_ATTACHMENT0);
+        model->texture1 = pressureTex0;
+        outputFramebuffer->addRenderTarget(pressureTex1, GL_COLOR_ATTACHMENT0);
         computeScene->render();
-        swapt(tempTex0, tempTex1);
+        swapt(pressureTex0, pressureTex1);
     }
 
     model->shader = subgradientKernel;
-    model->texture0 = tempTex0;
+    model->texture0 = pressureTex0;
     model->texture1 = velocityTex0;
     outputFramebuffer->addRenderTarget(velocityTex1, GL_COLOR_ATTACHMENT0);
     computeScene->render();

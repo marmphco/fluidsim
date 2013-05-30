@@ -32,7 +32,7 @@ vec2 to2SpaceZCeil(vec3 vec) {
 
 void main() {
     //shitty fix to the y-bleeding problem
-    if (mod(fPosition.y, sliceHeight) < sliceHeight/32.0) {
+    if (mod(fPosition.y, sliceHeight) < sliceHeight/height) {
         discard;
     }
     

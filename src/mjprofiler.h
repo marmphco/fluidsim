@@ -25,9 +25,11 @@ private:
         long startTime;
     };
     std::map<const std::string, profile> profiles;
+    GLUI *glui;
+    int enabled;
 public:
     Profiler();
-    void addProfile(GLUI *glui, const std::string name);
+    void addProfile(const std::string name);
     void start(const std::string name);
     void end(const std::string name);
 };

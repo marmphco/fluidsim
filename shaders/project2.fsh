@@ -8,7 +8,7 @@
 
 varying vec4 fPosition;
 uniform sampler2D divergenceBuffer;
-uniform sampler2D tempBuffer;
+uniform sampler2D pressureBuffer;
 
 uniform int iterations;
 uniform float width;
@@ -26,9 +26,9 @@ void main() {
     vec2 forward = vec2(fPosition.x, fPosition.y+sliceHeight);
     vec2 backward = vec2(fPosition.x, fPosition.y-sliceHeight);
 
-    float dx = texture2D(tempBuffer, right).x+texture2D(tempBuffer, left).x;
-    float dy = texture2D(tempBuffer, up).x+texture2D(tempBuffer, down).x;
-    float dz = texture2D(tempBuffer, forward).x+texture2D(tempBuffer, backward).x;
+    float dx = texture2D(pressureBuffer, right).x+texture2D(pressureBuffer, left).x;
+    float dy = texture2D(pressureBuffer, up).x+texture2D(pressureBuffer, down).x;
+    float dz = texture2D(pressureBuffer, forward).x+texture2D(pressureBuffer, backward).x;
     float divergence = texture2D(divergenceBuffer, fPosition.xy).r;
     gl_FragData[0] = vec4((dx+dy+dz-divergence)/6);
 }

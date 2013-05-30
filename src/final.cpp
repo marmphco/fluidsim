@@ -98,7 +98,6 @@ void mouseMove(int x, int y) {
     if (rightDown) {
         fillVel = Vector3(x-lastX, y-lastY, 0);
         fillPos += fillVel;
-        fillVel = Vector3(0, 0, 10);
         if (fillPos.x > WINDOW_WIDTH) {
             fillPos.x = WINDOW_WIDTH;
         }
@@ -129,7 +128,6 @@ void mouseEvent(int button, int state, int x, int y) {
 }
 
 void render(void) {
-    profiler->end("render");
     profiler->start("ui");
     static long ox = 0;
     long x = glutGet(GLUT_ELAPSED_TIME);
@@ -137,17 +135,19 @@ void render(void) {
     ox = x;
     float angle = x*0.005;
     float beta = x*0.006+1;
-    if (filling) {
-        int xx = cosf(angle)*width/4;
+            int xx = cosf(angle)*width/4;
         int yy = sinf(angle)*width/4;
         int zz = sinf(beta)*width/4;
+    fillVel.z = zz;
+    solver->addVelocity(Vector3(fillPos.x*width/640, fillPos.y*width/640, width/2), fillVel*100);
+    if (filling) {
+
         float vx = -sinf(angle)*3200.0;
         float vy = -cosf(angle)*3200.0;
-        solver->addVelocity(Vector3(fillPos.x*width/640, fillPos.y*width/640, fillPos.z*width/640), fillVel*100);
-        float g = vx < 0 ? 0 : vx/2;
-        float b = vy < 0 ? 0 : vy/2;
-        float r = zz*3200 < 0 ? 0 : zz*3200;
-        solver->addDensity(Vector3(fillPos.x*width/640, fillPos.y*width/640, fillPos.z*width/640), Vector3(r, g, b));
+        float g = vx < 0 ? 0 : vx/20;
+        float b = vy < 0 ? 0 : vy/20;
+        float r = zz*32 < 0 ? 0 : zz*32;
+        solver->addDensity(Vector3(fillPos.x*width/640, fillPos.y*width/640, width/2), Vector3(r, g, b));
     }
 
     profiler->end("ui");
@@ -169,7 +169,7 @@ void render(void) {
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
     densityTexture->initData((float *)0);
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);  
+    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     profiler->end("transfer voxels");
 
     profiler->start("render");
@@ -181,6 +181,7 @@ void render(void) {
     glDisable(GL_CULL_FACE);
     colorTarget->present(displayShader);
     glutSwapBuffers();
+    profiler->end("render");
 }
 
 void idle(void) {
@@ -209,9 +210,10 @@ void init(void) {
 
     scene = new Scene(mainFrameBuffer);
     scene->camera.perspective(-1.0f, 1.0f, -1.0f, 1.0f, 8.0f, 10.0f);
+    scene->camera.position = Vector3(0.0, 0.0, 10.0);
     scene->camera.position = Vector3(0.0, 4.4, 8.0);
     scene->camera.rotateLocal(-30, X_AXIS);
-    scene->backgroundColor = Vector4(0.0, 0.0, 0.0, 1.0);
+    scene->backgroundColor = Vector4(1.0, 1.0, 1.0, 1.0);
     scene->blendEnabled = true;
 
     fluidDomainGeo = loadCube(1.0, 1.0, 1.0);
@@ -257,15 +259,15 @@ int main(int argc, char **argv) {
     init();
 
     GLUI *gui = GLUI_Master.create_glui("Tools");
-    gui->add_statictext("le GUI");
+    gui->add_statictext("Profiler");
     profiler = new Profiler();
-    profiler->addProfile(gui, "solve density");
-    profiler->addProfile(gui, "solve velocity");
-    profiler->addProfile(gui, "render");
-    profiler->addProfile(gui, "ui");
-    profiler->addProfile(gui, "transfer voxels");
-    profiler->addProfile(gui, "total");
-    gui->add_column();
+    profiler->addProfile("solve density");
+    profiler->addProfile("solve velocity");
+    profiler->addProfile("render");
+    profiler->addProfile("ui");
+    profiler->addProfile("transfer voxels");
+    profiler->addProfile("total");
+    //gui->add_column();
 
     glutDisplayFunc(render);
     glutMotionFunc(mouseMove);

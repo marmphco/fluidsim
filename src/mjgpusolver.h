@@ -79,8 +79,8 @@ public:
         } else if (shader->uniformEnabled("buffer1")) {
             GLint tex1loc = shader->getUniformLocation("buffer1");
             glUniform1i(tex1loc, 1);
-        } else if (shader->uniformEnabled("tempBuffer")) {
-            GLint tex1loc = shader->getUniformLocation("tempBuffer");
+        } else if (shader->uniformEnabled("pressureBuffer")) {
+            GLint tex1loc = shader->getUniformLocation("pressureBuffer");
             glUniform1i(tex1loc, 1);
         }
 
@@ -97,8 +97,8 @@ private:
     Texture2D *densityTex1;
     Texture2D *velocityTex0;
     Texture2D *velocityTex1;
-    Texture2D *tempTex0;
-    Texture2D *tempTex1;
+    Texture2D *pressureTex0;
+    Texture2D *pressureTex1;
     Texture2D *divergenceTex;
 
     Framebuffer *outputFramebuffer;
@@ -107,7 +107,7 @@ private:
     Texture2D *velocityBufferTex;
     float *densityBuffer;
     float *velocityBuffer;
-    float *temp;
+    float *pressure;
     float *divergence;
 
     Scene *computeScene;
