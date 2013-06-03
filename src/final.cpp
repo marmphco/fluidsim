@@ -135,18 +135,18 @@ void render(void) {
     ox = x;
     float angle = x*0.005;
     float beta = x*0.006+1;
-            int xx = cosf(angle)*width/4;
-        int yy = sinf(angle)*width/4;
-        int zz = sinf(beta)*width/4;
+    int xx = cosf(angle)*width/4;
+    int yy = sinf(angle)*width/4;
+    int zz = sinf(beta)*width/4;
     fillVel.z = zz;
     solver->addVelocity(Vector3(fillPos.x*width/640, fillPos.y*width/640, width/2), fillVel*100);
     if (filling) {
 
         float vx = -sinf(angle)*3200.0;
         float vy = -cosf(angle)*3200.0;
-        float g = vx < 0 ? 0 : vx/20;
-        float b = vy < 0 ? 0 : vy/20;
-        float r = zz*32 < 0 ? 0 : zz*32;
+        float g = vx < 0 ? 0 : vx/200;
+        float b = vy < 0 ? 0 : vy/200;
+        float r = zz*32 < 0 ? 0 : zz*3;
         solver->addDensity(Vector3(fillPos.x*width/640, fillPos.y*width/640, width/2), Vector3(r, g, b));
     }
 
