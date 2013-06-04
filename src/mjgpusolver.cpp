@@ -161,7 +161,7 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     GLuint indices[] = {
         0, 1, 2, 3
     };
-    Geometry *geo = new Geometry(vertices, indices, 4, 4, 3);
+    geo = new Geometry(vertices, indices, 4, 4, 3);
 
     model = new GPUComputeModel(geo, advectKernel);
     model->init();
@@ -169,6 +169,31 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     model->height = height;
     model->depth = depth;
     computeScene->add(model);
+}
+
+GPUSolver::~GPUSolver() {
+    delete densityBuffer;
+    delete velocityBuffer;
+    delete divergence;
+    delete pressure;
+    delete densityTex0;
+    delete densityTex1;
+    delete velocityTex0;
+    delete velocityTex1;
+    delete pressureTex0;
+    delete pressureTex1;
+    delete divergenceTex;
+    delete outputFramebuffer;
+    delete densityBufferTex;
+    delete velocityBufferTex;
+    delete computeScene;
+    delete advectKernel;
+    delete divergenceKernel;
+    delete project2Kernel;
+    delete subgradientKernel;
+    delete addKernel;
+    delete model;
+    delete geo;
 }
 
 void GPUSolver::addVelocity(Vector3 pos, Vector3 amount) {

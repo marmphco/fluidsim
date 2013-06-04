@@ -9,13 +9,13 @@
 
 #include "mjutil.h"
 #include "mjtexture.h"
-#include <vector>
+#include <map>
 
 namespace mcjee {
 
 class Framebuffer {
 private:
-    std::vector<GLuint> renderbuffers;
+    std::map<GLenum, GLuint> renderbuffers;
 	GLuint framebuffer;
     int _width;
     int _height;

@@ -285,5 +285,14 @@ int main(int argc, char **argv) {
     glutMainLoop();
 
     delete smokeShader;
+    delete displayShader;
+    delete colorTarget;
+    delete mainFrameBuffer;
+    delete scene;
+    delete densityTextureData;
+    delete densityTexture;
+    delete fluidDomain;
+    delete solver;
+    delete profiler;
     return 0;
 }

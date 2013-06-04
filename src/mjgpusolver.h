@@ -39,6 +39,7 @@ private:
     Shader *divergenceKernel;
     Shader *project2Kernel;
     Shader *subgradientKernel;
+    Geometry *geo;
     GPUComputeModel *model;
 
     void addStep(Texture2D *in0, Texture2D *in1, Texture2D *out);
@@ -47,6 +48,7 @@ private:
 
 public:
     GPUSolver(int width, int height, int depth);
+    ~GPUSolver();
     void addVelocity(Vector3 pos, Vector3 amount);
     void addDensity(Vector3 pos, Vector3 amount);
     void solve(float dt);

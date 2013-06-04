@@ -12,7 +12,7 @@ Texture::Texture(GLenum target, GLint internalFormat, GLenum format, GLenum type
     target(target), internalFormat(internalFormat), format(format), type(type) {
     glGenTextures(1, &texture);
     bind();
-    // non-sensical defaults, temporary
+    // non-sensical defaults
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);

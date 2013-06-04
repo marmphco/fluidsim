@@ -28,7 +28,6 @@ namespace mcjee {
 
         *srcBuffer = new char[length+1];
 
-        // Should also be catching IO exceptions
         fs.read(*srcBuffer, length);
         (*srcBuffer)[length] = '\0';
 
@@ -75,6 +74,7 @@ namespace mcjee {
         GLuint shader = glCreateShader(type);
         glShaderSource(shader, 1, &csource, NULL);
         glCompileShader(shader);
+        delete source;
 
         GLint status;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &status);
@@ -90,7 +90,6 @@ namespace mcjee {
             message += log;
 
             glDeleteShader(shader);
-            delete source;
             delete log;
             throw ShaderError(message);
         }
