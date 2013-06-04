@@ -12,84 +12,7 @@
 
 namespace mcjee {
 
-class GPUComputeModel : public Renderable {
-public:
-    float width;
-    float height;
-    float depth;
-    float dt;
-
-    Texture *texture0;
-    Texture *texture1;
-    GPUComputeModel(Geometry *geo, Shader *shader) :
-        Renderable(geo, shader, GL_TRIANGLE_STRIP) {
-    }
-    virtual void setupVertexAttributes() {
-        GLint loc = shader->getAttribLocation("vPosition");
-        glEnableVertexAttribArray(loc);
-        glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    }
-    virtual void setupUniforms() {
-        if (shader->uniformEnabled("width")) {
-            GLint loc = shader->getUniformLocation("width");
-            glUniform1f(loc, width);
-        }
-        if (shader->uniformEnabled("height")) {
-            GLint loc = shader->getUniformLocation("height");
-            glUniform1f(loc, height);
-        }
-        if (shader->uniformEnabled("depth")) {
-            GLint loc = shader->getUniformLocation("depth");
-            glUniform1f(loc, depth);
-        }
-        if (shader->uniformEnabled("xunit")) {
-            GLint loc = shader->getUniformLocation("xunit");
-            glUniform1f(loc, 1.0/width);
-        }
-        if (shader->uniformEnabled("yunit")) {
-            GLint loc = shader->getUniformLocation("yunit");
-            glUniform1f(loc, 1.0/(height*depth));
-        }
-        if (shader->uniformEnabled("sliceHeight")) {
-            GLint loc = shader->getUniformLocation("sliceHeight");
-            glUniform1f(loc, 1.0/depth);
-        }
-        if (shader->uniformEnabled("dt")) {
-            GLint loc = shader->getUniformLocation("dt");
-            glUniform1f(loc, dt);
-        }
-
-        if (shader->uniformEnabled("inBuffer")) {
-            GLint tex0loc = shader->getUniformLocation("inBuffer");
-            glUniform1i(tex0loc, 0);
-        } else if (shader->uniformEnabled("buffer0")) {
-            GLint tex0loc = shader->getUniformLocation("buffer0");
-            glUniform1i(tex0loc, 0);
-        } else if (shader->uniformEnabled("divergenceBuffer")) {
-            GLint tex0loc = shader->getUniformLocation("divergenceBuffer");
-            glUniform1i(tex0loc, 0);
-        } else if (shader->uniformEnabled("scalarBuffer")) {
-            GLint tex0loc = shader->getUniformLocation("scalarBuffer");
-            glUniform1i(tex0loc, 0);
-        }
-
-        if (shader->uniformEnabled("velocityBuffer")) {
-            GLint tex1loc = shader->getUniformLocation("velocityBuffer");
-            glUniform1i(tex1loc, 1);
-        } else if (shader->uniformEnabled("buffer1")) {
-            GLint tex1loc = shader->getUniformLocation("buffer1");
-            glUniform1i(tex1loc, 1);
-        } else if (shader->uniformEnabled("pressureBuffer")) {
-            GLint tex1loc = shader->getUniformLocation("pressureBuffer");
-            glUniform1i(tex1loc, 1);
-        }
-
-        glActiveTexture(GL_TEXTURE0);
-        texture0->bind();
-        glActiveTexture(GL_TEXTURE1);
-        texture1->bind();
-    }
-};
+class GPUComputeModel;
 
 class GPUSolver : public FluidSolver {
 private:
@@ -124,12 +47,7 @@ private:
 
 public:
     GPUSolver(int width, int height, int depth);
-    void addVelocityX(int x, int y, int z, float amount);
-    void addVelocityY(int x, int y, int z, float amount);
-    void addVelocityZ(int x, int y, int z, float amount);
     void addVelocity(Vector3 pos, Vector3 amount);
-    void addDensity(int x, int y, int z, float amount);
-    void addDensity(int x, int y, int z, float r, float g, float b);
     void addDensity(Vector3 pos, Vector3 amount);
     void solve(float dt);
     void solveDensities(float dt);

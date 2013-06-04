@@ -13,7 +13,7 @@
 namespace mcjee {
 
 FluidSolver::FluidSolver(int width, int height, int depth) :
-    _width(width), _height(height), _depth(depth) {
+    _width(width), _height(height), _depth(depth), iterations(16) {
 
 }
 
@@ -22,7 +22,7 @@ FluidSolver::~FluidSolver() {
 }
 
 CPUSolver::CPUSolver(int width, int height, int depth) :
-    FluidSolver(width, height, depth), iterations(4) {
+    FluidSolver(width, height, depth) {
     density1 = new float[width*height*depth];
     density0 = new float[width*height*depth];
     vx1 = new float[width*height*depth];

@@ -169,6 +169,9 @@ void render(void) {
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
     densityTexture->initData((float *)0);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    //densityTextureData = new GLfloat[width*width*width*4];
+    //solver->fillDensityData(densityTextureData);
+    //densityTexture->initData(densityTextureData);
     profiler->end("transfer voxels");
 
     profiler->start("render");
@@ -259,7 +262,10 @@ int main(int argc, char **argv) {
     init();
 
     GLUI *gui = GLUI_Master.create_glui("Tools");
-    gui->add_statictext("Profiler");
+    gui->add_spinner("Velocity Scale");
+    gui->add_spinner("Density Scale");
+    gui->add_spinner("Iterations");
+    gui->add_listbox("Shading ");
     profiler = new Profiler();
     profiler->addProfile("solve density");
     profiler->addProfile("solve velocity");

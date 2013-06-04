@@ -15,6 +15,66 @@
 
 namespace mcjee {
 
+class GPUComputeModel : public Renderable {
+public:
+    float width;
+    float height;
+    float depth;
+    float dt;
+
+    Texture *texture0;
+    Texture *texture1;
+    GPUComputeModel(Geometry *geo, Shader *shader) :
+        Renderable(geo, shader, GL_TRIANGLE_STRIP) {
+    }
+    virtual void setupVertexAttributes() {
+        GLint loc = shader->getAttribLocation("vPosition");
+        glEnableVertexAttribArray(loc);
+        glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
+    }
+    virtual void setupUniforms() {
+        if (shader->uniformEnabled("width"))
+            glUniform1f(shader->getUniformLocation("width"), width);
+        if (shader->uniformEnabled("height"))
+            glUniform1f(shader->getUniformLocation("height"), height);
+        if (shader->uniformEnabled("depth"))
+            glUniform1f(shader->getUniformLocation("depth"), depth);
+        if (shader->uniformEnabled("xunit"))
+            glUniform1f(shader->getUniformLocation("xunit"), 1.0/width);
+        if (shader->uniformEnabled("yunit"))
+            glUniform1f(shader->getUniformLocation("yunit"), 1.0/(height*depth));
+        if (shader->uniformEnabled("sliceHeight"))
+            glUniform1f(shader->getUniformLocation("sliceHeight"), 1.0/depth);
+        if (shader->uniformEnabled("dt"))
+            glUniform1f(shader->getUniformLocation("dt"), dt);
+
+        GLint tex0loc = -1;
+        if (shader->uniformEnabled("inBuffer")) 
+            tex0loc = shader->getUniformLocation("inBuffer");
+        else if (shader->uniformEnabled("buffer0")) 
+            tex0loc = shader->getUniformLocation("buffer0");
+        else if (shader->uniformEnabled("divergenceBuffer")) 
+            tex0loc = shader->getUniformLocation("divergenceBuffer");
+        else if (shader->uniformEnabled("scalarBuffer")) 
+            tex0loc = shader->getUniformLocation("scalarBuffer");
+        if (tex0loc != -1) glUniform1i(tex0loc, 0);
+
+        GLint tex1loc = -1;
+        if (shader->uniformEnabled("velocityBuffer")) 
+            tex1loc = shader->getUniformLocation("velocityBuffer");
+        else if (shader->uniformEnabled("buffer1")) 
+            tex1loc = shader->getUniformLocation("buffer1");
+        else if (shader->uniformEnabled("pressureBuffer")) 
+            tex1loc = shader->getUniformLocation("pressureBuffer");
+        if (tex1loc != -1) glUniform1i(tex1loc, 1);
+
+        glActiveTexture(GL_TEXTURE0);
+        texture0->bind();
+        glActiveTexture(GL_TEXTURE1);
+        texture1->bind();
+    }
+};
+
 GPUSolver::GPUSolver(int width, int height, int depth) :
     FluidSolver(width, height, depth) {
 
@@ -50,17 +110,17 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
 
     pressureTex0 = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
     pressureTex0->initData(pressure);
-    pressureTex0->interpolation(GL_NEAREST);
+    pressureTex0->interpolation(GL_LINEAR);
     pressureTex0->wrap(GL_CLAMP_TO_BORDER);
 
     pressureTex1 = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
     pressureTex1->initData(pressure);
-    pressureTex1->interpolation(GL_NEAREST);
+    pressureTex1->interpolation(GL_LINEAR);
     pressureTex1->wrap(GL_CLAMP_TO_BORDER);
 
     divergenceTex = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
     divergenceTex->initData(divergence);
-    divergenceTex->interpolation(GL_NEAREST);
+    divergenceTex->interpolation(GL_LINEAR);
     divergenceTex->wrap(GL_CLAMP_TO_BORDER);
 
     GLenum drawTarget = GL_COLOR_ATTACHMENT0;
@@ -111,36 +171,10 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     computeScene->add(model);
 }
 
-void GPUSolver::addVelocityX(int x, int y, int z, float amount) {
-    velocityBuffer[idv(x, y, z, 0)] += amount/_width;
-}
-
-void GPUSolver::addVelocityY(int x, int y, int z, float amount) {
-    velocityBuffer[idv(x, y, z, 1)] += amount/_height;
-}
-
-void GPUSolver::addVelocityZ(int x, int y, int z, float amount) {
-    velocityBuffer[idv(x, y, z, 2)] += amount/_depth;
-}
-
 void GPUSolver::addVelocity(Vector3 pos, Vector3 amount) {
     velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 0)] += amount.x/_width;
     velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 1)] += amount.y/_height;
     velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 2)] += amount.z/_depth;
-}
-
-void GPUSolver::addDensity(int x, int y, int z, float amount) {
-    densityBuffer[idv4(x, y, z, 0)] += amount;
-    densityBuffer[idv4(x, y, z, 1)] += amount;
-    densityBuffer[idv4(x, y, z, 2)] += amount;
-    densityBuffer[idv4(x, y, z, 3)] += 0.5;
-}
-
-void GPUSolver::addDensity(int x, int y, int z, float r, float g, float b) {
-    densityBuffer[idv4(x, y, z, 0)] += r;
-    densityBuffer[idv4(x, y, z, 1)] += g;
-    densityBuffer[idv4(x, y, z, 2)] += b;
-    densityBuffer[idv4(x, y, z, 3)] += 0.5;
 }
 
 void GPUSolver::addDensity(Vector3 pos, Vector3 amount) {
@@ -174,7 +208,7 @@ void GPUSolver::projectStep() {
 
     pressureTex0->initData((float *)0);
     model->shader = project2Kernel;
-    for (int n = 0; n < 16; ++n) {
+    for (int n = 0; n < iterations; ++n) {
         model->texture0 = divergenceTex;
         model->texture1 = pressureTex0;
         outputFramebuffer->addRenderTarget(pressureTex1, GL_COLOR_ATTACHMENT0);
@@ -194,27 +228,8 @@ void GPUSolver::solve(float dt) {
     glViewport(0, 0, _width, _height*_depth);
     model->dt = dt;
 
-    densityBufferTex->initData(densityBuffer);
-    addStep(densityTex0, densityBufferTex, densityTex1);
-    swapt(densityTex0, densityTex1);
-
-    advectStep(densityTex0, densityTex1);
-    swapt(densityTex0, densityTex1);
-
-    velocityBufferTex->initData(velocityBuffer);
-    addStep(velocityTex0, velocityBufferTex, velocityTex1);
-    swapt(velocityTex0, velocityTex1);
-
-    projectStep();
-
-    advectStep(velocityTex0, velocityTex1);
-    swapt(velocityTex0, velocityTex1);
-
-    projectStep();
-
-    //clear add buffers
-    memset(densityBuffer, 0, sizeof(float)*_width*_height*_depth*4);
-    memset(velocityBuffer, 0, sizeof(float)*_width*_height*_depth*3);
+    solveDensities(dt);
+    solveVelocities(dt);
 }
 
 void GPUSolver::solveDensities(float dt) {
@@ -224,7 +239,6 @@ void GPUSolver::solveDensities(float dt) {
     densityBufferTex->initData(densityBuffer);
     addStep(densityTex0, densityBufferTex, densityTex1);
     swapt(densityTex0, densityTex1);
-
     advectStep(densityTex0, densityTex1);
     swapt(densityTex0, densityTex1);
 
@@ -238,12 +252,9 @@ void GPUSolver::solveVelocities(float dt) {
     velocityBufferTex->initData(velocityBuffer);
     addStep(velocityTex0, velocityBufferTex, velocityTex1);
     swapt(velocityTex0, velocityTex1);
-
     projectStep();
-
     advectStep(velocityTex0, velocityTex1);
     swapt(velocityTex0, velocityTex1);
-
     projectStep();
 
     memset(velocityBuffer, 0, sizeof(float)*_width*_height*_depth*3);

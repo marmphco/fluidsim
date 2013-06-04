@@ -21,6 +21,8 @@ protected:
     int _height;
     int _depth;
 public:
+    int iterations;
+
     FluidSolver(int width, int height, int depth);
     virtual ~FluidSolver();
 
@@ -49,8 +51,6 @@ private:
     void advect(float *next, float *prev, float *vx, float *vy, float *vz, float dt);
     void project(float *vx, float *vy, float *vz, float *div, float *temp);
 public:
-    int iterations;
-
     CPUSolver(int width, int height, int depth);
     ~CPUSolver();
 

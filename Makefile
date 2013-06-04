@@ -18,7 +18,7 @@ SHADERDIR = shaders
 OBJDIR = obj
 BINDIR = bin
 
-_CSRC = final.cpp mjterrain.cpp mjshader.cpp mjrenderable.cpp\
+_CSRC = final.cpp mjshader.cpp mjrenderable.cpp\
         mjutil.cpp mjscene.cpp mjcamera.cpp mjlight.cpp\
         mjloader.cpp mjgeometry.cpp mjfluid.cpp\
         mjtexture.cpp mjmatrix.cpp mjvector.cpp mjframebuffer.cpp\
