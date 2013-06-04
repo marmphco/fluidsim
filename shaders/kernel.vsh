@@ -1,5 +1,5 @@
 /*
-    divergence.vsh
+    kernel.vsh
     Matthew Jee
     mcjee@ucsc.edu
 */

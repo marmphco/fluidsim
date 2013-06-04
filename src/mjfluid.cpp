@@ -162,24 +162,14 @@ void CPUSolver::project(float *vx, float *vy, float *vz, float *div, float *temp
     }
 }
 
-void CPUSolver::addDensity(int x, int y, int z, float amount) {
-    density0[idx(x, y, z)] += amount;
+void CPUSolver::addVelocity(Vector3 pos, Vector3 amount) {
+    vx0[(int)idx(pos.x, pos.y, pos.z)] += amount.x;
+    vy0[(int)idx(pos.x, pos.y, pos.z)] += amount.y;
+    vz0[(int)idx(pos.x, pos.y, pos.z)] += amount.z;
 }
 
-void CPUSolver::addDensity(int x, int y, int z, float r, float, float) {
-    density0[idx(x, y, z)] += r;
-}
-
-void CPUSolver::addVelocityX(int x, int y, int z, float amount) {
-    vx0[idx(x, y, z)] += amount;
-}
-
-void CPUSolver::addVelocityY(int x, int y, int z, float amount) {
-    vy0[idx(x, y, z)] += amount;
-}
-
-void CPUSolver::addVelocityZ(int x, int y, int z, float amount) {
-    vy0[idx(x, y, z)] += amount;
+void CPUSolver::addDensity(Vector3 pos, Vector3 amount) {
+    density0[(int)idx(pos.x, pos.y, pos.z)] += amount.x;
 }
 
 void CPUSolver::solve(float dt) {
@@ -207,13 +197,32 @@ void CPUSolver::solve(float dt) {
     swap(vz1, vz0);
 }
 
+void CPUSolver::solveDensities(float dt) {
+    advect(density1, density0, vx0, vy0, vz0, dt);
+    swap(density1, density0);
+}
+
+void CPUSolver::solveVelocities(float dt) {
+    project(vx0, vy0, vz0, vx1, vy1);
+
+    advect(vx1, vx0, vx0, vy0, vz0, dt);
+    advect(vy1, vy0, vx0, vy0, vz0, dt);
+    advect(vz1, vz0, vx0, vy0, vz0, dt);
+
+    project(vx1, vy1, vz1, vx0, vy0);
+    swap(vx1, vx0);
+    swap(vy1, vy0);
+    swap(vz1, vz0);
+}
+
 void CPUSolver::fillDensityData(float *out) {
     for (int i = 0; i < _width; ++i) {
         for (int j = 0; j < _height; ++j) {
             for (int k = 0; k < _depth; ++k) {
-                out[idx(i, j, k)*3] = density1[idx(i, j, k)];
-                out[idx(i, j, k)*3+1] = density1[idx(i, j, k)];
-                out[idx(i, j, k)*3+2] = density1[idx(i, j, k)];
+                out[idx(i, j, k)*4] = density1[idx(i, j, k)];
+                out[idx(i, j, k)*4+1] = density1[idx(i, j, k)];
+                out[idx(i, j, k)*4+2] = density1[idx(i, j, k)];
+                out[idx(i, j, k)*4+3] = density1[idx(i, j, k)];
             }
         }
     }

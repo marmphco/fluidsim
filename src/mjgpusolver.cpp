@@ -83,11 +83,11 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     subgradientKernel = new Shader();
     addKernel = new Shader();
     try {
-        advectKernel->compile("shaders/advect.vsh", "shaders/advect.fsh");
-        divergenceKernel->compile("shaders/divergence.vsh", "shaders/divergence.fsh");
-        project2Kernel->compile("shaders/project2.vsh", "shaders/project2.fsh");
-        subgradientKernel->compile("shaders/subgradient.vsh", "shaders/subgradient.fsh");
-        addKernel->compile("shaders/add.vsh", "shaders/add.fsh");
+        advectKernel->compile("shaders/kernel.vsh", "shaders/advect.fsh");
+        divergenceKernel->compile("shaders/kernel.vsh", "shaders/divergence.fsh");
+        project2Kernel->compile("shaders/kernel.vsh", "shaders/project2.fsh");
+        subgradientKernel->compile("shaders/kernel.vsh", "shaders/subgradient.fsh");
+        addKernel->compile("shaders/kernel.vsh", "shaders/add.fsh");
     } catch (ShaderError &e) {
         std::cerr << e.what() << std::endl;
     }

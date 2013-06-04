@@ -11,7 +11,6 @@
 #include "libglui/glui.h"
 #pragma clang diagnostic pop
 #include "mjfluid.h"
-#include "mjhybridsolver.h"
 #include "mjgpusolver.h"
 #include <cmath>
 #include <iostream>

@@ -24,12 +24,7 @@ public:
     FluidSolver(int width, int height, int depth);
     virtual ~FluidSolver();
 
-    virtual void addVelocityX(int x, int y, int z, float amount) = 0;
-    virtual void addVelocityY(int x, int y, int z, float amount) = 0;
-    virtual void addVelocityZ(int x, int y, int z, float amount) = 0;
     virtual void addVelocity(Vector3 pos, Vector3 amount) = 0;
-    virtual void addDensity(int x, int y, int z, float amount) = 0;
-    virtual void addDensity(int x, int y, int z, float r, float g, float b) = 0;
     virtual void addDensity(Vector3 pos, Vector3 amount) = 0;
     virtual void solve(float dt) = 0;
     virtual void solveDensities(float dt) = 0;
@@ -59,12 +54,11 @@ public:
     CPUSolver(int width, int height, int depth);
     ~CPUSolver();
 
-    void addVelocityX(int x, int y, int z, float amount);
-    void addVelocityY(int x, int y, int z, float amount);
-    void addVelocityZ(int x, int y, int z, float amount);
-    void addDensity(int x, int y, int z, float amount);
-    void addDensity(int x, int y, int z, float r, float g, float b);
+    void addVelocity(Vector3 pos, Vector3 amount);
+    void addDensity(Vector3 pos, Vector3 amount);
     void solve(float dt);
+    void solveDensities(float dt);
+    void solveVelocities(float dt);
 
     void fillDensityData(float *out);
     void fillVelocityData(float *out);

@@ -22,15 +22,16 @@ _CSRC = final.cpp mjterrain.cpp mjshader.cpp mjrenderable.cpp\
         mjutil.cpp mjscene.cpp mjcamera.cpp mjlight.cpp\
         mjloader.cpp mjgeometry.cpp mjfluid.cpp\
         mjtexture.cpp mjmatrix.cpp mjvector.cpp mjframebuffer.cpp\
-        mjhybridsolver.cpp mjgpusolver.cpp mjprofiler.cpp
+        mjgpusolver.cpp mjprofiler.cpp
 
 _SHADERS = shader.fsh shader.vsh\
            display.vsh display.fsh\
-           add.vsh add.fsh\
-           advect.vsh advect.fsh\
-           divergence.vsh divergence.fsh\
-           project2.vsh project2.fsh\
-           subgradient.vsh subgradient.fsh\
+           add.fsh\
+           advect.fsh\
+           divergence.fsh\
+           project2.fsh\
+           subgradient.fsh\
+           kernel.vsh
 
 EXECUTABLE = ${BINDIR}/${EXECNAME}
 BUNDLE = ${BINDIR}/${BUNDLENAME}.app
