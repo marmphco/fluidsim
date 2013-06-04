@@ -28,12 +28,12 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     memset(divergence, 0, sizeof(float)*width*height*depth);
     memset(pressure, 0, sizeof(float)*width*height*depth);
 
-    densityTex0 = new Texture2D(GL_RGBA32F_ARB, GL_RGBA, GL_FLOAT, width, height*depth);
+    densityTex0 = new Texture2D(GL_RGBA, GL_RGBA, GL_FLOAT, width, height*depth);
     densityTex0->initData(densityBuffer);
     densityTex0->interpolation(GL_LINEAR);
     densityTex0->wrap(GL_CLAMP_TO_BORDER);
 
-    densityTex1 = new Texture2D(GL_RGBA32F_ARB, GL_RGBA, GL_FLOAT, width, height*depth);
+    densityTex1 = new Texture2D(GL_RGBA, GL_RGBA, GL_FLOAT, width, height*depth);
     densityTex1->initData(densityBuffer);
     densityTex1->interpolation(GL_LINEAR);
     densityTex1->wrap(GL_CLAMP_TO_BORDER);
@@ -69,7 +69,7 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     glDrawBuffers(1, &drawTarget);
     outputFramebuffer->unbind();
 
-    densityBufferTex = new Texture2D(GL_RGBA32F_ARB, GL_RGBA, GL_FLOAT, width, height*depth);
+    densityBufferTex = new Texture2D(GL_RGBA, GL_RGBA, GL_FLOAT, width, height*depth);
     densityBufferTex->initData(densityBuffer);
     velocityBufferTex = new Texture2D(GL_RGB, GL_RGB, GL_FLOAT, width, height*depth);
     velocityBufferTex->initData(velocityBuffer);

@@ -173,12 +173,13 @@ void render(void) {
     profiler->end("transfer voxels");
 
     profiler->start("render");
-    GLUI_Master.auto_set_viewport();
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     scene->render();
     glDisable(GL_CULL_FACE);
+    GLUI_Master.auto_set_viewport();
     colorTarget->present(displayShader);
     glutSwapBuffers();
     profiler->end("render");
@@ -220,7 +221,7 @@ void init(void) {
 
     densityTextureData = new GLfloat[width*width*width*4];
     memset(densityTextureData, 0, sizeof(float)*width*width*width*4);
-    densityTexture = new Texture3D(GL_RGBA32F_ARB, GL_RGBA, GL_FLOAT, width, width, width);
+    densityTexture = new Texture3D(GL_RGBA, GL_RGBA, GL_FLOAT, width, width, width);
     densityTexture->interpolation(GL_LINEAR);
     densityTexture->initData(densityTextureData);
 
