@@ -24,14 +24,11 @@ _CSRC = final.cpp mjshader.cpp mjrenderable.cpp\
         mjtexture.cpp mjmatrix.cpp mjvector.cpp mjframebuffer.cpp\
         mjgpusolver.cpp mjprofiler.cpp
 
-_SHADERS = shader.fsh shader.vsh\
+_SHADERS = colorBlend.fsh colorBlend.vsh\
            display.vsh display.fsh\
-           add.fsh\
-           advect.fsh\
-           divergence.fsh\
-           project2.fsh\
-           subgradient.fsh\
-           kernel.vsh
+           add.fsh advect.fsh divergence.fsh project2.fsh\
+           subgradient.fsh kernel.vsh\
+           rayPass.vsh rayPass.fsh
 
 EXECUTABLE = ${BINDIR}/${EXECNAME}
 BUNDLE = ${BINDIR}/${BUNDLENAME}.app

@@ -43,6 +43,7 @@ public:
 
 static Shader *displayShader;
 static Shader *smokeShader;
+static Shader *rayPass;
 static Geometry *fluidDomainGeo;
 static Model *fluidDomain;
 static Scene *scene;
@@ -52,6 +53,7 @@ static int mainWindow;
 static GLuint windowFramebuffer;
 static Profiler *profiler;
 
+static Texture2D *rayBuffer;
 static Texture2D *colorTarget;
 static Framebuffer *mainFrameBuffer;
 static Texture3D *densityTexture;
@@ -176,11 +178,37 @@ void render(void) {
 
     profiler->start("render");
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-
+    
     glEnable(GL_CULL_FACE);
-    glCullFace(GL_BACK);
+    // ray data pass 1 be careful about blending pl0x
+    glCullFace(GL_FRONT);
+    fluidDomain->shader = rayPass;
+    mainFrameBuffer->addRenderTarget(rayBuffer, GL_COLOR_ATTACHMENT0);
+    scene->sFactorA = GL_ONE;
+    scene->dFactorA = GL_ZERO;
     scene->render();
-    glDisable(GL_CULL_FACE);
+
+    // ray data pass 2
+    glCullFace(GL_BACK);
+    scene->sFactorRGB = GL_ONE;
+    scene->dFactorRGB = GL_ZERO;
+    scene->sFactorA = GL_ONE;
+    scene->dFactorA = GL_ONE;
+    scene->blendEquationA = GL_FUNC_SUBTRACT;
+    scene->render();
+
+    // composite pass
+    fluidDomain->shader = smokeShader;
+    mainFrameBuffer->addRenderTarget(colorTarget, GL_COLOR_ATTACHMENT0);
+    scene->sFactorRGB = GL_SRC_ALPHA;
+    scene->dFactorRGB = GL_ONE_MINUS_SRC_ALPHA;
+    scene->sFactorA = GL_SRC_ALPHA;
+    scene->dFactorA = GL_ONE_MINUS_SRC_ALPHA;
+    scene->blendEquationA = GL_FUNC_ADD;
+    scene->render();
+
+    //present framebuffer
+    //glDisable(GL_CULL_FACE);
     GLUI_Master.auto_set_viewport();
     colorTarget->present(displayShader);
     glutSwapBuffers();
@@ -195,15 +223,19 @@ void idle(void) {
 void compileShaders(void) {
     smokeShader = new Shader();
     displayShader = new Shader();
+    rayPass = new Shader();
     try {
-        smokeShader->compile("shaders/shader.vsh", "shaders/shader.fsh");
+        smokeShader->compile("shaders/colorBlend.vsh", "shaders/colorBlend.fsh");
         displayShader->compile("shaders/display.vsh", "shaders/display.fsh");
+        rayPass->compile("shaders/rayPass.vsh", "shaders/rayPass.fsh");
     } catch (mcjee::ShaderError &e) {
         cout << e.what() << endl;
     }
 }
 
 void init(void) {
+    rayBuffer = new Texture2D(GL_RGBA, GL_RGBA, GL_FLOAT, WINDOW_WIDTH, WINDOW_HEIGHT);
+    rayBuffer->initData((float *)0);
     colorTarget = new Texture2D(GL_RGBA, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, WINDOW_WIDTH, WINDOW_HEIGHT);
     colorTarget->initData((float *)0);
 

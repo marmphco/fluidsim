@@ -13,8 +13,12 @@ namespace mcjee {
         specularMultiplier(1.0),
         backgroundColor(Vector4()),
         blendEnabled(false),
-        sFactor(GL_SRC_ALPHA),
-        dFactor(GL_ONE_MINUS_SRC_ALPHA) {
+        sFactorRGB(GL_SRC_ALPHA),
+        dFactorRGB(GL_ONE_MINUS_SRC_ALPHA),
+        sFactorA(GL_SRC_ALPHA),
+        dFactorA(GL_ONE_MINUS_SRC_ALPHA),
+        blendEquationRGB(GL_FUNC_ADD),
+        blendEquationA(GL_FUNC_ADD) {
     }
 
     Scene::~Scene() {
@@ -39,7 +43,8 @@ namespace mcjee {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         if (blendEnabled) {
             glEnable(GL_BLEND);
-            glBlendFunc(sFactor, dFactor);
+            glBlendEquationSeparate(blendEquationRGB, blendEquationA);
+            glBlendFuncSeparate(sFactorRGB, dFactorRGB, sFactorA, dFactorA);
         } else {
             glDisable(GL_BLEND);
         }

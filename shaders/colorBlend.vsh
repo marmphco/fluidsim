@@ -1,5 +1,5 @@
 /*
-    terrainShader.vsh
+    shader.vsh
     Matthew Jee
     mcjee@ucsc.edu
 */
@@ -17,7 +17,6 @@ uniform mat4 modelMatrix;
 uniform mat4 projectionMatrix;
 
 void main() {
-    //fPosition = viewMatrix * modelMatrix * vPosition;
     fPosition = vPosition;
     fTexCoord = vTexCoord;
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vPosition;

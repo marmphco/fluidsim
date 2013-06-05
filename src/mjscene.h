@@ -32,8 +32,12 @@ namespace mcjee {
 
         Vector4 backgroundColor;
         bool blendEnabled;
-        GLenum sFactor;
-        GLenum dFactor;
+        GLenum sFactorRGB;
+        GLenum dFactorRGB;
+        GLenum sFactorA;
+        GLenum dFactorA;
+        GLenum blendEquationRGB;
+        GLenum blendEquationA;
 
         Scene(Framebuffer *);
         ~Scene();
