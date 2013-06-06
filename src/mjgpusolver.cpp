@@ -126,6 +126,7 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
 
     GLenum drawTarget = GL_COLOR_ATTACHMENT0;
     outputFramebuffer = new Framebuffer(width, height*depth);
+    outputFramebuffer->backgroundColor = Vector4();
     outputFramebuffer->bind();
     glDrawBuffers(1, &drawTarget);
     outputFramebuffer->unbind();

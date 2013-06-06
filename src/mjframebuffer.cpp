@@ -8,7 +8,8 @@
 
 namespace mcjee {
 
-Framebuffer::Framebuffer(float width, float height) {
+Framebuffer::Framebuffer(float width, float height) :
+    backgroundColor(Vector4(0.0, 0.0, 0.0, 0.0)) {
 	glGenFramebuffers(1, &framebuffer);
     _width = width;
     _height = height;
@@ -49,6 +50,13 @@ void Framebuffer::bind() {
 
 void Framebuffer::unbind() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void Framebuffer::clear(GLbitfield mask) {
+    bind();
+    glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
+    glClear(mask);
+    unbind();
 }
 
 }

@@ -39,12 +39,10 @@ namespace mcjee {
     }
 
     void Scene::render() {
-        framebuffer->bind();
         if (clearEnabled) {
-            glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            framebuffer->clear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         }
-        //glClear(GL_DEPTH_BUFFER_BIT);
+        framebuffer->bind();
         if (blendEnabled) {
             glEnable(GL_BLEND);
             glBlendEquationSeparate(blendEquationRGB, blendEquationA);

@@ -8,6 +8,7 @@
 #define MJ_FRAMEBUFFER_H
 
 #include "mjutil.h"
+#include "mjvector.h"
 #include "mjtexture.h"
 #include <map>
 
@@ -21,6 +22,8 @@ private:
     int _height;
 
 public:
+    Vector4 backgroundColor;
+
 	Framebuffer(float width, float height);
 	~Framebuffer();
 
@@ -29,6 +32,8 @@ public:
 
 	void bind();
 	void unbind();
+
+    void clear(GLbitfield mask);
 };
 
 }

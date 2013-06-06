@@ -228,13 +228,13 @@ void init(void) {
     mainFrameBuffer = new Framebuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
     mainFrameBuffer->addRenderTarget(colorTarget, GL_COLOR_ATTACHMENT0);
     mainFrameBuffer->addRenderTarget(GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT);
+    mainFrameBuffer->backgroundColor = Vector4(1.0, 1.0, 1.0, 1.0);
 
     scene = new Scene(mainFrameBuffer);
     scene->camera.perspective(-1.0f, 1.0f, -1.0f, 1.0f, 8.0f, 10.0f);
     scene->camera.position = Vector3(0.0, 0.0, 10.0);
     scene->camera.position = Vector3(0.0, 4.4, 8.0);
     scene->camera.rotateLocal(-30, X_AXIS);
-    scene->backgroundColor = Vector4(1.0, 1.0, 1.0, 1.0);
     scene->blendEnabled = true;
 
     fluidDomainGeo = loadCube(1.0, 1.0, 1.0);
