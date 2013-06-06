@@ -39,14 +39,8 @@ public:
         glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
     }
     virtual void setupUniforms() {
-        GLint loc = shader->getUniformLocation("rayBuffer");
-        glUniform1i(loc, 1);
-
-        loc = shader->getUniformLocation("texture0");
+        GLint loc = shader->getUniformLocation("texture0");
         glUniform1i(loc, 0);
-        
-        glActiveTexture(GL_TEXTURE1);
-        rayBuffer->bind();
 
         glActiveTexture(GL_TEXTURE0);
         densityBuffer->bind();
@@ -65,7 +59,6 @@ static int mainWindow;
 static GLuint windowFramebuffer;
 static Profiler *profiler;
 
-static Texture2D *rayBuffer;
 static Texture2D *colorTarget;
 static Framebuffer *mainFrameBuffer;
 static Texture3D *densityTexture;
@@ -191,28 +184,9 @@ void render(void) {
     profiler->start("render");
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
     glEnable(GL_CULL_FACE);
-    // ray data pass 1 be careful about blending pl0x
-    glCullFace(GL_FRONT);
-    fluidDomain->shader = rayPass;
-    mainFrameBuffer->addRenderTarget(rayBuffer, GL_COLOR_ATTACHMENT0);
-    scene->sFactorRGB = GL_ONE;
-    scene->dFactorRGB = GL_ZERO;
-    scene->sFactorA = GL_ONE;
-    scene->dFactorA = GL_ZERO;
-    scene->render();
-
-    // ray data pass 2
-    glCullFace(GL_BACK);
-    scene->clearEnabled = false;
-    scene->sFactorRGB = GL_ONE;
-    scene->dFactorRGB = GL_ZERO;
-    scene->sFactorA = GL_ONE;
-    scene->dFactorA = GL_ONE;
-    scene->blendEquationA = GL_FUNC_REVERSE_SUBTRACT;
-    scene->render();
-    scene->clearEnabled = true;
 
     // composite pass
+    glCullFace(GL_BACK);
     fluidDomain->shader = smokeShader;
     mainFrameBuffer->addRenderTarget(colorTarget, GL_COLOR_ATTACHMENT0);
     scene->sFactorRGB = GL_SRC_ALPHA;
@@ -224,7 +198,7 @@ void render(void) {
 
     //present framebuffer
     GLUI_Master.auto_set_viewport();
-    rayBuffer->present(displayShader);
+    colorTarget->present(displayShader);
     glutSwapBuffers();
     profiler->end("render");
 }
@@ -248,8 +222,6 @@ void compileShaders(void) {
 }
 
 void init(void) {
-    rayBuffer = new Texture2D(GL_RGBA, GL_RGBA, GL_FLOAT, WINDOW_WIDTH, WINDOW_HEIGHT);
-    rayBuffer->initData((float *)0);
     colorTarget = new Texture2D(GL_RGBA, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, WINDOW_WIDTH, WINDOW_HEIGHT);
     colorTarget->initData((float *)0);
 
@@ -277,7 +249,6 @@ void init(void) {
     fluidDomain->init();
     fluidDomain->center = Vector3(0.5, 0.5, 0.5);
     fluidDomain->scaleUniform(1.0);
-    fluidDomain->rayBuffer = rayBuffer;
     fluidDomain->densityBuffer = densityTexture;
     scene->add(fluidDomain);
 

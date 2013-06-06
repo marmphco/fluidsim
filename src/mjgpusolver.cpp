@@ -111,17 +111,17 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
 
     pressureTex0 = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
     pressureTex0->initData(pressure);
-    pressureTex0->interpolation(GL_LINEAR);
+    pressureTex0->interpolation(GL_NEAREST);
     pressureTex0->wrap(GL_CLAMP_TO_BORDER);
 
     pressureTex1 = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
     pressureTex1->initData(pressure);
-    pressureTex1->interpolation(GL_LINEAR);
+    pressureTex1->interpolation(GL_NEAREST);
     pressureTex1->wrap(GL_CLAMP_TO_BORDER);
 
     divergenceTex = new Texture2D(GL_RED, GL_RED, GL_FLOAT, width, height*depth);
     divergenceTex->initData(divergence);
-    divergenceTex->interpolation(GL_LINEAR);
+    divergenceTex->interpolation(GL_NEAREST);
     divergenceTex->wrap(GL_CLAMP_TO_BORDER);
 
     GLenum drawTarget = GL_COLOR_ATTACHMENT0;

@@ -8,12 +8,12 @@
 
 varying vec4 fTexCoord;
 uniform sampler3D texture0;
-uniform sampler2D rayBuffer;
+//uniform sampler2D rayBuffer;
 
 uniform mat4 inverseViewMatrix;
 uniform mat4 inverseModelMatrix;
 
-//const int samples = 64;
+const int samples = 64;
 const float fsamples = 64.0;
 const float samplestep = 1.7320508/fsamples;
 
@@ -22,7 +22,7 @@ const vec3 greenChannel = vec3(0.0, 1.0, 0.0);
 const vec3 blueChannel = vec3(0.0, 0.0, 1.0);
 const vec3 alphaChannel = vec3(1.0, 1.0, 1.0);
 
-/*void main() {
+void main() {
     //transform to texture space
     mat4 inverseModelViewMatrix = transpose(inverseModelMatrix * inverseViewMatrix);
     vec4 eyeCoord = vec4(0, 0, 0, 1.0) * inverseModelViewMatrix;
@@ -46,13 +46,12 @@ const vec3 alphaChannel = vec3(1.0, 1.0, 1.0);
             break;
         }
     }
-    vec2 coord = vec2(gl_FragCoord.x/640, gl_FragCoord.y/640);
-    vec4 shit = texture2D(rayBuffer, coord);
 
     gl_FragColor = min(color, vec4(1.0));
 }
-*/
 
+
+/*
 void main() {
     //transform to texture space
     mat4 inverseModelViewMatrix = transpose(inverseModelMatrix * inverseViewMatrix);
@@ -64,7 +63,7 @@ void main() {
     vec4 rayData = texture2D(rayBuffer, coord);
     float dist = rayData.a;
 
-    int samples = int(64.0*dist/1.7320508);
+    int samples = int(ceil(64.0*dist/1.7320508));
     for (int i = 0; i < samples; ++i) {     
         float s = float(i)*samplestep; //should travel sqrt(3) distance
         vec3 pos = (fTexCoord+ray*s).xyz;
@@ -81,6 +80,6 @@ void main() {
             break;
         }
     }
-    gl_FragColor = vec4(vec3(dist, dist, dist)*0.1, 1.0);
-    //gl_FragColor = min(color, vec4(1.0));
+    gl_FragColor = min(color, vec4(1.0));
 }
+*/
