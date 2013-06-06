@@ -61,12 +61,14 @@ template <typename dataType>
 void Texture2D::initData(dataType *data) {
     bind();
     glTexImage2D(target, 0, internalFormat, width, height, 0, format, type, data);
+    unbind();
 }
 
 template <typename dataType>
 void Texture3D::initData(dataType *data) {
     bind();
     glTexImage3D(target, 0, internalFormat, width, height, depth, 0, format, type, data);
+    unbind();
 }
 
 }

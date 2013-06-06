@@ -88,6 +88,7 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     memset(divergence, 0, sizeof(float)*width*height*depth);
     memset(pressure, 0, sizeof(float)*width*height*depth);
 
+    glActiveTexture(GL_TEXTURE0);
     densityTex0 = new Texture2D(GL_RGBA, GL_RGBA, GL_FLOAT, width, height*depth);
     densityTex0->initData(densityBuffer);
     densityTex0->interpolation(GL_LINEAR);
@@ -133,6 +134,7 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     densityBufferTex->initData(densityBuffer);
     velocityBufferTex = new Texture2D(GL_RGB, GL_RGB, GL_FLOAT, width, height*depth);
     velocityBufferTex->initData(velocityBuffer);
+    velocityBufferTex->unbind();
 
     computeScene = new Scene(outputFramebuffer);
     computeScene->backgroundColor = Vector4();
@@ -232,6 +234,7 @@ void GPUSolver::projectStep() {
     computeScene->render();
 
     pressureTex0->initData((float *)0);
+    pressureTex0->unbind();
     model->shader = project2Kernel;
     for (int n = 0; n < iterations; ++n) {
         model->texture0 = divergenceTex;
@@ -262,6 +265,7 @@ void GPUSolver::solveDensities(float dt) {
     model->dt = dt;
 
     densityBufferTex->initData(densityBuffer);
+    densityBufferTex->unbind();
     addStep(densityTex0, densityBufferTex, densityTex1);
     swapt(densityTex0, densityTex1);
     advectStep(densityTex0, densityTex1);
@@ -275,6 +279,7 @@ void GPUSolver::solveVelocities(float dt) {
     model->dt = dt;
 
     velocityBufferTex->initData(velocityBuffer);
+    velocityBufferTex->unbind();
     addStep(velocityTex0, velocityBufferTex, velocityTex1);
     swapt(velocityTex0, velocityTex1);
     projectStep();

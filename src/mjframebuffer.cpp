@@ -40,6 +40,7 @@ void Framebuffer::addRenderTarget(Texture2D *texture, GLenum attachment) {
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     texture->bind();
     glFramebufferTexture2D(GL_FRAMEBUFFER, attachment, GL_TEXTURE_2D, texture->texture, 0);
+    texture->unbind();
 }
 
 void Framebuffer::bind() {

@@ -18,6 +18,7 @@ Texture::Texture(GLenum target, GLint internalFormat, GLenum format, GLenum type
     glTexParameteri(target, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
     glTexParameteri(target, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
     glTexParameteri(target, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    unbind();
 }
 
 Texture::~Texture() {
@@ -33,14 +34,18 @@ void Texture::unbind(void) {
 }
 
 void Texture::interpolation(GLint interpol) {
+    bind();
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, interpol);
     glTexParameteri(target, GL_TEXTURE_MAG_FILTER, interpol);
+    unbind();
 }
 
 void Texture::wrap(GLint wrap) {
+    bind();
     glTexParameteri(target, GL_TEXTURE_WRAP_S, wrap);
     glTexParameteri(target, GL_TEXTURE_WRAP_R, wrap);
     glTexParameteri(target, GL_TEXTURE_WRAP_T, wrap);
+    unbind();
 }
 
 Texture2D::Texture2D(GLint internalFormat, GLenum format, GLenum type,
@@ -70,6 +75,7 @@ void Texture2D::present(Shader *shader) {
     glEnableVertexAttribArray(loc);
     glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, vertices);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 Texture3D::Texture3D(GLint internalFormat, GLenum format, GLenum type,

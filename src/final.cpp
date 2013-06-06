@@ -25,6 +25,7 @@ static const int WINDOW_HEIGHT = 640;
 
 class Model : public Renderable {
 public:
+    Texture2D *rayBuffer;
     Model(Geometry *geo, Shader *shader, GLenum drawType) :
         Renderable(geo, shader, drawType) {}
     virtual void setupVertexAttributes() {
@@ -37,7 +38,8 @@ public:
         glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
     }
     virtual void setupUniforms() {
-
+        //glActiveTexture(GL_TEXTURE0);
+        //rayBuffer->bind();
     }
 };
 
@@ -205,10 +207,12 @@ void render(void) {
     scene->sFactorA = GL_SRC_ALPHA;
     scene->dFactorA = GL_ONE_MINUS_SRC_ALPHA;
     scene->blendEquationA = GL_FUNC_ADD;
+    glActiveTexture(GL_TEXTURE0);
+    densityTexture->bind();
     scene->render();
+    densityTexture->unbind();
 
     //present framebuffer
-    //glDisable(GL_CULL_FACE);
     GLUI_Master.auto_set_viewport();
     colorTarget->present(displayShader);
     glutSwapBuffers();
@@ -263,6 +267,7 @@ void init(void) {
     fluidDomain->init();
     fluidDomain->center = Vector3(0.5, 0.5, 0.5);
     fluidDomain->scaleUniform(1.0);
+    fluidDomain->rayBuffer = rayBuffer;
     scene->add(fluidDomain);
 
     solver = new GPUSolver(width, width, width);
