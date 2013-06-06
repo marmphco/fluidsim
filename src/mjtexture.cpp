@@ -59,7 +59,7 @@ void Texture2D::present(Shader *shader) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
-    glBlendFunc(GL_ONE, GL_ZERO);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //GL_ONE, GL_ZERO
     GLfloat vertices[] = {
         -1.0, -1.0, 0.0,
         1.0, -1.0, 0.0,

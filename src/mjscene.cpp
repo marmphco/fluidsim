@@ -12,6 +12,7 @@ namespace mcjee {
         diffuseMultiplier(1.0),
         specularMultiplier(1.0),
         backgroundColor(Vector4()),
+        clearEnabled(true), //must be manuaklly disabled
         blendEnabled(false),
         sFactorRGB(GL_SRC_ALPHA),
         dFactorRGB(GL_ONE_MINUS_SRC_ALPHA),
@@ -39,8 +40,11 @@ namespace mcjee {
 
     void Scene::render() {
         framebuffer->bind();
-        glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        if (clearEnabled) {
+            glClearColor(backgroundColor.r, backgroundColor.g, backgroundColor.b, backgroundColor.a);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        }
+        //glClear(GL_DEPTH_BUFFER_BIT);
         if (blendEnabled) {
             glEnable(GL_BLEND);
             glBlendEquationSeparate(blendEquationRGB, blendEquationA);

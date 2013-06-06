@@ -12,5 +12,8 @@ uniform mat4 inverseViewMatrix;
 uniform mat4 inverseModelMatrix;
 
 void main() {
-    gl_FragColor = vec4(fTexCoord.xyz, length(fTexCoord));
+    mat4 inverseModelViewMatrix = transpose(inverseModelMatrix * inverseViewMatrix);
+    vec4 eyeCoord = vec4(0, 0, 0, 1.0) * inverseModelViewMatrix;
+
+    gl_FragColor = vec4(fTexCoord.xyz, distance(fTexCoord.xyz, eyeCoord.xyz));
 }

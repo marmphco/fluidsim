@@ -26,6 +26,7 @@ static const int WINDOW_HEIGHT = 640;
 class Model : public Renderable {
 public:
     Texture2D *rayBuffer;
+    Texture3D *densityBuffer;
     Model(Geometry *geo, Shader *shader, GLenum drawType) :
         Renderable(geo, shader, drawType) {}
     virtual void setupVertexAttributes() {
@@ -38,8 +39,17 @@ public:
         glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
     }
     virtual void setupUniforms() {
-        //glActiveTexture(GL_TEXTURE0);
-        //rayBuffer->bind();
+        GLint loc = shader->getUniformLocation("rayBuffer");
+        glUniform1i(loc, 1);
+
+        loc = shader->getUniformLocation("texture0");
+        glUniform1i(loc, 0);
+        
+        glActiveTexture(GL_TEXTURE1);
+        rayBuffer->bind();
+
+        glActiveTexture(GL_TEXTURE0);
+        densityBuffer->bind();
     }
 };
 
@@ -180,24 +190,27 @@ void render(void) {
 
     profiler->start("render");
     glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-    
     glEnable(GL_CULL_FACE);
     // ray data pass 1 be careful about blending pl0x
     glCullFace(GL_FRONT);
     fluidDomain->shader = rayPass;
     mainFrameBuffer->addRenderTarget(rayBuffer, GL_COLOR_ATTACHMENT0);
+    scene->sFactorRGB = GL_ONE;
+    scene->dFactorRGB = GL_ZERO;
     scene->sFactorA = GL_ONE;
     scene->dFactorA = GL_ZERO;
     scene->render();
 
     // ray data pass 2
     glCullFace(GL_BACK);
+    scene->clearEnabled = false;
     scene->sFactorRGB = GL_ONE;
     scene->dFactorRGB = GL_ZERO;
     scene->sFactorA = GL_ONE;
     scene->dFactorA = GL_ONE;
-    scene->blendEquationA = GL_FUNC_SUBTRACT;
+    scene->blendEquationA = GL_FUNC_REVERSE_SUBTRACT;
     scene->render();
+    scene->clearEnabled = true;
 
     // composite pass
     fluidDomain->shader = smokeShader;
@@ -207,14 +220,11 @@ void render(void) {
     scene->sFactorA = GL_SRC_ALPHA;
     scene->dFactorA = GL_ONE_MINUS_SRC_ALPHA;
     scene->blendEquationA = GL_FUNC_ADD;
-    glActiveTexture(GL_TEXTURE0);
-    densityTexture->bind();
     scene->render();
-    densityTexture->unbind();
 
     //present framebuffer
     GLUI_Master.auto_set_viewport();
-    colorTarget->present(displayShader);
+    rayBuffer->present(displayShader);
     glutSwapBuffers();
     profiler->end("render");
 }
@@ -268,6 +278,7 @@ void init(void) {
     fluidDomain->center = Vector3(0.5, 0.5, 0.5);
     fluidDomain->scaleUniform(1.0);
     fluidDomain->rayBuffer = rayBuffer;
+    fluidDomain->densityBuffer = densityTexture;
     scene->add(fluidDomain);
 
     solver = new GPUSolver(width, width, width);

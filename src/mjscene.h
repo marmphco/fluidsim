@@ -31,6 +31,8 @@ namespace mcjee {
         Camera camera;
 
         Vector4 backgroundColor;
+        //hack to enable/disable automatic framebuffer clearing
+        bool clearEnabled;
         bool blendEnabled;
         GLenum sFactorRGB;
         GLenum dFactorRGB;
@@ -45,6 +47,7 @@ namespace mcjee {
         void add(Light *);
         //void remove();
         void deleteMembers();
+        //void clear();
         void render();
 
         void eachRenderable(void (*)(Renderable *));
