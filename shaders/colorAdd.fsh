@@ -12,11 +12,11 @@ uniform sampler3D texture0;
 uniform mat4 inverseViewMatrix;
 uniform mat4 inverseModelMatrix;
 
-const int samples = 64;
-const float fsamples = 64.0;
-const float samplestep = 1.7320508/fsamples;
+uniform int samples;
 
 void main() { //background should be black
+    float samplestep = 1.7320508/float(samples);
+
     //transform to texture space
     mat4 inverseModelViewMatrix = transpose(inverseModelMatrix * inverseViewMatrix);
     vec4 eyeCoord = vec4(0, 0, 0, 1.0) * inverseModelViewMatrix;

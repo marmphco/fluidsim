@@ -11,7 +11,7 @@ namespace mcjee {
         ambientColor(Vector3()),
         diffuseMultiplier(1.0),
         specularMultiplier(1.0),
-        clearEnabled(true), //must be manuaklly disabled
+        clearEnabled(true), //must be manually disabled
         blendEnabled(false),
         sFactorRGB(GL_SRC_ALPHA),
         dFactorRGB(GL_ONE_MINUS_SRC_ALPHA),

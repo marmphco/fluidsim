@@ -1,7 +1,7 @@
 /*
-  final.cpp
-  Matthew Jee
-  mcjee@ucsc.edu
+    final.cpp
+    Matthew Jee
+    mcjee@ucsc.edu
 */
 #include "mj.h"
 #pragma clang diagnostic push
@@ -12,6 +12,7 @@
 #pragma clang diagnostic pop
 #include "mjfluid.h"
 #include "mjgpusolver.h"
+#include "models.h"
 #include <cmath>
 #include <iostream>
 
@@ -23,30 +24,7 @@ using namespace std;
 static const int WINDOW_WIDTH = 640;
 static const int WINDOW_HEIGHT = 640;
 
-class Model : public Renderable {
-public:
-    Texture2D *rayBuffer;
-    Texture3D *densityBuffer;
-    Model(Geometry *geo, Shader *shader, GLenum drawType) :
-        Renderable(geo, shader, drawType) {}
-    virtual void setupVertexAttributes() {
-        GLint loc = shader->getAttribLocation("vPosition");
-        glEnableVertexAttribArray(loc);
-        glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
-        // HACKY use same vertices for texture coordinates
-        loc = shader->getAttribLocation("vTexCoord");
-        glEnableVertexAttribArray(loc);
-        glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
-    }
-    virtual void setupUniforms() {
-        GLint loc = shader->getUniformLocation("texture0");
-        glUniform1i(loc, 0);
-
-        glActiveTexture(GL_TEXTURE0);
-        densityBuffer->bind();
-    }
-};
-
+static int samples;
 static int curShader;
 static Shader *shaders[3];
 static Vector4 backgroundColors[] = {
@@ -55,11 +33,13 @@ static Vector4 backgroundColors[] = {
     Vector4(0.0, 0.0, 0.0, 0.0),
 };
 static Shader *displayShader;
+static Shader *simpleShader;
 static Geometry *fluidDomainGeo;
-static Model *fluidDomain;
+static FluidModel *fluidDomain;
+static BoundingBox *boundingBox;
 static Scene *scene;
 static FluidSolver *solver;
-static int width = 64; // power of 2 plz
+static int width = 64;
 static int mainWindow;
 static GLuint windowFramebuffer;
 static Profiler *profiler;
@@ -181,9 +161,6 @@ void render(void) {
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
     densityTexture->initData((float *)0);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-    //densityTextureData = new GLfloat[width*width*width*4];
-    //solver->fillDensityData(densityTextureData);
-    //densityTexture->initData(densityTextureData);
     profiler->end("transfer voxels");
 
     profiler->start("render");
@@ -214,6 +191,7 @@ void idle(void) {
 
 void compileShaders(void) {
     displayShader = new Shader();
+    simpleShader = new Shader();
     shaders[0] = new Shader();
     shaders[1] = new Shader();
     shaders[2] = new Shader();
@@ -222,6 +200,7 @@ void compileShaders(void) {
         shaders[1]->compile("shaders/colorBlend.vsh", "shaders/colorBlend.fsh");
         shaders[2]->compile("shaders/colorBlend.vsh", "shaders/colorAdd.fsh");
         displayShader->compile("shaders/display.vsh", "shaders/display.fsh");
+        simpleShader->compile("shaders/simple.vsh", "shaders/simple.fsh");
     } catch (mcjee::ShaderError &e) {
         cout << e.what() << endl;
     }
@@ -237,10 +216,11 @@ void init(void) {
     mainFrameBuffer->backgroundColor = Vector4(0.0, 0.0, 0.0, 0.0);
 
     scene = new Scene(mainFrameBuffer);
-    scene->camera.perspective(-1.0f, 1.0f, -1.0f, 1.0f, 8.0f, 10.0f);
+    scene->camera.perspective(-1.0f, 1.0f, -1.0f, 1.0f, 8.0f, 20.0f);
     scene->camera.position = Vector3(0.0, 0.0, 10.0);
     scene->camera.position = Vector3(0.0, 4.4, 8.0);
     scene->camera.rotateLocal(-30, X_AXIS);
+    scene->camera.zoom = 0.8;
     scene->blendEnabled = true;
 
     fluidDomainGeo = loadCube(1.0, 1.0, 1.0);
@@ -251,12 +231,18 @@ void init(void) {
     densityTexture->interpolation(GL_LINEAR);
     densityTexture->initData(densityTextureData);
 
-    fluidDomain = new Model(fluidDomainGeo, shaders[0], GL_TRIANGLES);
+    fluidDomain = new FluidModel(fluidDomainGeo, shaders[0], GL_TRIANGLES);
     fluidDomain->init();
     fluidDomain->center = Vector3(0.5, 0.5, 0.5);
-    fluidDomain->scaleUniform(1.0);
+    fluidDomain->scaleUniform(1.5);
     fluidDomain->densityBuffer = densityTexture;
     scene->add(fluidDomain);
+
+    boundingBox = new BoundingBox(loadWireCube(1.0, 1.0, 1.0), simpleShader, fluidDomain);
+    boundingBox->init();
+    boundingBox->center = Vector3(0.5, 0.5, 0.5);
+    boundingBox->scaleUniform(1.5);
+    scene->add(boundingBox);
 
     solver = new GPUSolver(width, width, width);
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint *)&windowFramebuffer);
@@ -278,6 +264,10 @@ void shaderListCallback(GLUI_Control *) {
     mainFrameBuffer->backgroundColor = backgroundColors[curShader];
 }
 
+void samplesSpinnerCallback(GLUI_Control *) {
+    fluidDomain->samples = samples;
+}
+
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
@@ -292,21 +282,18 @@ int main(int argc, char **argv) {
     init();
 
     GLUI *gui = GLUI_Master.create_glui_subwindow(mainWindow, GLUI_SUBWINDOW_LEFT);
-    gui->add_statictext("Simulation");
-    gui->add_separator();
-    GLUI_Control *control = gui->add_spinner("Velocity Scale");
+    GLUI_Panel *simulationPanel = gui->add_panel("Simulation");
+    GLUI_Control *control = gui->add_spinner_to_panel(simulationPanel, "Velocity Scale");
     control->set_alignment(GLUI_ALIGN_RIGHT);
-    control = gui->add_spinner("Density Scale");
+    control = gui->add_spinner_to_panel(simulationPanel, "Density Scale");
     control->set_alignment(GLUI_ALIGN_RIGHT);
-    control = gui->add_spinner("Iterations");
+    control = gui->add_spinner_to_panel(simulationPanel, "Iterations");
     control->set_alignment(GLUI_ALIGN_RIGHT);
 
-    gui->add_statictext("");
-    gui->add_statictext("Rendering");
-    gui->add_separator();
-    control = gui->add_spinner("Samples");
+    GLUI_Panel *renderingPanel = gui->add_panel("Rendering");
+    control = gui->add_spinner_to_panel(renderingPanel, "Samples", GLUI_SPINNER_INT, &samples, -1, samplesSpinnerCallback);
     control->set_alignment(GLUI_ALIGN_RIGHT);
-    GLUI_Listbox *listBox = gui->add_listbox("Shading ", &curShader, -1, shaderListCallback);
+    GLUI_Listbox *listBox = gui->add_listbox_to_panel(renderingPanel, "Shading ", &curShader, -1, shaderListCallback);
     listBox->set_alignment(GLUI_ALIGN_RIGHT);
     listBox->add_item(0, "Smoke");
     listBox->add_item(1, "Colored Smoke");
@@ -320,7 +307,6 @@ int main(int argc, char **argv) {
     profiler->addProfile("ui");
     profiler->addProfile("transfer voxels");
     profiler->addProfile("total");
-    //gui->add_column();
 
     int vx, vy, vw, vh;
     GLUI_Master.get_viewport_area(&vx, &vy, &vw, &vh);

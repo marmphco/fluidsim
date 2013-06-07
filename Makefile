@@ -27,7 +27,8 @@ _CSRC = final.cpp mjshader.cpp mjrenderable.cpp\
 _SHADERS = colorBlend.fsh colorBlend.vsh\
            display.vsh display.fsh\
            add.fsh advect.fsh divergence.fsh project2.fsh\
-           subgradient.fsh kernel.vsh
+           subgradient.fsh kernel.vsh\
+           simple.vsh simple.fsh
 
 EXECUTABLE = ${BINDIR}/${EXECNAME}
 BUNDLE = ${BINDIR}/${BUNDLENAME}.app
