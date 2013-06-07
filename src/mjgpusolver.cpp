@@ -138,7 +138,6 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     velocityBufferTex->unbind();
 
     computeScene = new Scene(outputFramebuffer);
-    computeScene->backgroundColor = Vector4();
     computeScene->blendEnabled = false;
     advectKernel = new Shader();
     divergenceKernel = new Shader();

@@ -47,9 +47,14 @@ public:
     }
 };
 
+static int curShader;
+static Shader *shaders[3];
+static Vector4 backgroundColors[] = {
+    Vector4(1.0, 1.0, 1.0, 1.0),
+    Vector4(0.0, 0.0, 0.0, 0.0),
+    Vector4(0.0, 0.0, 0.0, 0.0),
+};
 static Shader *displayShader;
-static Shader *smokeShader;
-static Shader *rayPass;
 static Geometry *fluidDomainGeo;
 static Model *fluidDomain;
 static Scene *scene;
@@ -187,7 +192,6 @@ void render(void) {
 
     // composite pass
     glCullFace(GL_BACK);
-    fluidDomain->shader = smokeShader;
     mainFrameBuffer->addRenderTarget(colorTarget, GL_COLOR_ATTACHMENT0);
     scene->sFactorRGB = GL_SRC_ALPHA;
     scene->dFactorRGB = GL_ONE_MINUS_SRC_ALPHA;
@@ -209,13 +213,15 @@ void idle(void) {
 }
 
 void compileShaders(void) {
-    smokeShader = new Shader();
     displayShader = new Shader();
-    rayPass = new Shader();
+    shaders[0] = new Shader();
+    shaders[1] = new Shader();
+    shaders[2] = new Shader();
     try {
-        smokeShader->compile("shaders/colorBlend.vsh", "shaders/colorBlend.fsh");
+        shaders[0]->compile("shaders/colorBlend.vsh", "shaders/colorBlend.fsh");
+        shaders[1]->compile("shaders/colorBlend.vsh", "shaders/colorBlend.fsh");
+        shaders[2]->compile("shaders/colorBlend.vsh", "shaders/colorAdd.fsh");
         displayShader->compile("shaders/display.vsh", "shaders/display.fsh");
-        rayPass->compile("shaders/rayPass.vsh", "shaders/rayPass.fsh");
     } catch (mcjee::ShaderError &e) {
         cout << e.what() << endl;
     }
@@ -228,7 +234,7 @@ void init(void) {
     mainFrameBuffer = new Framebuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
     mainFrameBuffer->addRenderTarget(colorTarget, GL_COLOR_ATTACHMENT0);
     mainFrameBuffer->addRenderTarget(GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT);
-    mainFrameBuffer->backgroundColor = Vector4(1.0, 1.0, 1.0, 1.0);
+    mainFrameBuffer->backgroundColor = Vector4(0.0, 0.0, 0.0, 0.0);
 
     scene = new Scene(mainFrameBuffer);
     scene->camera.perspective(-1.0f, 1.0f, -1.0f, 1.0f, 8.0f, 10.0f);
@@ -245,7 +251,7 @@ void init(void) {
     densityTexture->interpolation(GL_LINEAR);
     densityTexture->initData(densityTextureData);
 
-    fluidDomain = new Model(fluidDomainGeo, smokeShader, GL_TRIANGLES);
+    fluidDomain = new Model(fluidDomainGeo, shaders[0], GL_TRIANGLES);
     fluidDomain->init();
     fluidDomain->center = Vector3(0.5, 0.5, 0.5);
     fluidDomain->scaleUniform(1.0);
@@ -267,6 +273,11 @@ void reshapeWindow(int, int) {
     GLUI_Master.reshape();
 }
 
+void shaderListCallback(GLUI_Control *) {
+    fluidDomain->shader = shaders[curShader];
+    mainFrameBuffer->backgroundColor = backgroundColors[curShader];
+}
+
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
@@ -280,11 +291,28 @@ int main(int argc, char **argv) {
     compileShaders();
     init();
 
-    GLUI *gui = GLUI_Master.create_glui("Tools");
-    gui->add_spinner("Velocity Scale");
-    gui->add_spinner("Density Scale");
-    gui->add_spinner("Iterations");
-    gui->add_listbox("Shading ");
+    GLUI *gui = GLUI_Master.create_glui_subwindow(mainWindow, GLUI_SUBWINDOW_LEFT);
+    gui->add_statictext("Simulation");
+    gui->add_separator();
+    GLUI_Control *control = gui->add_spinner("Velocity Scale");
+    control->set_alignment(GLUI_ALIGN_RIGHT);
+    control = gui->add_spinner("Density Scale");
+    control->set_alignment(GLUI_ALIGN_RIGHT);
+    control = gui->add_spinner("Iterations");
+    control->set_alignment(GLUI_ALIGN_RIGHT);
+
+    gui->add_statictext("");
+    gui->add_statictext("Rendering");
+    gui->add_separator();
+    control = gui->add_spinner("Samples");
+    control->set_alignment(GLUI_ALIGN_RIGHT);
+    GLUI_Listbox *listBox = gui->add_listbox("Shading ", &curShader, -1, shaderListCallback);
+    listBox->set_alignment(GLUI_ALIGN_RIGHT);
+    listBox->add_item(0, "Smoke");
+    listBox->add_item(1, "Colored Smoke");
+    listBox->add_item(2, "Glow");
+    listBox->add_item(3, "Fire");
+
     profiler = new Profiler();
     profiler->addProfile("solve density");
     profiler->addProfile("solve velocity");
@@ -293,6 +321,10 @@ int main(int argc, char **argv) {
     profiler->addProfile("transfer voxels");
     profiler->addProfile("total");
     //gui->add_column();
+
+    int vx, vy, vw, vh;
+    GLUI_Master.get_viewport_area(&vx, &vy, &vw, &vh);
+    glutReshapeWindow(WINDOW_WIDTH+(WINDOW_WIDTH-vw), WINDOW_HEIGHT);
 
     glutDisplayFunc(render);
     glutMotionFunc(mouseMove);
@@ -303,7 +335,7 @@ int main(int argc, char **argv) {
     GLUI_Master.set_glutKeyboardFunc(keyboardEvent);
     glutMainLoop();
 
-    delete smokeShader;
+    //delete all shaders
     delete displayShader;
     delete colorTarget;
     delete mainFrameBuffer;

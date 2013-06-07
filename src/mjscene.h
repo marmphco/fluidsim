@@ -30,7 +30,6 @@ namespace mcjee {
         float specularMultiplier;
         Camera camera;
 
-        Vector4 backgroundColor;
         //hack to enable/disable automatic framebuffer clearing
         bool clearEnabled;
         bool blendEnabled;
