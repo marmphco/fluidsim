@@ -41,7 +41,7 @@ void main() {
         color.a += alpha*(1.0-color.a);
 
         if (color.a > 1.0) {
-            color.a = 1.0;
+            color.a = 1.0; //not necessary
             break;
         }
     }

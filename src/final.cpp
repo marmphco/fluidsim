@@ -13,6 +13,7 @@
 #include "mjfluid.h"
 #include "mjgpusolver.h"
 #include "models.h"
+#include "uimanager.h"
 #include <cmath>
 #include <iostream>
 
@@ -24,8 +25,7 @@ using namespace std;
 static const int WINDOW_WIDTH = 640;
 static const int WINDOW_HEIGHT = 640;
 
-static int samples;
-static int curShader;
+static int shaderIndex;
 static Shader *shaders[3];
 static Vector4 backgroundColors[] = {
     Vector4(1.0, 1.0, 1.0, 1.0),
@@ -168,6 +168,8 @@ void render(void) {
     glEnable(GL_CULL_FACE);
 
     // composite pass
+    fluidDomain->shader = shaders[shaderIndex];
+    mainFrameBuffer->backgroundColor = backgroundColors[shaderIndex];
     glCullFace(GL_BACK);
     mainFrameBuffer->addRenderTarget(colorTarget, GL_COLOR_ATTACHMENT0);
     scene->sFactorRGB = GL_SRC_ALPHA;
@@ -259,15 +261,6 @@ void reshapeWindow(int, int) {
     GLUI_Master.reshape();
 }
 
-void shaderListCallback(GLUI_Control *) {
-    fluidDomain->shader = shaders[curShader];
-    mainFrameBuffer->backgroundColor = backgroundColors[curShader];
-}
-
-void samplesSpinnerCallback(GLUI_Control *) {
-    fluidDomain->samples = samples;
-}
-
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
@@ -281,24 +274,9 @@ int main(int argc, char **argv) {
     compileShaders();
     init();
 
-    GLUI *gui = GLUI_Master.create_glui_subwindow(mainWindow, GLUI_SUBWINDOW_LEFT);
-    GLUI_Panel *simulationPanel = gui->add_panel("Simulation");
-    GLUI_Control *control = gui->add_spinner_to_panel(simulationPanel, "Velocity Scale");
-    control->set_alignment(GLUI_ALIGN_RIGHT);
-    control = gui->add_spinner_to_panel(simulationPanel, "Density Scale");
-    control->set_alignment(GLUI_ALIGN_RIGHT);
-    control = gui->add_spinner_to_panel(simulationPanel, "Iterations");
-    control->set_alignment(GLUI_ALIGN_RIGHT);
-
-    GLUI_Panel *renderingPanel = gui->add_panel("Rendering");
-    control = gui->add_spinner_to_panel(renderingPanel, "Samples", GLUI_SPINNER_INT, &samples, -1, samplesSpinnerCallback);
-    control->set_alignment(GLUI_ALIGN_RIGHT);
-    GLUI_Listbox *listBox = gui->add_listbox_to_panel(renderingPanel, "Shading ", &curShader, -1, shaderListCallback);
-    listBox->set_alignment(GLUI_ALIGN_RIGHT);
-    listBox->add_item(0, "Smoke");
-    listBox->add_item(1, "Colored Smoke");
-    listBox->add_item(2, "Glow");
-    listBox->add_item(3, "Fire");
+    uiInitialize(mainWindow);
+    uiSetSamplesPointer(&fluidDomain->samples);
+    uiSetShaderIndexPointer(&shaderIndex);
 
     profiler = new Profiler();
     profiler->addProfile("solve density");

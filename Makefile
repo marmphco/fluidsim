@@ -22,7 +22,7 @@ _CSRC = final.cpp mjshader.cpp mjrenderable.cpp\
         mjutil.cpp mjscene.cpp mjcamera.cpp mjlight.cpp\
         mjloader.cpp mjgeometry.cpp mjfluid.cpp\
         mjtexture.cpp mjmatrix.cpp mjvector.cpp mjframebuffer.cpp\
-        mjgpusolver.cpp mjprofiler.cpp
+        mjgpusolver.cpp mjprofiler.cpp uimanager.cpp
 
 _SHADERS = colorBlend.fsh colorBlend.vsh\
            display.vsh display.fsh\
