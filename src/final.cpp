@@ -24,6 +24,8 @@ using namespace std;
 
 static const int WINDOW_WIDTH = 640;
 static const int WINDOW_HEIGHT = 640;
+static int OLD_WIDTH;
+static int OLD_HEIGHT;
 
 static int shaderIndex;
 static Shader *shaders[3];
@@ -87,20 +89,32 @@ void mouseMove(int x, int y) {
         fluidDomain->rotateGlobal(rotationAmount, rotationAxis);
     }
     if (rightDown) {
-        fillVel = Vector3(x-lastX, y-lastY, 0);
-        fillPos += fillVel;
-        if (fillPos.x > WINDOW_WIDTH) {
-            fillPos.x = WINDOW_WIDTH;
-        }
-        if (fillPos.x < 0) {
-            fillPos.x = 0;
-        }
-        if (fillPos.y > WINDOW_HEIGHT) {
-            fillPos.y = WINDOW_HEIGHT;
-        }
-        if (fillPos.y < 0) {
-            fillPos.y = 0;
-        }
+        //fillVel = Vector3(x-lastX, y-lastY, 0);
+
+        int viewportX = x+(OLD_WIDTH-WINDOW_WIDTH); //area of gui strip
+        int viewportY = y+(OLD_HEIGHT-WINDOW_HEIGHT);
+
+        Matrix4 viewMatrix = scene->camera.viewMatrix();
+        Matrix3 viewRotation = viewMatrix.matrix3().transpose();
+
+        Vector3 viewXAxis = viewRotation * X_AXIS;
+        Vector3 viewYAxis = viewRotation * Y_AXIS;
+
+        //the depth of global plane z=0 in view space
+        float n = 8.0*scene->camera.zoom;
+        float f = 10.0;
+        float worldx = (viewportX*2.0/WINDOW_WIDTH-1.0)*f/n;
+        float worldy = (viewportY*2.0/WINDOW_HEIGHT-1.0)*f/n;
+
+        Matrix4 inverseModelMatrix = fluidDomain->inverseModelMatrix();
+        Matrix4 inverseModelViewMatrix = fluidDomain->inverseModelMatrix() * scene->camera.inverseViewMatrix();
+        fillPos = inverseModelViewMatrix * Vector3(worldx, -worldy, -10.0);
+        if (fillPos.x > 1.0) fillPos.x = 1.0;
+        if (fillPos.x < 0) fillPos.x = 0;
+        if (fillPos.y > 1.0) fillPos.y = 1.0;
+        if (fillPos.y < 0) fillPos.y = 0;
+        if (fillPos.z > 1.0) fillPos.z = 0.9;
+        if (fillPos.z < 0) fillPos.z = 0;
     }
     lastX = x;
     lastY = y;
@@ -130,7 +144,8 @@ void render(void) {
     int yy = sinf(angle)*width/4;
     int zz = sinf(beta)*width/4;
     fillVel.z = zz;
-    solver->addVelocity(Vector3(fillPos.x*width/640, fillPos.y*width/640, width/2), fillVel*100);
+    Vector3 texSpaceFillPos = Vector3(fillPos.x*width, fillPos.y*width, fillPos.z*width);
+    solver->addVelocity(texSpaceFillPos, fillVel*100);
     if (filling) {
 
         float vx = -sinf(angle)*3200.0;
@@ -138,7 +153,7 @@ void render(void) {
         float g = vx < 0 ? 0 : vx/200;
         float b = vy < 0 ? 0 : vy/200;
         float r = zz*32 < 0 ? 0 : zz*3;
-        solver->addDensity(Vector3(fillPos.x*width/640, fillPos.y*width/640, width/2), Vector3(r, g, b));
+        solver->addDensity(texSpaceFillPos, Vector3(r, g, b));
     }
 
     profiler->end("ui");
@@ -172,11 +187,6 @@ void render(void) {
     mainFrameBuffer->backgroundColor = backgroundColors[shaderIndex];
     glCullFace(GL_BACK);
     mainFrameBuffer->addRenderTarget(colorTarget, GL_COLOR_ATTACHMENT0);
-    scene->sFactorRGB = GL_SRC_ALPHA;
-    scene->dFactorRGB = GL_ONE_MINUS_SRC_ALPHA;
-    scene->sFactorA = GL_SRC_ALPHA;
-    scene->dFactorA = GL_ONE_MINUS_SRC_ALPHA;
-    scene->blendEquationA = GL_FUNC_ADD;
     scene->render();
 
     //present framebuffer
@@ -220,8 +230,6 @@ void init(void) {
     scene = new Scene(mainFrameBuffer);
     scene->camera.perspective(-1.0f, 1.0f, -1.0f, 1.0f, 8.0f, 20.0f);
     scene->camera.position = Vector3(0.0, 0.0, 10.0);
-    scene->camera.position = Vector3(0.0, 4.4, 8.0);
-    scene->camera.rotateLocal(-30, X_AXIS);
     scene->camera.zoom = 0.8;
     scene->blendEnabled = true;
 
@@ -249,7 +257,7 @@ void init(void) {
     solver = new GPUSolver(width, width, width);
     glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint *)&windowFramebuffer);
 
-    fillPos = Vector3(width/2, width/2, width/2);
+    fillPos = Vector3(0, 0, 0);
 
     glGenBuffers(1, &pbo);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
@@ -286,9 +294,10 @@ int main(int argc, char **argv) {
     profiler->addProfile("transfer voxels");
     profiler->addProfile("total");
 
-    int vx, vy, vw, vh;
-    GLUI_Master.get_viewport_area(&vx, &vy, &vw, &vh);
-    glutReshapeWindow(WINDOW_WIDTH+(WINDOW_WIDTH-vw), WINDOW_HEIGHT);
+    int vx, vy;
+    GLUI_Master.get_viewport_area(&vx, &vy, &OLD_WIDTH, &OLD_HEIGHT);
+    glutReshapeWindow(WINDOW_WIDTH+(WINDOW_WIDTH-OLD_WIDTH), WINDOW_HEIGHT);
+    GLUI_Master.get_viewport_area(&vx, &vy, &OLD_WIDTH, &OLD_HEIGHT);
 
     glutDisplayFunc(render);
     glutMotionFunc(mouseMove);

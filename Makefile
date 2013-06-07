@@ -24,7 +24,7 @@ _CSRC = final.cpp mjshader.cpp mjrenderable.cpp\
         mjtexture.cpp mjmatrix.cpp mjvector.cpp mjframebuffer.cpp\
         mjgpusolver.cpp mjprofiler.cpp uimanager.cpp
 
-_SHADERS = colorBlend.fsh colorBlend.vsh\
+_SHADERS = colorBlend.fsh colorBlend.vsh colorAdd.fsh\
            display.vsh display.fsh\
            add.fsh advect.fsh divergence.fsh project2.fsh\
            subgradient.fsh kernel.vsh\

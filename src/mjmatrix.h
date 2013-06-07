@@ -31,6 +31,7 @@ public:
     Matrix4 operator*(Matrix4 &that) const;
     Matrix4 &operator*=(Matrix4 &that);
     Vector3 operator*(Vector3 that) const;
+    Vector4 operator*(Vector4 that) const;
 
     void identity();
     void frustum(float left,

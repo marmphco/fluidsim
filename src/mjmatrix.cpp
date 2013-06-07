@@ -94,8 +94,19 @@ Vector3 Matrix4::operator*(Vector3 that) const {
     temp.x = that.x*data[0]+that.y*data[4]+that.z*data[8]+data[12];
     temp.y = that.x*data[1]+that.y*data[5]+that.z*data[9]+data[13];
     temp.z = that.x*data[2]+that.y*data[6]+that.z*data[10]+data[14];
+    //implicit homogenous coordinate
     return temp;
 }
+
+/*
+Vector4 Matrix4::operator*(Vector4 that) const {
+    Vector4 temp;
+    temp.r = that.x*data[0]+that.y*data[4]+that.z*data[8]+data[12];
+    temp.g = that.x*data[1]+that.y*data[5]+that.z*data[9]+data[13];
+    temp.b = that.x*data[2]+that.y*data[6]+that.z*data[10]+data[14];
+    temp.a = that.x*data[3]+that.y*data[7]+that.z*data[11]+data[15];
+    return temp;
+}*/
 
 void Matrix4::identity() {
     data[0] = 1;   data[1] = 0;  data[2] = 0;  data[3] = 0;

@@ -10,6 +10,8 @@ struct {
     int _shaderIndex; int *shaderIndex;
     int _samples; int *samples;
     int _iterations; int *iterations;
+    float _velocityMultiplier; float *velocityMultiplier;
+    float _densityMultiplier; float *densityMultiplier;
 } data;
 
 static void shaderListCallback(GLUI_Control *) {
@@ -29,6 +31,7 @@ void uiInitialize(int window) {
     control->set_alignment(GLUI_ALIGN_RIGHT);
     control = gui->add_spinner_to_panel(simulationPanel, "Iterations");
     control->set_alignment(GLUI_ALIGN_RIGHT);
+    gui->add_button_to_panel(simulationPanel, "Erase Fluid");
 
     GLUI_Panel *renderingPanel = gui->add_panel("Rendering");
     control = gui->add_spinner_to_panel(renderingPanel, "Samples", GLUI_SPINNER_INT, &(data._samples), -1, samplesSpinnerCallback);
@@ -39,6 +42,7 @@ void uiInitialize(int window) {
     listBox->add_item(1, "Colored Smoke");
     listBox->add_item(2, "Glow");
     listBox->add_item(3, "Fire");
+    gui->add_checkbox_to_panel(renderingPanel, "Interpolation");
 }
 
 void uiTearDown() {
