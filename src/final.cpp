@@ -93,6 +93,8 @@ void mouseMove(int x, int y) {
 
         int viewportX = x+(OLD_WIDTH-WINDOW_WIDTH); //area of gui strip
         int viewportY = y+(OLD_HEIGHT-WINDOW_HEIGHT);
+        int lastViewportX = lastX+(OLD_WIDTH-WINDOW_WIDTH); //area of gui strip
+        int lastviewportY = lastY+(OLD_HEIGHT-WINDOW_HEIGHT);
 
         Matrix4 viewMatrix = scene->camera.viewMatrix();
         Matrix3 viewRotation = viewMatrix.matrix3().transpose();
@@ -105,10 +107,14 @@ void mouseMove(int x, int y) {
         float f = 10.0;
         float worldx = (viewportX*2.0/WINDOW_WIDTH-1.0)*f/n;
         float worldy = (viewportY*2.0/WINDOW_HEIGHT-1.0)*f/n;
+        float lastWorldx = (lastViewportX*2.0/WINDOW_WIDTH-1.0)*f/n;
+        float lastWorldy = (lastviewportY*2.0/WINDOW_HEIGHT-1.0)*f/n;
 
         Matrix4 inverseModelMatrix = fluidDomain->inverseModelMatrix();
         Matrix4 inverseModelViewMatrix = fluidDomain->inverseModelMatrix() * scene->camera.inverseViewMatrix();
         fillPos = inverseModelViewMatrix * Vector3(worldx, -worldy, -10.0);
+        Vector3 lastFillPos = inverseModelViewMatrix * Vector3(lastWorldx, -lastWorldy, -10.0);
+        fillVel = fillPos-lastFillPos;
         if (fillPos.x > 1.0) fillPos.x = 1.0;
         if (fillPos.x < 0) fillPos.x = 0;
         if (fillPos.y > 1.0) fillPos.y = 1.0;
@@ -143,9 +149,8 @@ void render(void) {
     int xx = cosf(angle)*width/4;
     int yy = sinf(angle)*width/4;
     int zz = sinf(beta)*width/4;
-    fillVel.z = zz;
     Vector3 texSpaceFillPos = Vector3(fillPos.x*width, fillPos.y*width, fillPos.z*width);
-    solver->addVelocity(texSpaceFillPos, fillVel*100);
+    solver->addVelocity(texSpaceFillPos, fillVel*50000);
     if (filling) {
 
         float vx = -sinf(angle)*3200.0;
