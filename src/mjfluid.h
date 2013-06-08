@@ -27,13 +27,16 @@ public:
     virtual ~FluidSolver();
 
     virtual void addVelocity(Vector3 pos, Vector3 amount) = 0;
-    virtual void addDensity(Vector3 pos, Vector3 amount) = 0;
+    virtual void addDensity(Vector3 pos, Vector4 amount) = 0;
     virtual void solve(float dt) = 0;
     virtual void solveDensities(float dt) = 0;
     virtual void solveVelocities(float dt) = 0;
 
     virtual void fillDensityData(float *out) = 0;
     virtual void fillVelocityData(float *out) = 0;
+
+    virtual void clearDensity(void) = 0;
+    virtual void clearVelocity(void) = 0;
 };
 
 class CPUSolver : public FluidSolver {
@@ -55,7 +58,7 @@ public:
     ~CPUSolver();
 
     void addVelocity(Vector3 pos, Vector3 amount);
-    void addDensity(Vector3 pos, Vector3 amount);
+    void addDensity(Vector3 pos, Vector4 amount);
     void solve(float dt);
     void solveDensities(float dt);
     void solveVelocities(float dt);

@@ -17,7 +17,9 @@ void uiTearDown();
 void uiSetSamplesPointer(int *);
 void uiSetShaderIndexPointer(int *);
 void uiSetIterationsPointer(int *);
-void uiSetVelocityMultiplierPointer(int *);
-void uiSetDensityMultiplierPointer(int *);
+void uiSetVelocityScalePointer(float *);
+void uiSetDensityScalePointer(float *);
+
+void uiSetEraseFluidCallback(void (*)());
 
 #endif

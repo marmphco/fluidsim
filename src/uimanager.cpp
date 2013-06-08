@@ -6,37 +6,91 @@
 
 #include "uimanager.h"
 
+static const float BASE_VELOCITY_SCALE = 50000.0;
+static const float BASE_DENSITY_SCALE = 1.0;
+
 struct {
     int _shaderIndex; int *shaderIndex;
     int _samples; int *samples;
     int _iterations; int *iterations;
-    float _velocityMultiplier; float *velocityMultiplier;
-    float _densityMultiplier; float *densityMultiplier;
+    float _velocityScale; float *velocityScale;
+    float _densityScale; float *densityScale;
+    void (*eraseFluid)();
 } data;
 
-static void shaderListCallback(GLUI_Control *) {
+//these should check for null
+static void shaderList(GLUI_Control *) {
     *data.shaderIndex = data._shaderIndex;
 }
 
-static void samplesSpinnerCallback(GLUI_Control *) {
+static void samplesSpinner(GLUI_Control *) {
     *data.samples = data._samples;
 }
 
+static void velocityScaleSpinner(GLUI_Control *) {
+    *data.velocityScale = BASE_VELOCITY_SCALE*data._velocityScale;
+}
+
+static void densityScaleSpinner(GLUI_Control *) {
+    *data.densityScale = BASE_DENSITY_SCALE*data._densityScale;
+}
+
+static void iterationsSpinner(GLUI_Control *) {
+    *data.iterations = data._iterations;
+}
+
+static void eraseFluidButton(GLUI_Control *) {
+    data.eraseFluid();
+}
+
 void uiInitialize(int window) {
-    GLUI *gui = GLUI_Master.create_glui_subwindow(window, GLUI_SUBWINDOW_LEFT);
+    GLUI *gui = GLUI_Master.create_glui_subwindow(window,
+                                                  GLUI_SUBWINDOW_LEFT);
     GLUI_Panel *simulationPanel = gui->add_panel("Simulation");
-    GLUI_Control *control = gui->add_spinner_to_panel(simulationPanel, "Velocity Scale");
+    GLUI_Control *control = gui->add_spinner_to_panel(simulationPanel,
+                                                      "Velocity Scale",
+                                                      GLUI_SPINNER_FLOAT,
+                                                      &(data._velocityScale),
+                                                      -1,
+                                                      velocityScaleSpinner);
+    control->set_float_val(1.0);
     control->set_alignment(GLUI_ALIGN_RIGHT);
-    control = gui->add_spinner_to_panel(simulationPanel, "Density Scale");
+
+    control = gui->add_spinner_to_panel(simulationPanel,
+                                        "Density Scale",
+                                        GLUI_SPINNER_FLOAT,
+                                        &(data._densityScale),
+                                        -1,
+                                        densityScaleSpinner);
+    control->set_float_val(1.0);
     control->set_alignment(GLUI_ALIGN_RIGHT);
-    control = gui->add_spinner_to_panel(simulationPanel, "Iterations");
+
+    control = gui->add_spinner_to_panel(simulationPanel,
+                                        "Iterations",
+                                        GLUI_SPINNER_INT,
+                                        &(data._iterations),
+                                        -1,
+                                        iterationsSpinner);
     control->set_alignment(GLUI_ALIGN_RIGHT);
-    gui->add_button_to_panel(simulationPanel, "Erase Fluid");
+    gui->add_button_to_panel(simulationPanel,
+                             "Erase Fluid",
+                             -1,
+                             eraseFluidButton);
 
     GLUI_Panel *renderingPanel = gui->add_panel("Rendering");
-    control = gui->add_spinner_to_panel(renderingPanel, "Samples", GLUI_SPINNER_INT, &(data._samples), -1, samplesSpinnerCallback);
+    control = gui->add_spinner_to_panel(renderingPanel,
+                                        "Samples",
+                                        GLUI_SPINNER_INT,
+                                        &(data._samples),
+                                        -1,
+                                        samplesSpinner);
     control->set_alignment(GLUI_ALIGN_RIGHT);
-    GLUI_Listbox *listBox = gui->add_listbox_to_panel(renderingPanel, "Shading ", &(data._shaderIndex), -1, shaderListCallback);
+
+    GLUI_Listbox *listBox = gui->add_listbox_to_panel(renderingPanel,
+                                                      "Shading ",
+                                                      &(data._shaderIndex),
+                                                      -1,
+                                                      shaderList);
     listBox->set_alignment(GLUI_ALIGN_RIGHT);
     listBox->add_item(0, "Smoke");
     listBox->add_item(1, "Colored Smoke");
@@ -58,14 +112,19 @@ void uiSetShaderIndexPointer(int *p) {
 }
 
 void uiSetIterationsPointer(int *p) {
-
+    data.iterations = p;
 }
 
-void uiSetVelocityMultiplierPointer(int *p) {
-
+void uiSetVelocityScalePointer(float *p) {
+    data.velocityScale = p;
+    *data.velocityScale = BASE_VELOCITY_SCALE*data._velocityScale;
 }
 
-void uiSetDensityMultiplierPointer(int *p) {
-
+void uiSetDensityScalePointer(float *p) {
+    data.densityScale = p;
+    *data.densityScale = BASE_DENSITY_SCALE*data._densityScale;
 }
 
+void uiSetEraseFluidCallback(void (*callback)()) {
+    data.eraseFluid = callback;
+}

@@ -168,8 +168,8 @@ void CPUSolver::addVelocity(Vector3 pos, Vector3 amount) {
     vz0[(int)idx(pos.x, pos.y, pos.z)] += amount.z;
 }
 
-void CPUSolver::addDensity(Vector3 pos, Vector3 amount) {
-    density0[(int)idx(pos.x, pos.y, pos.z)] += amount.x;
+void CPUSolver::addDensity(Vector3 pos, Vector4 amount) {
+    density0[(int)idx(pos.x, pos.y, pos.z)] += amount.r;
 }
 
 void CPUSolver::solve(float dt) {

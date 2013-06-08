@@ -50,13 +50,16 @@ public:
     GPUSolver(int width, int height, int depth);
     ~GPUSolver();
     void addVelocity(Vector3 pos, Vector3 amount);
-    void addDensity(Vector3 pos, Vector3 amount);
+    void addDensity(Vector3 pos, Vector4 amount);
     void solve(float dt);
     void solveDensities(float dt);
     void solveVelocities(float dt);
 
     void fillDensityData(float *out);
     void fillVelocityData(float *out);
+
+    void clearDensity();
+    void clearVelocity();
 };
 
 }

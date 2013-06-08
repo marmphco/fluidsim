@@ -59,6 +59,8 @@ static Vector3 fillPos;
 static Vector3 fillVel;
 static bool leftDown;
 static bool rightDown;
+static float velocityScale;
+static float densityScale;
 
 static GLuint pbo;
 
@@ -89,18 +91,10 @@ void mouseMove(int x, int y) {
         fluidDomain->rotateGlobal(rotationAmount, rotationAxis);
     }
     if (rightDown) {
-        //fillVel = Vector3(x-lastX, y-lastY, 0);
-
         int viewportX = x+(OLD_WIDTH-WINDOW_WIDTH); //area of gui strip
         int viewportY = y+(OLD_HEIGHT-WINDOW_HEIGHT);
         int lastViewportX = lastX+(OLD_WIDTH-WINDOW_WIDTH); //area of gui strip
         int lastviewportY = lastY+(OLD_HEIGHT-WINDOW_HEIGHT);
-
-        Matrix4 viewMatrix = scene->camera.viewMatrix();
-        Matrix3 viewRotation = viewMatrix.matrix3().transpose();
-
-        Vector3 viewXAxis = viewRotation * X_AXIS;
-        Vector3 viewYAxis = viewRotation * Y_AXIS;
 
         //the depth of global plane z=0 in view space
         float n = 8.0*scene->camera.zoom;
@@ -110,7 +104,6 @@ void mouseMove(int x, int y) {
         float lastWorldx = (lastViewportX*2.0/WINDOW_WIDTH-1.0)*f/n;
         float lastWorldy = (lastviewportY*2.0/WINDOW_HEIGHT-1.0)*f/n;
 
-        Matrix4 inverseModelMatrix = fluidDomain->inverseModelMatrix();
         Matrix4 inverseModelViewMatrix = fluidDomain->inverseModelMatrix() * scene->camera.inverseViewMatrix();
         fillPos = inverseModelViewMatrix * Vector3(worldx, -worldy, -10.0);
         Vector3 lastFillPos = inverseModelViewMatrix * Vector3(lastWorldx, -lastWorldy, -10.0);
@@ -150,15 +143,16 @@ void render(void) {
     int yy = sinf(angle)*width/4;
     int zz = sinf(beta)*width/4;
     Vector3 texSpaceFillPos = Vector3(fillPos.x*width, fillPos.y*width, fillPos.z*width);
-    solver->addVelocity(texSpaceFillPos, fillVel*50000);
+    if (rightDown) {
+        solver->addVelocity(texSpaceFillPos, fillVel*velocityScale);
+    }
     if (filling) {
-
         float vx = -sinf(angle)*3200.0;
         float vy = -cosf(angle)*3200.0;
         float g = vx < 0 ? 0 : vx/200;
         float b = vy < 0 ? 0 : vy/200;
         float r = zz*32 < 0 ? 0 : zz*3;
-        solver->addDensity(texSpaceFillPos, Vector3(r, g, b));
+        solver->addDensity(texSpaceFillPos, Vector4(r, g, b, 10)*densityScale);
     }
 
     profiler->end("ui");
@@ -274,6 +268,12 @@ void reshapeWindow(int, int) {
     GLUI_Master.reshape();
 }
 
+void eraseFluid() {
+    glutSetWindow(mainWindow);
+    solver->clearDensity();
+    solver->clearVelocity();
+}
+
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
@@ -288,8 +288,12 @@ int main(int argc, char **argv) {
     init();
 
     uiInitialize(mainWindow);
+    uiSetIterationsPointer(&solver->iterations);
     uiSetSamplesPointer(&fluidDomain->samples);
     uiSetShaderIndexPointer(&shaderIndex);
+    uiSetVelocityScalePointer(&velocityScale);
+    uiSetDensityScalePointer(&densityScale);
+    uiSetEraseFluidCallback(eraseFluid);
 
     profiler = new Profiler();
     profiler->addProfile("solve density");

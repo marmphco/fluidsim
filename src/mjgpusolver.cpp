@@ -204,11 +204,11 @@ void GPUSolver::addVelocity(Vector3 pos, Vector3 amount) {
     velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 2)] += amount.z/_depth;
 }
 
-void GPUSolver::addDensity(Vector3 pos, Vector3 amount) {
-    densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 0)] += amount.x;
-    densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 1)] += amount.y;
-    densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 2)] += amount.z;
-    densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 3)] += 10.0;
+void GPUSolver::addDensity(Vector3 pos, Vector4 amount) {
+    densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 0)] += amount.r;
+    densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 1)] += amount.g;
+    densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 2)] += amount.b;
+    densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 3)] += amount.a;
 }
 
 void GPUSolver::addStep(Texture2D *in0, Texture2D *in1, Texture2D *out) {
@@ -234,7 +234,6 @@ void GPUSolver::projectStep() {
     computeScene->render();
 
     pressureTex0->initData((float *)0);
-    pressureTex0->unbind();
     model->shader = project2Kernel;
     for (int n = 0; n < iterations; ++n) {
         model->texture0 = divergenceTex;
@@ -265,7 +264,6 @@ void GPUSolver::solveDensities(float dt) {
     model->dt = dt;
 
     densityBufferTex->initData(densityBuffer);
-    densityBufferTex->unbind();
     addStep(densityTex0, densityBufferTex, densityTex1);
     swapt(densityTex0, densityTex1);
     advectStep(densityTex0, densityTex1);
@@ -279,7 +277,6 @@ void GPUSolver::solveVelocities(float dt) {
     model->dt = dt;
 
     velocityBufferTex->initData(velocityBuffer);
-    velocityBufferTex->unbind();
     addStep(velocityTex0, velocityBufferTex, velocityTex1);
     swapt(velocityTex0, velocityTex1);
     projectStep();
@@ -300,6 +297,20 @@ void GPUSolver::fillVelocityData(float *out) {
     velocityTex0->bind();
     glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_FLOAT, out);
     velocityTex0->unbind();
+}
+
+void GPUSolver::clearDensity() {
+    outputFramebuffer->addRenderTarget(densityTex0, GL_COLOR_ATTACHMENT0);
+    outputFramebuffer->clear(GL_COLOR_BUFFER_BIT);
+    outputFramebuffer->addRenderTarget(densityTex1, GL_COLOR_ATTACHMENT0);
+    outputFramebuffer->clear(GL_COLOR_BUFFER_BIT);
+}
+
+void GPUSolver::clearVelocity() {
+    outputFramebuffer->addRenderTarget(velocityTex0, GL_COLOR_ATTACHMENT0);
+    outputFramebuffer->clear(GL_COLOR_BUFFER_BIT);
+    outputFramebuffer->addRenderTarget(velocityTex1, GL_COLOR_ATTACHMENT0);
+    outputFramebuffer->clear(GL_COLOR_BUFFER_BIT);
 }
 
 }
