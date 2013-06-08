@@ -44,7 +44,7 @@ static FluidModel *fluidDomain;
 static BoundingBox *boundingBox;
 static Scene *scene;
 static FluidSolver *solver;
-static int width = 64;
+static int width = 72;
 static int mainWindow;
 static GLuint windowFramebuffer;
 static Profiler *profiler;

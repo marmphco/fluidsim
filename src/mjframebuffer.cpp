@@ -44,6 +44,12 @@ void Framebuffer::addRenderTarget(Texture2D *texture, GLenum attachment) {
     texture->unbind();
 }
 
+void Framebuffer::setDrawBuffers(int count, GLenum *buffers) {
+    bind();
+    glDrawBuffers(count, buffers);
+    unbind();
+}
+
 void Framebuffer::bind() {
 	glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 }

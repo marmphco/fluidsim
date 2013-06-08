@@ -33,6 +33,11 @@ void Texture::unbind(void) {
     glBindTexture(target, 0);
 }
 
+void Texture::bindToUnit(GLenum unit) {
+    glActiveTexture(unit);
+    glBindTexture(target, texture);
+}
+
 void Texture::interpolation(GLint interpol) {
     bind();
     glTexParameteri(target, GL_TEXTURE_MIN_FILTER, interpol);
@@ -57,28 +62,22 @@ Texture2D::Texture2D(GLint internalFormat, GLenum format, GLenum type,
 
 void Texture2D::present(Shader *shader) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    glClearColor(0.0, 0.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
     glBlendFunc(GL_ONE, GL_ZERO);
-    float w = 1.0;
-    float h = 1.0;
-    float aspect = h/w;
     GLfloat vertices[] = {
-        -w, -aspect, 0.0,
-        w, -aspect, 0.0,
-        -w, aspect, 0.0,
-        w, aspect, 0.0,
+        -1.0, -1.0, 0.0,
+        1.0, -1.0, 0.0,
+        -1.0, 1.0, 0.0,
+        1.0, 1.0, 0.0,
     };
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     shader->use();
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    bindToUnit(GL_TEXTURE0);
     GLint loc = shader->getAttribLocation("vPosition");
     glEnableVertexAttribArray(loc);
     glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, vertices);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    unbind();
 }
 
 Texture3D::Texture3D(GLint internalFormat, GLenum format, GLenum type,

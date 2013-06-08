@@ -69,10 +69,8 @@ public:
             tex1loc = shader->getUniformLocation("pressureBuffer");
         if (tex1loc != -1) glUniform1i(tex1loc, 1);
 
-        glActiveTexture(GL_TEXTURE0);
-        texture0->bind();
-        glActiveTexture(GL_TEXTURE1);
-        texture1->bind();
+        texture0->bindToUnit(GL_TEXTURE0);
+        texture1->bindToUnit(GL_TEXTURE1);
     }
 };
 
@@ -89,7 +87,6 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     memset(divergence, 0, sizeof(uint16_t)*width*height*depth);
     memset(pressure, 0, sizeof(uint16_t)*width*height*depth);
 
-    glActiveTexture(GL_TEXTURE0);
     densityTex0 = new Texture2D(GL_RGBA16F_ARB, GL_RGBA, GL_HALF_FLOAT, width, height*depth);
     densityTex0->initData(densityBuffer);
     densityTex0->interpolation(GL_LINEAR);
@@ -128,15 +125,12 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     GLenum drawTarget = GL_COLOR_ATTACHMENT0;
     outputFramebuffer = new Framebuffer(width, height*depth);
     outputFramebuffer->backgroundColor = Vector4();
-    outputFramebuffer->bind();
-    glDrawBuffers(1, &drawTarget);
-    outputFramebuffer->unbind();
+    outputFramebuffer->setDrawBuffers(1, &drawTarget);
 
     densityBufferTex = new Texture2D(GL_RGBA16F_ARB, GL_RGBA, GL_HALF_FLOAT, width, height*depth);
     densityBufferTex->initData(densityBuffer);
     velocityBufferTex = new Texture2D(GL_RGB16F_ARB, GL_RGB, GL_HALF_FLOAT, width, height*depth);
     velocityBufferTex->initData(velocityBuffer);
-    velocityBufferTex->unbind();
 
     computeScene = new Scene(outputFramebuffer);
     computeScene->blendEnabled = false;
@@ -206,9 +200,6 @@ void GPUSolver::addVelocity(Vector3 pos, Vector3 amount) {
     velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 0)] = half_from_float(*(uint32_t *)(&valx));
     velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 1)] = half_from_float(*(uint32_t *)(&valy));
     velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 2)] = half_from_float(*(uint32_t *)(&valz));
-   // velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 0)] += amount.x/_width;
-    //velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 1)] += amount.y/_height;
-    //velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 2)] += amount.z/_depth;
 }
 
 void GPUSolver::addDensity(Vector3 pos, Vector4 amount) {
@@ -220,10 +211,6 @@ void GPUSolver::addDensity(Vector3 pos, Vector4 amount) {
     densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 1)] = half_from_float(*(uint32_t *)(&valg));
     densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 2)] = half_from_float(*(uint32_t *)(&valb));
     densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 3)] = half_from_float(*(uint32_t *)(&vala));
-    //densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 0)] += amount.r;
-   // densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 1)] += amount.g;
-    //densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 2)] += amount.b;
-    //densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 3)] += amount.a;
 }
 
 void GPUSolver::addStep(Texture2D *in0, Texture2D *in1, Texture2D *out) {

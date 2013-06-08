@@ -27,8 +27,9 @@ public:
 
     Texture(GLenum target, GLint internalFormat, GLenum format, GLenum type);
     ~Texture();
-    void bind(void);
+    void bind();
     void unbind(void);
+    void bindToUnit(GLenum unit);
     void interpolation(GLint interpol);
     void wrap(GLint wrap);
 };
