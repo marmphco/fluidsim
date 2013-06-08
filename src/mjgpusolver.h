@@ -28,10 +28,10 @@ private:
 
     Texture2D *densityBufferTex;
     Texture2D *velocityBufferTex;
-    float *densityBuffer;
-    float *velocityBuffer;
-    float *pressure;
-    float *divergence;
+    uint16_t *densityBuffer;
+    uint16_t *velocityBuffer;
+    uint16_t *pressure;
+    uint16_t *divergence;
 
     Scene *computeScene;
     Shader *addKernel;
