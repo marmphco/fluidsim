@@ -46,7 +46,6 @@ static Scene *scene;
 static FluidSolver *solver;
 static int width = 72;
 static int mainWindow;
-static GLuint windowFramebuffer;
 static Profiler *profiler;
 
 static Texture2D *colorTarget;
@@ -54,10 +53,9 @@ static Framebuffer *mainFrameBuffer;
 static Texture3D *densityTexture;
 static uint16_t *densityTextureData;
 
+static bool fullscreen;
 static int lastX = 0;
 static int lastY = 0;
-static bool filling = false;
-
 static Vector3 fillPos;
 static Vector3 fillVel;
 static bool leftDown;
@@ -68,21 +66,9 @@ static float densityScale;
 static GLuint pbo;
 
 void keyboardEvent(unsigned char key, int, int) {
-    switch(key) {
-        case 32:
-            filling = true;
-            break;
-        default: break;
-    }
-}
-
-void keyboardUpEvent(unsigned char key, int, int) {
-    switch(key) {
-        case 32:
-            filling = false;
-            break;
-        default: break;
-    }
+    fullscreen = !fullscreen;
+    if (fullscreen) glutFullScreen();
+    else glutReshapeWindow(640+sidebarWidth, 640+sidebarHeight);
 }
 
 void mouseMove(int x, int y) {
@@ -193,6 +179,7 @@ void render(void) {
 
     //present framebuffer
     GLUI_Master.auto_set_viewport();
+    colorTarget->borderColor(backgroundColors[shaderIndex]);
     colorTarget->present(displayShader);
     glutSwapBuffers();
     profiler->end("render");
@@ -222,6 +209,7 @@ void compileShaders(void) {
 
 void init(void) {
     colorTarget = new Texture2D(GL_RGBA, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, FRAME_WIDTH, FRAME_HEIGHT);
+    colorTarget->interpolation(GL_LINEAR);
     colorTarget->initData((float *)0);
 
     mainFrameBuffer = new Framebuffer(FRAME_WIDTH, FRAME_HEIGHT);
@@ -257,7 +245,6 @@ void init(void) {
     scene->add(boundingBox);
 
     solver = new GPUSolver(width, width, width);
-    glGetIntegerv(GL_DRAW_FRAMEBUFFER_BINDING, (GLint *)&windowFramebuffer);
 
     fillPos = Vector3(0, 0, 0);
 
@@ -315,7 +302,7 @@ int main(int argc, char **argv) {
     uiSetInterpolationCallback(setInterpolation);
     uiSetEraseFluidCallback(eraseFluid);
 
-    profiler = new Profiler();
+    profiler = new Profiler(uiGetGLUI());
     profiler->addProfile("solve density");
     profiler->addProfile("solve velocity");
     profiler->addProfile("render");
@@ -327,11 +314,10 @@ int main(int argc, char **argv) {
     GLUI_Master.get_viewport_area(&vx, &vy, &vw, &vh);
     sidebarWidth = FRAME_WIDTH-vw;
     sidebarHeight = FRAME_HEIGHT-vh;
-    //glutReshapeWindow(FRAME_WIDTH+sidebarWidth, FRAME_HEIGHT);
+    glutReshapeWindow(FRAME_WIDTH+sidebarWidth, FRAME_HEIGHT);
 
     glutDisplayFunc(render);
     glutMotionFunc(mouseMove);
-    glutKeyboardUpFunc(keyboardUpEvent);
     GLUI_Master.set_glutIdleFunc(idle);
     GLUI_Master.set_glutMouseFunc(mouseEvent);
     GLUI_Master.set_glutReshapeFunc(reshapeWindow);

@@ -12,6 +12,7 @@
 
 #include "mjutil.h"
 #include "mjshader.h"
+#include "mjvector.h"
 
 namespace mcjee {
 
@@ -32,6 +33,7 @@ public:
     void bindToUnit(GLenum unit);
     void interpolation(GLint interpol);
     void wrap(GLint wrap);
+    void borderColor(Vector4 color);
 };
 
 class Texture2D : public Texture {

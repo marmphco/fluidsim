@@ -53,6 +53,12 @@ void Texture::wrap(GLint wrap) {
     unbind();
 }
 
+void Texture::borderColor(Vector4 color) {
+    bind();
+    glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, (const GLfloat *)&color);
+    unbind();
+}
+
 Texture2D::Texture2D(GLint internalFormat, GLenum format, GLenum type,
                      int width, int height) :
     Texture(GL_TEXTURE_2D, internalFormat, format, type),

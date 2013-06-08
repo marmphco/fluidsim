@@ -8,14 +8,15 @@
 
 namespace mcjee {
 
-Profiler::Profiler() : enabled(true) {
-    glui = GLUI_Master.create_glui("Profiler");
-    glui->add_checkbox("Enable Profiling", &enabled);
-    glui->add_separator();
+Profiler::Profiler(GLUI *glui) : glui(glui), enabled(true) {
+    panel = glui->add_panel("Profiler");
+    GLUI_Control *control = glui->add_checkbox_to_panel(panel, "Enable Profiling", &enabled);
+    control->set_int_val(1);
+    glui->add_separator_to_panel(panel);
 }
 
 void Profiler::addProfile(const std::string name) {
-    profile p = {glui->add_statictext(name.c_str()), 0};
+    profile p = {glui->add_statictext_to_panel(panel, name.c_str()), 0};
     profiles[name] = p;
 }
 

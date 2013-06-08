@@ -47,7 +47,7 @@ void main() {
     vec2 p2 = to2SpaceZCeil(source);
     vec4 col1 = texture2D(inBuffer, p1);
     vec4 col2 = texture2D(inBuffer, p2);
-    float f = 1-mod(source.z, xunit)/xunit;
+    float f = 1-mod(source.z, xunit)/xunit; //these are actually zunit?
 
     gl_FragData[0] = col1*f+col2*(1-f);
 }

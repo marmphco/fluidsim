@@ -39,6 +39,7 @@ public:
         shader->setUniform1f("depth", depth);
         shader->setUniform1f("xunit", 1.0/width);
         shader->setUniform1f("yunit", 1.0/(height*depth));
+        shader->setUniform1f("zunit", 1.0/(height*depth));
         shader->setUniform1f("sliceHeight", 1.0/depth);
         shader->setUniform1f("dt", dt);
 
@@ -175,9 +176,9 @@ GPUSolver::~GPUSolver() {
 }
 
 void GPUSolver::addVelocity(Vector3 pos, Vector3 amount) {
-    float valx = amount.x/_width;
-    float valy = amount.y/_height;
-    float valz = amount.z/_depth;
+    float valx = amount.x;
+    float valy = amount.y;
+    float valz = amount.z;
     velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 0)] = half_from_float(*(uint32_t *)(&valx));
     velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 1)] = half_from_float(*(uint32_t *)(&valy));
     velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 2)] = half_from_float(*(uint32_t *)(&valz));

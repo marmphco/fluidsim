@@ -26,9 +26,10 @@ private:
     };
     std::map<const std::string, profile> profiles;
     GLUI *glui;
+    GLUI_Panel *panel;
     int enabled;
 public:
-    Profiler();
+    Profiler(GLUI *);
     void addProfile(const std::string name);
     void start(const std::string name);
     void end(const std::string name);

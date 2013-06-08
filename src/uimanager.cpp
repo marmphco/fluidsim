@@ -6,10 +6,11 @@
 
 #include "uimanager.h"
 
-static const float BASE_VELOCITY_SCALE = 50000.0;
+static const float BASE_VELOCITY_SCALE = 1000.0;
 static const float BASE_DENSITY_SCALE = 1.0;
 
 struct {
+    GLUI *glui;
     int _shaderIndex; int *shaderIndex;
     int _samples; int *samples;
     int _iterations; int *iterations;
@@ -52,6 +53,7 @@ static void interpolationCheckbox(GLUI_Control *) {
 void uiInitialize(int window) {
     GLUI *gui = GLUI_Master.create_glui_subwindow(window,
                                                   GLUI_SUBWINDOW_LEFT);
+    data.glui = gui;
     GLUI_Panel *simulationPanel = gui->add_panel("Simulation");
     GLUI_Control *control = gui->add_spinner_to_panel(simulationPanel,
                                                       "Velocity Scale",
@@ -77,7 +79,9 @@ void uiInitialize(int window) {
                                         &(data._iterations),
                                         -1,
                                         iterationsSpinner);
+    control->set_int_val(16);
     control->set_alignment(GLUI_ALIGN_RIGHT);
+
     gui->add_button_to_panel(simulationPanel,
                              "Erase Fluid",
                              -1,
@@ -90,6 +94,7 @@ void uiInitialize(int window) {
                                         &(data._samples),
                                         -1,
                                         samplesSpinner);
+    control->set_int_val(64);
     control->set_alignment(GLUI_ALIGN_RIGHT);
 
     GLUI_Listbox *listBox = gui->add_listbox_to_panel(renderingPanel,
@@ -102,27 +107,35 @@ void uiInitialize(int window) {
     listBox->add_item(1, "Colored Smoke");
     listBox->add_item(2, "Glow");
     listBox->add_item(3, "Fire");
-    gui->add_checkbox_to_panel(renderingPanel,
-                               "Interpolation",
-                               &(data._interpolation),
-                               -1,
-                               interpolationCheckbox);
+    control = gui->add_checkbox_to_panel(renderingPanel,
+                                         "Interpolation",
+                                         &(data._interpolation),
+                                         -1,
+                                         interpolationCheckbox);
+    control->set_int_val(1);
 }
 
 void uiTearDown() {
 
 }
 
+GLUI *uiGetGLUI() {
+    return data.glui;
+}
+
 void uiSetSamplesPointer(int *p) {
     data.samples = p;
+    *p = data._samples;
 }
 
 void uiSetShaderIndexPointer(int *p) {
     data.shaderIndex = p;
+    *p = data._shaderIndex;
 }
 
 void uiSetIterationsPointer(int *p) {
     data.iterations = p;
+    *p = data._iterations;
 }
 
 void uiSetVelocityScalePointer(float *p) {

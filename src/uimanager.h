@@ -14,6 +14,8 @@ using namespace mcjee;
 void uiInitialize(int window);
 void uiTearDown();
 
+GLUI *uiGetGLUI();
+
 void uiSetSamplesPointer(int *);
 void uiSetShaderIndexPointer(int *);
 void uiSetIterationsPointer(int *);
