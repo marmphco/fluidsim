@@ -59,12 +59,15 @@ void Texture2D::present(Shader *shader) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); //GL_ONE, GL_ZERO
+    glBlendFunc(GL_ONE, GL_ZERO);
+    float w = 1.0;
+    float h = 1.0;
+    float aspect = h/w;
     GLfloat vertices[] = {
-        -1.0, -1.0, 0.0,
-        1.0, -1.0, 0.0,
-        -1.0, 1.0, 0.0,
-        1.0, 1.0, 0.0,
+        -w, -aspect, 0.0,
+        w, -aspect, 0.0,
+        -w, aspect, 0.0,
+        w, aspect, 0.0,
     };
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);

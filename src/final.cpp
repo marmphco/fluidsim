@@ -22,10 +22,12 @@ using namespace std;
 
 // --- Constants ---
 
-static const int WINDOW_WIDTH = 640;
-static const int WINDOW_HEIGHT = 640;
-static int OLD_WIDTH;
-static int OLD_HEIGHT;
+static const int FRAME_WIDTH = 640;
+static const int FRAME_HEIGHT = 640;
+static int sidebarWidth;
+static int sidebarHeight;
+static int currentFrameWidth;
+static int currentFrameHeight;
 
 static int shaderIndex;
 static Shader *shaders[3];
@@ -91,18 +93,20 @@ void mouseMove(int x, int y) {
         fluidDomain->rotateGlobal(rotationAmount, rotationAxis);
     }
     if (rightDown) {
-        int viewportX = x+(OLD_WIDTH-WINDOW_WIDTH); //area of gui strip
-        int viewportY = y+(OLD_HEIGHT-WINDOW_HEIGHT);
-        int lastViewportX = lastX+(OLD_WIDTH-WINDOW_WIDTH); //area of gui strip
-        int lastviewportY = lastY+(OLD_HEIGHT-WINDOW_HEIGHT);
+        //transform to frame coordinates
+        float scale = 1.0*currentFrameHeight/FRAME_HEIGHT;
+        int viewportX = (x-sidebarWidth-(currentFrameWidth-FRAME_WIDTH*scale)/2)/scale;
+        int viewportY = (y-sidebarHeight)/scale;
+        int lastViewportX = (lastX-sidebarWidth-(currentFrameWidth-FRAME_WIDTH*scale)/2)/scale;
+        int lastviewportY = (lastY-sidebarHeight)/scale;
 
         //the depth of global plane z=0 in view space
         float n = 8.0*scene->camera.zoom;
         float f = 10.0;
-        float worldx = (viewportX*2.0/WINDOW_WIDTH-1.0)*f/n;
-        float worldy = (viewportY*2.0/WINDOW_HEIGHT-1.0)*f/n;
-        float lastWorldx = (lastViewportX*2.0/WINDOW_WIDTH-1.0)*f/n;
-        float lastWorldy = (lastviewportY*2.0/WINDOW_HEIGHT-1.0)*f/n;
+        float worldx = (viewportX*2.0/FRAME_WIDTH-1.0)*f/n;
+        float worldy = (viewportY*2.0/FRAME_HEIGHT-1.0)*f/n;
+        float lastWorldx = (lastViewportX*2.0/FRAME_WIDTH-1.0)*f/n;
+        float lastWorldy = (lastviewportY*2.0/FRAME_HEIGHT-1.0)*f/n;
 
         Matrix4 inverseModelViewMatrix = fluidDomain->inverseModelMatrix() * scene->camera.inverseViewMatrix();
         fillPos = inverseModelViewMatrix * Vector3(worldx, -worldy, -10.0);
@@ -145,8 +149,6 @@ void render(void) {
     Vector3 texSpaceFillPos = Vector3(fillPos.x*width, fillPos.y*width, fillPos.z*width);
     if (rightDown) {
         solver->addVelocity(texSpaceFillPos, fillVel*velocityScale);
-    }
-    if (filling) {
         float vx = -sinf(angle)*3200.0;
         float vy = -cosf(angle)*3200.0;
         float g = vx < 0 ? 0 : vx/200;
@@ -178,7 +180,7 @@ void render(void) {
     profiler->end("transfer voxels");
 
     profiler->start("render");
-    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    glViewport(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
     glEnable(GL_CULL_FACE);
 
     // composite pass
@@ -218,10 +220,10 @@ void compileShaders(void) {
 }
 
 void init(void) {
-    colorTarget = new Texture2D(GL_RGBA, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, WINDOW_WIDTH, WINDOW_HEIGHT);
+    colorTarget = new Texture2D(GL_RGBA, GL_RGBA, GL_UNSIGNED_INT_8_8_8_8, FRAME_WIDTH, FRAME_HEIGHT);
     colorTarget->initData((float *)0);
 
-    mainFrameBuffer = new Framebuffer(WINDOW_WIDTH, WINDOW_HEIGHT);
+    mainFrameBuffer = new Framebuffer(FRAME_WIDTH, FRAME_HEIGHT);
     mainFrameBuffer->addRenderTarget(colorTarget, GL_COLOR_ATTACHMENT0);
     mainFrameBuffer->addRenderTarget(GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT);
     mainFrameBuffer->backgroundColor = Vector4(0.0, 0.0, 0.0, 0.0);
@@ -266,6 +268,14 @@ void init(void) {
 
 void reshapeWindow(int, int) {
     GLUI_Master.reshape();
+    int vx, vy;
+    GLUI_Master.get_viewport_area(&vx,
+                                  &vy,
+                                  &currentFrameWidth,
+                                  &currentFrameHeight);
+    GLint loc = displayShader->getUniformLocation("aspectRatio");
+    displayShader->use();
+    glUniform1f(loc, 1.0*currentFrameWidth/currentFrameHeight);
 }
 
 void eraseFluid() {
@@ -277,7 +287,7 @@ void eraseFluid() {
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
-    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
+    glutInitWindowSize(FRAME_WIDTH, FRAME_HEIGHT);
     glutInitWindowPosition(100, 100);
     mainWindow = glutCreateWindow("Fluid Simulator");
 
@@ -303,10 +313,11 @@ int main(int argc, char **argv) {
     profiler->addProfile("transfer voxels");
     profiler->addProfile("total");
 
-    int vx, vy;
-    GLUI_Master.get_viewport_area(&vx, &vy, &OLD_WIDTH, &OLD_HEIGHT);
-    glutReshapeWindow(WINDOW_WIDTH+(WINDOW_WIDTH-OLD_WIDTH), WINDOW_HEIGHT);
-    GLUI_Master.get_viewport_area(&vx, &vy, &OLD_WIDTH, &OLD_HEIGHT);
+    int vx, vy, vw, vh;
+    GLUI_Master.get_viewport_area(&vx, &vy, &vw, &vh);
+    sidebarWidth = FRAME_WIDTH-vw;
+    sidebarHeight = FRAME_HEIGHT-vh;
+    //glutReshapeWindow(FRAME_WIDTH+sidebarWidth, FRAME_HEIGHT);
 
     glutDisplayFunc(render);
     glutMotionFunc(mouseMove);
