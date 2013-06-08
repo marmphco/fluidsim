@@ -162,34 +162,50 @@ namespace mcjee {
     GLint loc = getUniformLocation(name);\
     if (loc != -1) glUniform1##POSTFIX(loc, x);\
 }
-
 #define uniform2x(POSTFIX, TYPE) void Shader::setUniform2##POSTFIX(const char *name, TYPE x, TYPE y) {\
     GLint loc = getUniformLocation(name);\
     if (loc != -1) glUniform2##POSTFIX(loc, x, y);\
 }
-
 #define uniform3x(POSTFIX, TYPE) void Shader::setUniform3##POSTFIX(const char *name, TYPE x, TYPE y, TYPE z) {\
     GLint loc = getUniformLocation(name);\
     if (loc != -1) glUniform3##POSTFIX(loc, x, y, z);\
 }
-
 #define uniform4x(POSTFIX, TYPE) void Shader::setUniform4##POSTFIX(const char *name, TYPE x, TYPE y, TYPE z, TYPE w) {\
     GLint loc = getUniformLocation(name);\
     if (loc != -1) glUniform4##POSTFIX(loc, x, y, z, w);\
 }
+#define uniformxv(POSTFIX, TYPE) void Shader::setUniform##POSTFIX##v(const char *name, GLsizei count, TYPE val) {\
+    GLint loc = getUniformLocation(name);\
+    if (loc != -1) glUniform##POSTFIX##v(loc, count, val);\
+}
+#define uniformMatxv(POSTFIX) void Shader::setUniformMatrix##POSTFIX##v(const char *name, GLsizei count, GLboolean transpose, const GLfloat *data) {\
+    GLint loc = getUniformLocation(name);\
+    if (loc != -1) glUniformMatrix##POSTFIX##v(loc, count, transpose, data);\
+}
 
-    uniform1x(f, float)
-    uniform2x(f, float)
-    uniform3x(f, float)
-    uniform4x(f, float)
-    uniform1x(i, int)
-    uniform2x(i, int)
-    uniform3x(i, int)
-    uniform4x(i, int)
-    /*uniform1x(ui, unsigned int)
-    uniform2x(ui, unsigned int)
-    uniform3x(ui, unsigned int)
-    uniform4x(ui, unsigned int)*/
-
-
+    uniform1x(f, GLfloat)
+    uniform2x(f, GLfloat)
+    uniform3x(f, GLfloat)
+    uniform4x(f, GLfloat)
+    uniform1x(i, GLint)
+    uniform2x(i, GLint)
+    uniform3x(i, GLint)
+    uniform4x(i, GLint)
+    uniformxv(1f, const GLfloat *)
+    uniformxv(2f, const GLfloat *)
+    uniformxv(3f, const GLfloat *)
+    uniformxv(4f, const GLfloat *)
+    uniformxv(1i, const GLint *)
+    uniformxv(2i, const GLint *)
+    uniformxv(3i, const GLint *)
+    uniformxv(4i, const GLint *)
+    uniformMatxv(2f)
+    uniformMatxv(3f)
+    uniformMatxv(4f)
+    uniformMatxv(2x3f)
+    uniformMatxv(3x2f)
+    uniformMatxv(2x4f)
+    uniformMatxv(4x2f)
+    uniformMatxv(3x4f)
+    uniformMatxv(4x3f)
 }

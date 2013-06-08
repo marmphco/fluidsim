@@ -38,27 +38,11 @@ void Renderable::render(void) {
     if (!visible) return;
     shader->use();
     setupUniforms();
-    if (shader->uniformEnabled("modelMatrix")) {
-        Matrix4 matrix = modelMatrix();
-        GLint loc = shader->getUniformLocation("modelMatrix");
-        glUniformMatrix4fv(loc, 1, GL_FALSE, matrix.data);
-    }
-    if (shader->uniformEnabled("inverseModelMatrix")) {
-        Matrix4 matrix = inverseModelMatrix();
-        GLint loc = shader->getUniformLocation("inverseModelMatrix");
-        glUniformMatrix4fv(loc, 1, GL_FALSE, matrix.data);
-    }
-    if (shader->uniformEnabled("matDiffuseColor") ||
-        shader->uniformEnabled("ambientColor")) {
-        GLint loc = shader->getUniformLocation("matDiffuseColor");
-        glUniform3fv(loc, 1, (const GLfloat *)&material.diffuseColor);
-    }
-    if (shader->uniformEnabled("matSpecularColor")) {
-        GLint loc = shader->getUniformLocation("matSpecularColor");
-        glUniform3fv(loc, 1, (const GLfloat *)&material.specularColor);
-        loc = shader->getUniformLocation("matSpecularPower");
-        glUniform1f(loc, material.specularPower);
-    }
+    shader->setUniformMatrix4fv("modelMatrix", 1, GL_FALSE, modelMatrix().data);
+    shader->setUniformMatrix4fv("inverseModelMatrix", 1, GL_FALSE, inverseModelMatrix().data);
+    shader->setUniform3fv("matDiffuseColor", 1, (const GLfloat *)&material.diffuseColor);
+    shader->setUniform3fv("matSpecularColor", 1, (const GLfloat *)&material.specularPower);
+    shader->setUniform1f("matSpecularPower", material.specularPower);
     std::vector<Texture *>::iterator i;
     for (i = material.textures.begin(); i != material.textures.end(); ++i) {
         (*i)->bind();
