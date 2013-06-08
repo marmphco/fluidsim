@@ -15,6 +15,8 @@ struct {
     int _iterations; int *iterations;
     float _velocityScale; float *velocityScale;
     float _densityScale; float *densityScale;
+    int _interpolation;
+    void (*interpolationSwitch)(bool);
     void (*eraseFluid)();
 } data;
 
@@ -41,6 +43,10 @@ static void iterationsSpinner(GLUI_Control *) {
 
 static void eraseFluidButton(GLUI_Control *) {
     data.eraseFluid();
+}
+
+static void interpolationCheckbox(GLUI_Control *) {
+    data.interpolationSwitch(data._interpolation);
 }
 
 void uiInitialize(int window) {
@@ -96,7 +102,11 @@ void uiInitialize(int window) {
     listBox->add_item(1, "Colored Smoke");
     listBox->add_item(2, "Glow");
     listBox->add_item(3, "Fire");
-    gui->add_checkbox_to_panel(renderingPanel, "Interpolation");
+    gui->add_checkbox_to_panel(renderingPanel,
+                               "Interpolation",
+                               &(data._interpolation),
+                               -1,
+                               interpolationCheckbox);
 }
 
 void uiTearDown() {
@@ -127,4 +137,8 @@ void uiSetDensityScalePointer(float *p) {
 
 void uiSetEraseFluidCallback(void (*callback)()) {
     data.eraseFluid = callback;
+}
+
+void uiSetInterpolationCallback(void (*callback)(bool)) {
+    data.interpolationSwitch = callback;
 }

@@ -21,5 +21,6 @@ void uiSetVelocityScalePointer(float *);
 void uiSetDensityScalePointer(float *);
 
 void uiSetEraseFluidCallback(void (*)());
+void uiSetInterpolationCallback(void (*)(bool));
 
 #endif

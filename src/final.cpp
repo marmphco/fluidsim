@@ -284,6 +284,14 @@ void eraseFluid() {
     solver->clearVelocity();
 }
 
+void setInterpolation(bool on) {
+    glutSetWindow(mainWindow);
+    if (on)
+        densityTexture->interpolation(GL_LINEAR);
+    else
+        densityTexture->interpolation(GL_NEAREST);
+}
+
 int main(int argc, char **argv) {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA);
@@ -303,6 +311,7 @@ int main(int argc, char **argv) {
     uiSetShaderIndexPointer(&shaderIndex);
     uiSetVelocityScalePointer(&velocityScale);
     uiSetDensityScalePointer(&densityScale);
+    uiSetInterpolationCallback(setInterpolation);
     uiSetEraseFluidCallback(eraseFluid);
 
     profiler = new Profiler();
