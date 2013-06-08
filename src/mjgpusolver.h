@@ -58,6 +58,9 @@ public:
     void fillDensityData(float *out);
     void fillVelocityData(float *out);
 
+    void fillDensityData(uint16_t *out);
+    void fillVelocityData(uint16_t *out);
+
     void clearDensity();
     void clearVelocity();
 };

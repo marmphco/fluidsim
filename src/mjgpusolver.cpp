@@ -299,6 +299,18 @@ void GPUSolver::fillVelocityData(float *out) {
     velocityTex0->unbind();
 }
 
+void GPUSolver::fillDensityData(uint16_t *out) {
+    densityTex0->bind();
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGBA, GL_HALF_FLOAT, out);
+    densityTex0->unbind();
+}
+
+void GPUSolver::fillVelocityData(uint16_t *out) {
+    velocityTex0->bind();
+    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_HALF_FLOAT, out);
+    velocityTex0->unbind();
+}
+
 void GPUSolver::clearDensity() {
     outputFramebuffer->addRenderTarget(densityTex0, GL_COLOR_ATTACHMENT0);
     outputFramebuffer->clear(GL_COLOR_BUFFER_BIT);

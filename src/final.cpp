@@ -14,6 +14,7 @@
 #include "mjgpusolver.h"
 #include "models.h"
 #include "uimanager.h"
+#include "half.h"
 #include <cmath>
 #include <iostream>
 
@@ -51,7 +52,7 @@ static Profiler *profiler;
 static Texture2D *colorTarget;
 static Framebuffer *mainFrameBuffer;
 static Texture3D *densityTexture;
-static GLfloat *densityTextureData;
+static uint16_t *densityTextureData;
 
 static int lastX = 0;
 static int lastY = 0;
@@ -171,11 +172,11 @@ void render(void) {
 
     profiler->start("transfer voxels");
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
-    solver->fillDensityData((float *)0);
+    solver->fillDensityData((uint16_t *)0);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
 
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-    densityTexture->initData((float *)0);
+    densityTexture->initData((uint16_t *)0);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     profiler->end("transfer voxels");
 
@@ -236,9 +237,9 @@ void init(void) {
 
     fluidDomainGeo = loadCube(1.0, 1.0, 1.0);
 
-    densityTextureData = new GLfloat[width*width*width*4];
-    memset(densityTextureData, 0, sizeof(float)*width*width*width*4);
-    densityTexture = new Texture3D(GL_RGBA, GL_RGBA, GL_FLOAT, width, width, width);
+    densityTextureData = new uint16_t[width*width*width*4];
+    memset(densityTextureData, 0, sizeof(uint16_t)*width*width*width*4);
+    densityTexture = new Texture3D(GL_RGBA16F_ARB, GL_RGBA, GL_HALF_FLOAT, width, width, width);
     densityTexture->interpolation(GL_LINEAR);
     densityTexture->initData(densityTextureData);
 
@@ -262,7 +263,7 @@ void init(void) {
 
     glGenBuffers(1, &pbo);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
-    glBufferData(GL_PIXEL_PACK_BUFFER, width*width*width*4*sizeof(GLfloat), NULL, GL_DYNAMIC_COPY);
+    glBufferData(GL_PIXEL_PACK_BUFFER, width*width*width*4*sizeof(uint16_t), NULL, GL_DYNAMIC_COPY);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);    
 }
 

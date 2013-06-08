@@ -35,6 +35,9 @@ public:
     virtual void fillDensityData(float *out) = 0;
     virtual void fillVelocityData(float *out) = 0;
 
+    virtual void fillDensityData(uint16_t *out) = 0;
+    virtual void fillVelocityData(uint16_t *out) = 0;
+
     virtual void clearDensity(void) = 0;
     virtual void clearVelocity(void) = 0;
 };
