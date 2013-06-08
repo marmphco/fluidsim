@@ -116,7 +116,7 @@ void uiInitialize(int window) {
 }
 
 void uiTearDown() {
-
+    data.glui->close();
 }
 
 GLUI *uiGetGLUI() {

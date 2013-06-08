@@ -39,7 +39,6 @@ static Vector4 backgroundColors[] = {
 };
 static Shader *displayShader;
 static Shader *simpleShader;
-static Geometry *fluidDomainGeo;
 static FluidModel *fluidDomain;
 static BoundingBox *boundingBox;
 static Scene *scene;
@@ -65,7 +64,25 @@ static float densityScale;
 
 static GLuint pbo;
 
-void keyboardEvent(unsigned char key, int, int) {
+// converts from a screen space coordinate to a
+// world space coordinate on the screen space xy plane where world z = 0
+// the converts to density texture space
+Vector3 screenSpaceToFluidSpace(Vector3 in) {
+    float scale = 1.0*currentFrameHeight/FRAME_HEIGHT;
+    int viewportX = (in.x-sidebarWidth-(currentFrameWidth-FRAME_WIDTH*scale)/2)/scale;
+    int viewportY = (in.y-sidebarHeight)/scale;
+
+    //the depth of global plane z=0 in view space
+    float n = 8.0*scene->camera.zoom; // FIXIT TODO BLAH 8.0 is scene camera near
+    float f = in.z;
+    float worldx = (viewportX*2.0/FRAME_WIDTH-1.0)*f/n;
+    float worldy = (viewportY*2.0/FRAME_HEIGHT-1.0)*f/n;
+
+    Matrix4 inverseModelViewMatrix = fluidDomain->inverseModelMatrix() * scene->camera.inverseViewMatrix();
+    return inverseModelViewMatrix * Vector3(worldx, -worldy, -in.z);;
+}
+
+void keyboardEvent(unsigned char, int, int) {
     fullscreen = !fullscreen;
     if (fullscreen) glutFullScreen();
     else glutReshapeWindow(640+sidebarWidth, 640+sidebarHeight);
@@ -81,29 +98,14 @@ void mouseMove(int x, int y) {
     }
     if (rightDown) {
         //transform to frame coordinates
-        float scale = 1.0*currentFrameHeight/FRAME_HEIGHT;
-        int viewportX = (x-sidebarWidth-(currentFrameWidth-FRAME_WIDTH*scale)/2)/scale;
-        int viewportY = (y-sidebarHeight)/scale;
-        int lastViewportX = (lastX-sidebarWidth-(currentFrameWidth-FRAME_WIDTH*scale)/2)/scale;
-        int lastviewportY = (lastY-sidebarHeight)/scale;
-
-        //the depth of global plane z=0 in view space
-        float n = 8.0*scene->camera.zoom;
-        float f = 10.0;
-        float worldx = (viewportX*2.0/FRAME_WIDTH-1.0)*f/n;
-        float worldy = (viewportY*2.0/FRAME_HEIGHT-1.0)*f/n;
-        float lastWorldx = (lastViewportX*2.0/FRAME_WIDTH-1.0)*f/n;
-        float lastWorldy = (lastviewportY*2.0/FRAME_HEIGHT-1.0)*f/n;
-
-        Matrix4 inverseModelViewMatrix = fluidDomain->inverseModelMatrix() * scene->camera.inverseViewMatrix();
-        fillPos = inverseModelViewMatrix * Vector3(worldx, -worldy, -10.0);
-        Vector3 lastFillPos = inverseModelViewMatrix * Vector3(lastWorldx, -lastWorldy, -10.0);
+        fillPos = screenSpaceToFluidSpace(Vector3(x, y, scene->camera.position.z));
+        Vector3 lastFillPos = screenSpaceToFluidSpace(Vector3(lastX, lastY, scene->camera.position.z));
         fillVel = fillPos-lastFillPos;
         if (fillPos.x > 1.0) fillPos.x = 1.0;
         if (fillPos.x < 0) fillPos.x = 0;
         if (fillPos.y > 1.0) fillPos.y = 1.0;
         if (fillPos.y < 0) fillPos.y = 0;
-        if (fillPos.z > 1.0) fillPos.z = 0.9;
+        if (fillPos.z > 1.0) fillPos.z = 1.0;
         if (fillPos.z < 0) fillPos.z = 0;
     }
     lastX = x;
@@ -130,8 +132,6 @@ void render(void) {
     ox = x;
     float angle = x*0.005;
     float beta = x*0.006+1;
-    int xx = cosf(angle)*width/4;
-    int yy = sinf(angle)*width/4;
     int zz = sinf(beta)*width/4;
     Vector3 texSpaceFillPos = Vector3(fillPos.x*width, fillPos.y*width, fillPos.z*width);
     if (rightDown) {
@@ -223,15 +223,13 @@ void init(void) {
     scene->camera.zoom = 0.8;
     scene->blendEnabled = true;
 
-    fluidDomainGeo = loadCube(1.0, 1.0, 1.0);
-
     densityTextureData = new uint16_t[width*width*width*4];
     memset(densityTextureData, 0, sizeof(uint16_t)*width*width*width*4);
     densityTexture = new Texture3D(GL_RGBA16F_ARB, GL_RGBA, GL_HALF_FLOAT, width, width, width);
     densityTexture->interpolation(GL_LINEAR);
     densityTexture->initData(densityTextureData);
 
-    fluidDomain = new FluidModel(fluidDomainGeo, shaders[0], GL_TRIANGLES);
+    fluidDomain = new FluidModel(loadCube(1.0, 1.0, 1.0), shaders[0], GL_TRIANGLES);
     fluidDomain->init();
     fluidDomain->center = Vector3(0.5, 0.5, 0.5);
     fluidDomain->scaleUniform(1.5);
@@ -324,7 +322,9 @@ int main(int argc, char **argv) {
     GLUI_Master.set_glutKeyboardFunc(keyboardEvent);
     glutMainLoop();
 
-    //delete all shaders
+    //delete all shaders too
+    //also somehow delete geometries which we dont have a handle on anymore
+    uiTearDown();
     delete displayShader;
     delete colorTarget;
     delete mainFrameBuffer;
