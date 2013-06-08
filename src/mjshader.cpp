@@ -58,9 +58,6 @@ namespace mcjee {
             throw ShaderError(message);
         }
 
-        getProgramUniforms();
-        getProgramAttributes();
-
         linked = true;
         glDeleteShader(vertexShader);
         glDeleteShader(fragShader);
@@ -97,7 +94,7 @@ namespace mcjee {
         return shader;
     }
 
-    void Shader::getProgramUniforms() {
+    void Shader::dumpUniforms() {
         GLint uniformCount;
         glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &uniformCount);
         for (int i = 0; i < uniformCount; ++i) {
@@ -112,18 +109,13 @@ namespace mcjee {
                                &size,
                                &type,
                                name);
-            // fix uniform array names
-            if (name[nameSize-1] == ']') {
-                name[nameSize-3] = '\0';
-            } else {
-                name[nameSize] = '\0'; // just in case
-            }
-            uniformMap[name] = glGetUniformLocation(program, name);
-            std::cerr << name << ", " << uniformMap[name] << std::endl;
+            name[nameSize] = '\0'; // just in case
+            GLint loc = glGetUniformLocation(program, name);
+            std::cerr << name << ", " << loc << std::endl;
         }
     }
 
-    void Shader::getProgramAttributes() {
+    void Shader::dumpAttributes() {
         GLint attribCount;
         glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &attribCount);
         for (int i = 0; i < attribCount; ++i) {
@@ -139,8 +131,8 @@ namespace mcjee {
                               &type,
                               name);
             name[nameSize] = '\0'; // just in case
-            attributeMap[name] = glGetAttribLocation(program, name);
-	    //std::cerr << name << ", " << attributeMap[name] << std::endl;
+            GLint loc = glGetAttribLocation(program, name);
+	        std::cerr << name << ", " << loc << std::endl;
         }
 
     }
@@ -149,20 +141,55 @@ namespace mcjee {
         glUseProgram(program);
     }
 
-    // These are not safe right now for empty access
     GLint Shader::getAttribLocation(const GLchar *name) {
-        return attributeMap[name];
+        return glGetAttribLocation(program, name);
     }
 
     GLint Shader::getUniformLocation(const GLchar *name) {
-        return uniformMap[name];
+        return glGetUniformLocation(program, name);
     }
 
     bool Shader::uniformEnabled(const char *name) {
-        return uniformMap.find(name) != uniformMap.end();
+        return glGetUniformLocation(program, name) != -1;
     }
 
     bool Shader::attributeEnabled(const char *name) {
-        return attributeMap.find(name) != attributeMap.end();
+        return glGetAttribLocation(program, name) != -1;
     }
+
+//to help define all those uniform setting functions
+#define uniform1x(POSTFIX, TYPE) void Shader::setUniform1##POSTFIX(const char *name, TYPE x) {\
+    GLint loc = getUniformLocation(name);\
+    if (loc != -1) glUniform1##POSTFIX(loc, x);\
+}
+
+#define uniform2x(POSTFIX, TYPE) void Shader::setUniform2##POSTFIX(const char *name, TYPE x, TYPE y) {\
+    GLint loc = getUniformLocation(name);\
+    if (loc != -1) glUniform2##POSTFIX(loc, x, y);\
+}
+
+#define uniform3x(POSTFIX, TYPE) void Shader::setUniform3##POSTFIX(const char *name, TYPE x, TYPE y, TYPE z) {\
+    GLint loc = getUniformLocation(name);\
+    if (loc != -1) glUniform3##POSTFIX(loc, x, y, z);\
+}
+
+#define uniform4x(POSTFIX, TYPE) void Shader::setUniform4##POSTFIX(const char *name, TYPE x, TYPE y, TYPE z, TYPE w) {\
+    GLint loc = getUniformLocation(name);\
+    if (loc != -1) glUniform4##POSTFIX(loc, x, y, z, w);\
+}
+
+    uniform1x(f, float)
+    uniform2x(f, float)
+    uniform3x(f, float)
+    uniform4x(f, float)
+    uniform1x(i, int)
+    uniform2x(i, int)
+    uniform3x(i, int)
+    uniform4x(i, int)
+    /*uniform1x(ui, unsigned int)
+    uniform2x(ui, unsigned int)
+    uniform3x(ui, unsigned int)
+    uniform4x(ui, unsigned int)*/
+
+
 }

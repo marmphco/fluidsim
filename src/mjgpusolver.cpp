@@ -34,40 +34,21 @@ public:
         glVertexAttribPointer(loc, 3, GL_FLOAT, GL_FALSE, 0, 0);
     }
     virtual void setupUniforms() {
-        if (shader->uniformEnabled("width"))
-            glUniform1f(shader->getUniformLocation("width"), width);
-        if (shader->uniformEnabled("height"))
-            glUniform1f(shader->getUniformLocation("height"), height);
-        if (shader->uniformEnabled("depth"))
-            glUniform1f(shader->getUniformLocation("depth"), depth);
-        if (shader->uniformEnabled("xunit"))
-            glUniform1f(shader->getUniformLocation("xunit"), 1.0/width);
-        if (shader->uniformEnabled("yunit"))
-            glUniform1f(shader->getUniformLocation("yunit"), 1.0/(height*depth));
-        if (shader->uniformEnabled("sliceHeight"))
-            glUniform1f(shader->getUniformLocation("sliceHeight"), 1.0/depth);
-        if (shader->uniformEnabled("dt"))
-            glUniform1f(shader->getUniformLocation("dt"), dt);
+        shader->setUniform1f("width", width);
+        shader->setUniform1f("height", height);
+        shader->setUniform1f("depth", depth);
+        shader->setUniform1f("xunit", 1.0/width);
+        shader->setUniform1f("yunit", 1.0/(height*depth));
+        shader->setUniform1f("sliceHeight", 1.0/depth);
+        shader->setUniform1f("dt", dt);
 
-        GLint tex0loc = -1;
-        if (shader->uniformEnabled("inBuffer")) 
-            tex0loc = shader->getUniformLocation("inBuffer");
-        else if (shader->uniformEnabled("buffer0")) 
-            tex0loc = shader->getUniformLocation("buffer0");
-        else if (shader->uniformEnabled("divergenceBuffer")) 
-            tex0loc = shader->getUniformLocation("divergenceBuffer");
-        else if (shader->uniformEnabled("scalarBuffer")) 
-            tex0loc = shader->getUniformLocation("scalarBuffer");
-        if (tex0loc != -1) glUniform1i(tex0loc, 0);
-
-        GLint tex1loc = -1;
-        if (shader->uniformEnabled("velocityBuffer")) 
-            tex1loc = shader->getUniformLocation("velocityBuffer");
-        else if (shader->uniformEnabled("buffer1")) 
-            tex1loc = shader->getUniformLocation("buffer1");
-        else if (shader->uniformEnabled("pressureBuffer")) 
-            tex1loc = shader->getUniformLocation("pressureBuffer");
-        if (tex1loc != -1) glUniform1i(tex1loc, 1);
+        shader->setUniform1i("inBuffer", 0);
+        shader->setUniform1i("buffer0", 0);
+        shader->setUniform1i("divergenceBuffer", 0);
+        shader->setUniform1i("scalarBuffer", 0);
+        shader->setUniform1i("velocityBuffer", 1);
+        shader->setUniform1i("buffer1", 1);
+        shader->setUniform1i("pressureBuffer", 1);
 
         texture0->bindToUnit(GL_TEXTURE0);
         texture1->bindToUnit(GL_TEXTURE1);
