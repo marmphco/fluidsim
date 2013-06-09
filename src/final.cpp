@@ -21,8 +21,6 @@
 using namespace mcjee;
 using namespace std;
 
-// --- Constants ---
-
 static const int FRAME_WIDTH = 640;
 static const int FRAME_HEIGHT = 640;
 static int sidebarWidth;
@@ -39,19 +37,18 @@ static Vector4 backgroundColors[] = {
 };
 static Shader *displayShader;
 static Shader *simpleShader;
+static Shader *particleShader;
 static FluidModel *fluidDomain;
 static BoundingBox *boundingBox;
 static ParticleSystem *particleSystem;
 static Scene *scene;
 static FluidSolver *solver;
-static int width = 48;
+static int width = 64;
 static int mainWindow;
 static Profiler *profiler;
 
 static Texture2D *colorTarget;
 static Framebuffer *mainFrameBuffer;
-static Texture3D *densityTexture;
-static uint16_t *densityTextureData;
 
 static bool fullscreen;
 static int lastX = 0;
@@ -79,7 +76,10 @@ Vector3 screenSpaceToFluidSpace(Vector3 in) {
     float worldx = (viewportX*2.0/FRAME_WIDTH-1.0)*f/n;
     float worldy = (viewportY*2.0/FRAME_HEIGHT-1.0)*f/n;
 
-    Matrix4 inverseModelViewMatrix = fluidDomain->inverseModelMatrix() * scene->camera.inverseViewMatrix();
+    Matrix4 inverseModelMatrix = fluidDomain->inverseModelMatrix();
+    Matrix4 inverseViewMatrix = scene->camera.inverseViewMatrix();
+
+    Matrix4 inverseModelViewMatrix = inverseModelMatrix*inverseViewMatrix;
     return inverseModelViewMatrix * Vector3(worldx, -worldy, -in.z);;
 }
 
@@ -99,8 +99,10 @@ void mouseMove(int x, int y) {
     }
     if (rightDown) {
         //transform to frame coordinates
-        fillPos = screenSpaceToFluidSpace(Vector3(x, y, scene->camera.position.z));
-        Vector3 lastFillPos = screenSpaceToFluidSpace(Vector3(lastX, lastY, scene->camera.position.z));
+        Vector3 curPos = Vector3(x, y, scene->camera.position.z);
+        Vector3 lastPos = Vector3(lastX, lastY, scene->camera.position.z);
+        fillPos = screenSpaceToFluidSpace(curPos);
+        Vector3 lastFillPos = screenSpaceToFluidSpace(lastPos);
         fillVel = fillPos-lastFillPos;
         if (fillPos.x > 1.0) fillPos.x = 1.0;
         if (fillPos.x < 0) fillPos.x = 0;
@@ -144,7 +146,6 @@ void render(void) {
         float r = zz*32 < 0 ? 0 : zz*3;
         solver->addDensity(texSpaceFillPos, Vector4(r, g, b, 10)*densityScale);
     }
-
     profiler->end("ui");
     profiler->end("total");
     profiler->start("total");
@@ -159,28 +160,24 @@ void render(void) {
 
     profiler->start("transfer voxels");
     solver->fillVelocityData(particleSystem->velocityBuffer);
-    
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
     solver->fillDensityData((uint16_t *)0);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
-
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
-    densityTexture->initData((uint16_t *)0);
+    fluidDomain->densityTexture->initData((uint16_t *)0);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-
     profiler->end("transfer voxels");
 
     profiler->start("render");
     glViewport(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
     glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     particleSystem->update(dt); // do this during async pixel transfer
     particleSystem->rotation = fluidDomain->rotation;
 
-    // composite pass
     fluidDomain->shader = shaders[shaderIndex];
     mainFrameBuffer->backgroundColor = backgroundColors[shaderIndex];
-    glCullFace(GL_BACK);
     mainFrameBuffer->addRenderTarget(colorTarget, GL_COLOR_ATTACHMENT0);
     scene->render();
 
@@ -200,6 +197,7 @@ void idle(void) {
 void compileShaders(void) {
     displayShader = new Shader();
     simpleShader = new Shader();
+    particleShader = new Shader();
     shaders[0] = new Shader();
     shaders[1] = new Shader();
     shaders[2] = new Shader();
@@ -209,6 +207,7 @@ void compileShaders(void) {
         shaders[2]->compile("shaders/colorBlend.vsh", "shaders/colorAdd.fsh");
         displayShader->compile("shaders/display.vsh", "shaders/display.fsh");
         simpleShader->compile("shaders/simple.vsh", "shaders/simple.fsh");
+        particleShader->compile("shaders/simple.vsh", "shaders/particle.fsh");
     } catch (mcjee::ShaderError &e) {
         cout << e.what() << endl;
     }
@@ -230,38 +229,27 @@ void init(void) {
     scene->camera.zoom = 0.8;
     scene->blendEnabled = true;
 
-    densityTextureData = new uint16_t[width*width*width*4];
-    memset(densityTextureData, 0, sizeof(uint16_t)*width*width*width*4);
-    densityTexture = new Texture3D(GL_RGBA16F_ARB, GL_RGBA, GL_HALF_FLOAT, width, width, width);
-    densityTexture->interpolation(GL_LINEAR);
-    densityTexture->initData(densityTextureData);
-
-    fluidDomain = new FluidModel(loadCube(1.0, 1.0, 1.0), shaders[0], GL_TRIANGLES);
+    fluidDomain = new FluidModel(shaders[0], GL_TRIANGLES, width, width, width);
     fluidDomain->init();
     fluidDomain->center = Vector3(0.5, 0.5, 0.5);
     fluidDomain->scaleUniform(1.5);
-    fluidDomain->densityBuffer = densityTexture;
     scene->add(fluidDomain);
 
-    boundingBox = new BoundingBox(loadWireCube(1.0, 1.0, 1.0), simpleShader, fluidDomain);
+    boundingBox = new BoundingBox(simpleShader, fluidDomain);
     boundingBox->init();
-    boundingBox->center = Vector3(0.5, 0.5, 0.5);
-    boundingBox->scaleUniform(1.5);
     scene->add(boundingBox);
 
-    particleSystem = new ParticleSystem(simpleShader, width, width, width);
+    particleSystem = new ParticleSystem(particleShader, width, width, width);
     particleSystem->center = Vector3(0.5, 0.5, 0.5);
     particleSystem->scaleUniform(1.5);
     particleSystem->init();
     scene->add(particleSystem);
 
     for (int i = 0; i < 5000; ++i) {
-        particleSystem->add(Vector3(0.5+0.001*i, 0.5+0.001*i, 0.5+0.001*i), 1.0);
+        particleSystem->add(Vector3(), 1.0);
     }
 
     solver = new GPUSolver(width, width, width);
-
-    fillPos = Vector3(0, 0, 0);
 
     glGenBuffers(1, &pbo);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
@@ -289,10 +277,12 @@ void eraseFluid() {
 
 void setInterpolation(bool on) {
     glutSetWindow(mainWindow);
-    if (on)
-        densityTexture->interpolation(GL_LINEAR);
-    else
-        densityTexture->interpolation(GL_NEAREST);
+    if (on) fluidDomain->densityTexture->interpolation(GL_LINEAR);
+    else fluidDomain->densityTexture->interpolation(GL_NEAREST);
+}
+
+void setParticlesEnabled(bool on) {
+    particleSystem->visible = on;
 }
 
 int main(int argc, char **argv) {
@@ -308,22 +298,23 @@ int main(int argc, char **argv) {
     compileShaders();
     init();
 
-    uiInitialize(mainWindow);
-    uiSetIterationsPointer(&solver->iterations);
-    uiSetSamplesPointer(&fluidDomain->samples);
-    uiSetShaderIndexPointer(&shaderIndex);
-    uiSetVelocityScalePointer(&velocityScale);
-    uiSetDensityScalePointer(&densityScale);
-    uiSetInterpolationCallback(setInterpolation);
-    uiSetEraseFluidCallback(eraseFluid);
-
-    profiler = new Profiler(uiGetGLUI());
+    GLUI *gui = GLUI_Master.create_glui_subwindow(mainWindow, GLUI_SUBWINDOW_LEFT);
+    profiler = new Profiler(gui);
     profiler->addProfile("solve density");
     profiler->addProfile("solve velocity");
     profiler->addProfile("render");
     profiler->addProfile("ui");
     profiler->addProfile("transfer voxels");
     profiler->addProfile("total");
+    uiInitialize(gui);
+    uiSetIterationsPointer(&solver->iterations);
+    uiSetSamplesPointer(&fluidDomain->samples);
+    uiSetShaderIndexPointer(&shaderIndex);
+    uiSetVelocityScalePointer(&velocityScale);
+    uiSetDensityScalePointer(&densityScale);
+    uiSetInterpolationCallback(setInterpolation);
+    uiSetParticlesEnabledCallback(setParticlesEnabled);
+    uiSetEraseFluidCallback(eraseFluid);
 
     int vx, vy, vw, vh;
     GLUI_Master.get_viewport_area(&vx, &vy, &vw, &vh);
@@ -340,15 +331,13 @@ int main(int argc, char **argv) {
     glutMainLoop();
 
     //delete all shaders too
-    //also somehow delete geometries which we dont have a handle on anymore
     uiTearDown();
     delete displayShader;
     delete colorTarget;
     delete mainFrameBuffer;
     delete scene;
-    delete densityTextureData;
-    delete densityTexture;
     delete fluidDomain;
+    delete boundingBox;
     delete solver;
     delete profiler;
     return 0;

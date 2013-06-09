@@ -11,7 +11,7 @@
 
 using namespace mcjee;
 
-void uiInitialize(int window);
+void uiInitialize(GLUI *gui);
 void uiTearDown();
 
 GLUI *uiGetGLUI();
@@ -24,5 +24,6 @@ void uiSetDensityScalePointer(float *);
 
 void uiSetEraseFluidCallback(void (*)());
 void uiSetInterpolationCallback(void (*)(bool));
+void uiSetParticlesEnabledCallback(void (*)(bool));
 
 #endif

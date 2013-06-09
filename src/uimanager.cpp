@@ -17,6 +17,8 @@ struct {
     float _velocityScale; float *velocityScale;
     float _densityScale; float *densityScale;
     int _interpolation;
+    int _particlesEnabled;
+    void (*particlesEnabledSwitch)(bool);
     void (*interpolationSwitch)(bool);
     void (*eraseFluid)();
 } data;
@@ -50,9 +52,11 @@ static void interpolationCheckbox(GLUI_Control *) {
     data.interpolationSwitch(data._interpolation);
 }
 
-void uiInitialize(int window) {
-    GLUI *gui = GLUI_Master.create_glui_subwindow(window,
-                                                  GLUI_SUBWINDOW_LEFT);
+static void particlesEnabledCheckbox(GLUI_Control *) {
+    data.particlesEnabledSwitch(data._particlesEnabled);
+}
+
+void uiInitialize(GLUI *gui) {
     data.glui = gui;
     GLUI_Panel *simulationPanel = gui->add_panel("Simulation");
     GLUI_Control *control = gui->add_spinner_to_panel(simulationPanel,
@@ -113,6 +117,13 @@ void uiInitialize(int window) {
                                          -1,
                                          interpolationCheckbox);
     control->set_int_val(1);
+
+    GLUI_Panel *particlePanel = gui->add_panel("Particles");
+    control = gui->add_checkbox_to_panel(particlePanel,
+                                         "Particles enabled",
+                                         &(data._particlesEnabled),
+                                         -1,
+                                         particlesEnabledCheckbox);
 }
 
 void uiTearDown() {
@@ -154,4 +165,8 @@ void uiSetEraseFluidCallback(void (*callback)()) {
 
 void uiSetInterpolationCallback(void (*callback)(bool)) {
     data.interpolationSwitch = callback;
+}
+
+void uiSetParticlesEnabledCallback(void (*callback)(bool)) {
+    data.particlesEnabledSwitch = callback;
 }
