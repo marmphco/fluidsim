@@ -10,7 +10,7 @@ UNAME = ${shell uname}
 ARCH = ${shell uname -m}
 INCLUDEDEPS = ${filter clean,${MAKECMDGOALS}}
 
-SUBMITNAME = finalProject 
+SUBMITNAME = proj
 BUNDLENAME = FluidSim
 EXECNAME = fluidSim
 SRCDIR = src
@@ -23,13 +23,13 @@ _CSRC = final.cpp mjshader.cpp mjrenderable.cpp\
         mjloader.cpp mjgeometry.cpp mjfluid.cpp\
         mjtexture.cpp mjmatrix.cpp mjvector.cpp mjframebuffer.cpp\
         mjgpusolver.cpp mjprofiler.cpp uimanager.cpp half.cpp\
-        models.cpp
+        models.cpp colors.cpp
 
 _SHADERS = colorBlend.fsh colorBlend.vsh colorAdd.fsh\
            display.vsh display.fsh\
            add.fsh advect.fsh divergence.fsh project2.fsh\
            subgradient.fsh kernel.vsh\
-           simple.vsh simple.fsh
+           simple.vsh simple.fsh particle.fsh
 
 EXECUTABLE = ${BINDIR}/${EXECNAME}
 BUNDLE = ${BINDIR}/${BUNDLENAME}.app
@@ -107,6 +107,8 @@ dirs:
 clean:
 	- rm -f ${OBJ} ${EXECUTABLE} deps
 	- rm -rf ${BUNDLE}
+	- rm -rf ${BINDIR}/*
+	- rm -rf ${SUBMITNAME}
 
 ifeq "${INCLUDEDEPS}" ""
 include deps

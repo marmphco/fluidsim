@@ -21,9 +21,10 @@ void uiSetShaderIndexPointer(int *);
 void uiSetIterationsPointer(int *);
 void uiSetVelocityScalePointer(float *);
 void uiSetDensityScalePointer(float *);
-
+void uiSetParticlesEnabledPointer(int *);
+void uiSetGlowPointer(int *);
+void uiSetDarkBackgroundPointer(int *);
+void uiSetSubdivisionsCallback(void (*)(int));
 void uiSetEraseFluidCallback(void (*)());
-void uiSetInterpolationCallback(void (*)(bool));
-void uiSetParticlesEnabledCallback(void (*)(bool));
 
 #endif

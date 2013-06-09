@@ -160,11 +160,11 @@ GPUSolver::~GPUSolver() {
     delete densityBufferTex;
     delete velocityBufferTex;
     delete computeScene;
+    delete addKernel;
     delete advectKernel;
     delete divergenceKernel;
     delete project2Kernel;
     delete subgradientKernel;
-    delete addKernel;
     delete model;
     delete geo;
 }
@@ -173,9 +173,12 @@ void GPUSolver::addVelocity(Vector3 pos, Vector3 amount) {
     float valx = amount.x;
     float valy = amount.y;
     float valz = amount.z;
-    velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 0)] = half_from_float(*(uint32_t *)(&valx));
-    velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 1)] = half_from_float(*(uint32_t *)(&valy));
-    velocityBuffer[idv((int)pos.x, (int)pos.y, (int)pos.z, 2)] = half_from_float(*(uint32_t *)(&valz));
+    int ix = idv((int)pos.x, (int)pos.y, (int)pos.z, 0);
+    if (ix+2 < _width*_height*_depth*3) {
+        velocityBuffer[ix] = half_from_float(*(uint32_t *)(&valx));
+        velocityBuffer[ix+1] = half_from_float(*(uint32_t *)(&valy));
+        velocityBuffer[ix+2] = half_from_float(*(uint32_t *)(&valz));
+    }
 }
 
 void GPUSolver::addDensity(Vector3 pos, Vector4 amount) {
@@ -183,10 +186,13 @@ void GPUSolver::addDensity(Vector3 pos, Vector4 amount) {
     float valg = amount.g;
     float valb = amount.b;
     float vala = amount.a;
-    densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 0)] = half_from_float(*(uint32_t *)(&valr));
-    densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 1)] = half_from_float(*(uint32_t *)(&valg));
-    densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 2)] = half_from_float(*(uint32_t *)(&valb));
-    densityBuffer[idv4((int)pos.x, (int)pos.y, (int)pos.z, 3)] = half_from_float(*(uint32_t *)(&vala));
+    int ir = idv4((int)pos.x, (int)pos.y, (int)pos.z, 0);
+    if (ir+2 < _width*_height*_depth*4) {
+        densityBuffer[ir] = half_from_float(*(uint32_t *)(&valr));
+        densityBuffer[ir+1] = half_from_float(*(uint32_t *)(&valg));
+        densityBuffer[ir+2] = half_from_float(*(uint32_t *)(&valb));
+        densityBuffer[ir+3] = half_from_float(*(uint32_t *)(&vala));
+    }
 }
 
 void GPUSolver::addStep(Texture2D *in0, Texture2D *in1, Texture2D *out) {

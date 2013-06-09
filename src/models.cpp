@@ -82,6 +82,7 @@ ParticleSystem::ParticleSystem(Shader *shader, int width, int height, int depth)
 
 ParticleSystem::~ParticleSystem() {
     delete geometry;
+    delete velocityBuffer;
 }
 
 void ParticleSystem::setupVertexAttributes() {
