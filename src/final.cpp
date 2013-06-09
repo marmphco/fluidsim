@@ -146,6 +146,7 @@ void render(void) {
         float r = zz*32 < 0 ? 0 : zz*3;
         solver->addDensity(texSpaceFillPos, Vector4(r, g, b, 10)*densityScale);
     }
+    dumpGLError();
     profiler->end("ui");
     profiler->end("total");
     profiler->start("total");

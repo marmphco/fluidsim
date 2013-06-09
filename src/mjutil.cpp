@@ -31,6 +31,38 @@ long getTimeMillis(void) {
 #endif
 }
 
+void dumpGLError() {
+    GLenum error = glGetError();
+    const char *id = "OpenGL Error: ";
+    switch (error) {
+        case GL_NO_ERROR:
+            //std::cerr << "no error"<< std::endl;
+            break;
+        case GL_INVALID_ENUM:
+            std::cerr << id << "Invalid Enum"<< std::endl;
+            break;
+        case GL_INVALID_VALUE:
+            std::cerr << id << "Invalid Value"<< std::endl;
+            break;
+        case GL_INVALID_OPERATION:
+            std::cerr << id << "Invalid Operation"<< std::endl;
+            break;
+        case GL_INVALID_FRAMEBUFFER_OPERATION:
+            std::cerr << id << "Invalid Framebuffer Operation"<< std::endl;
+            break;
+        case GL_OUT_OF_MEMORY:
+            std::cerr << id << "Out of Memory"<< std::endl;
+            break;
+        case GL_STACK_UNDERFLOW:
+            std::cerr << id << "Stack Underflow"<< std::endl;
+            break;
+        case GL_STACK_OVERFLOW:
+            std::cerr << id << "Stack Overflow"<< std::endl;
+            break;
+        default: break;
+    }
+}
+
 // can also be used for texture coordinates
 void interleaveVertexData(float *interleaved,
                           float *positionData,

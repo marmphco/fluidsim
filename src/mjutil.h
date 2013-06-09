@@ -23,6 +23,7 @@
 namespace mcjee {
 
 long getTimeMillis(void);
+void dumpGLError();
 
 // can also be used for texture coordinates
 void interleaveVertexData(float *interleaved,

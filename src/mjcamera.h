@@ -14,6 +14,7 @@ class Camera {
 private:
     Matrix4 _projectionMatrix;
     Matrix4 _viewMatrix;
+    Matrix4 _inverseViewMatrix;
     float _left;
     float _right;
     float _bottom;

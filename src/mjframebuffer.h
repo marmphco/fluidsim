@@ -27,6 +27,7 @@ public:
 	Framebuffer(float width, float height);
 	~Framebuffer();
 
+    GLenum completeness();
     void addRenderTarget(GLenum format, GLenum attachment);
     void addRenderTarget(Texture2D *, GLenum attachment);
     void setDrawBuffers(int count, GLenum *buffers);

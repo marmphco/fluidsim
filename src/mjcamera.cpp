@@ -99,10 +99,10 @@ Matrix4 &Camera::viewMatrix() {
 }
 
 Matrix4 &Camera::inverseViewMatrix() {
-    _viewMatrix.identity();
-    _viewMatrix = rotation;
-    _viewMatrix.translate(position.x, position.y, position.z);
-    return _viewMatrix;
+    _inverseViewMatrix.identity();
+    _inverseViewMatrix = rotation;
+    _inverseViewMatrix.translate(position.x, position.y, position.z);
+    return _inverseViewMatrix;
 }
 
 }

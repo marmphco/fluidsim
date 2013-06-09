@@ -23,6 +23,13 @@ Framebuffer::~Framebuffer() {
     }
 }
 
+GLenum Framebuffer::completeness() {
+    bind();
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    unbind();
+    return status;
+}
+
 void Framebuffer::addRenderTarget(GLenum format, GLenum attachment) {
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     GLuint buffer;

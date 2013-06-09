@@ -44,9 +44,8 @@ namespace mcjee {
         ~Scene();
         void add(Renderable *);
         void add(Light *);
-        //void remove();
-        void deleteMembers();
-        //void clear();
+        void remove(Renderable *);
+        void remove(Light *);
         void render();
 
         void eachRenderable(void (*)(Renderable *));

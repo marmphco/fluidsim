@@ -33,8 +33,13 @@ namespace mcjee {
         lights.push_back(light);
     }
 
-    void Scene::deleteMembers() {
-        // delete all data held in renderables and lights
+    void Scene::remove(Renderable *) {
+        // i guess we got to search for this guy
+        //or give it an id field
+    }
+
+    void Scene::remove(Light *) {
+
     }
 
     void Scene::render() {
@@ -60,15 +65,18 @@ namespace mcjee {
             lightSpecularColors[i] = lights[i]->specularColor*specularMultiplier;
         }
 
+        GLfloat *projectionMatrix = camera.projectionMatrix().data;
+        GLfloat *viewMatrix = camera.viewMatrix().data;
+        GLfloat *inverseViewMatrix = camera.inverseViewMatrix().data;
         // render objects
         for (unsigned int i = 0; i != renderables.size(); ++i) {
             Renderable &object = *renderables[i];
             Shader &shader = *object.shader;
             shader.use();
             // matrix uniforms
-            shader.setUniformMatrix4fv("projectionMatrix", 1, GL_FALSE, camera.projectionMatrix().data);
-            shader.setUniformMatrix4fv("viewMatrix", 1, GL_FALSE, camera.viewMatrix().data);
-            shader.setUniformMatrix4fv("inverseViewMatrix", 1, GL_FALSE, camera.inverseViewMatrix().data);
+            shader.setUniformMatrix4fv("projectionMatrix", 1, GL_FALSE, projectionMatrix);
+            shader.setUniformMatrix4fv("viewMatrix", 1, GL_FALSE, viewMatrix);
+            shader.setUniformMatrix4fv("inverseViewMatrix", 1, GL_FALSE, inverseViewMatrix);
             //light uniforms
             shader.setUniform3fv("ambientColor", 1, (const GLfloat *)&ambientColor);
             shader.setUniform3fv("lightPositions", MAX_LIGHTS, (const GLfloat *)&lightPositions);
