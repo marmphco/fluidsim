@@ -84,7 +84,7 @@ void ParticleSystem::update(float dt) {
         Vector3 vel = Vector3(vx, vy, vz);
         if (vel.length() > 1) vel.normalize();
 
-        particles[i] = p + vel * dt * scale;
+        particles[i] = p + vel * dt * scale; // normalize all for coool stuff
 
     }
     glLineWidth(1.0);
