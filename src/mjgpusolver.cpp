@@ -61,13 +61,9 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
 
     densityBuffer = new uint16_t[width*height*depth*4];
     velocityBuffer = new uint16_t[width*height*depth*3];
-    divergence = new uint16_t[width*height*depth];
-    pressure = new uint16_t[width*height*depth];
 
     memset(densityBuffer, 0, sizeof(uint16_t)*width*height*depth*4);
     memset(velocityBuffer, 0, sizeof(uint16_t)*width*height*depth*3);
-    memset(divergence, 0, sizeof(uint16_t)*width*height*depth);
-    memset(pressure, 0, sizeof(uint16_t)*width*height*depth);
 
     densityTex0 = new Texture2D(GL_RGBA16F_ARB, GL_RGBA, GL_HALF_FLOAT, width, height*depth);
     densityTex0->initData(densityBuffer);
@@ -90,17 +86,17 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     velocityTex1->wrap(GL_CLAMP_TO_BORDER);
 
     pressureTex0 = new Texture2D(GL_R16F, GL_RED, GL_HALF_FLOAT, width, height*depth);
-    pressureTex0->initData(pressure);
+    pressureTex0->initData((float *)0);
     pressureTex0->interpolation(GL_NEAREST);
     pressureTex0->wrap(GL_CLAMP_TO_BORDER);
 
     pressureTex1 = new Texture2D(GL_R16F, GL_RED, GL_HALF_FLOAT, width, height*depth);
-    pressureTex1->initData(pressure);
+    pressureTex1->initData((float *)0);
     pressureTex1->interpolation(GL_NEAREST);
     pressureTex1->wrap(GL_CLAMP_TO_BORDER);
 
     divergenceTex = new Texture2D(GL_R16F, GL_RED, GL_HALF_FLOAT, width, height*depth);
-    divergenceTex->initData(divergence);
+    divergenceTex->initData((float *)0);
     divergenceTex->interpolation(GL_NEAREST);
     divergenceTex->wrap(GL_CLAMP_TO_BORDER);
 
@@ -153,8 +149,6 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
 GPUSolver::~GPUSolver() {
     delete densityBuffer;
     delete velocityBuffer;
-    delete divergence;
-    delete pressure;
     delete densityTex0;
     delete densityTex1;
     delete velocityTex0;
