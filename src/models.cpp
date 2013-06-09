@@ -44,7 +44,6 @@ void ParticleSystem::update(float dt) {
         // constrain to bounds? // may be more complicated with fluid domain rotating
         //keep it in a unit sphere for now
         Vector3 p = particles[i];
-        std::cout << lifes.size() << std::endl;
         if (p.x > 1.0 || p.y > 1.0 || p.z > 1.0 || p.x < 0.0 || p.y < 0.0 || p.z < 0.0 || lifes[i/2] < 0.0) {
             p.x = 1.0*rand()/RAND_MAX;
             p.y = 1.0*rand()/RAND_MAX;
@@ -81,6 +80,7 @@ void ParticleSystem::update(float dt) {
         float vx = velocityBuffer[idv((int)tx, (int)ty, (int)tz, 0)];
         float vy = velocityBuffer[idv((int)tx, (int)ty, (int)tz, 1)];
         float vz = velocityBuffer[idv((int)tx, (int)ty, (int)tz, 2)];
+
         Vector3 vel = Vector3(vx, vy, vz);
         if (vel.length() > 1) vel.normalize();
 

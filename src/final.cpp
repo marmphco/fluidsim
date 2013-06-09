@@ -44,7 +44,7 @@ static BoundingBox *boundingBox;
 static ParticleSystem *particleSystem;
 static Scene *scene;
 static FluidSolver *solver;
-static int width = 72;
+static int width = 48;
 static int mainWindow;
 static Profiler *profiler;
 
@@ -254,6 +254,7 @@ void init(void) {
     particleSystem->scaleUniform(1.5);
     particleSystem->init();
     scene->add(particleSystem);
+
     for (int i = 0; i < 5000; ++i) {
         particleSystem->add(Vector3(0.5+0.001*i, 0.5+0.001*i, 0.5+0.001*i), 1.0);
     }
