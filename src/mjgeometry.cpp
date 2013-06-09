@@ -12,6 +12,11 @@ Geometry::~Geometry() {
     glDeleteBuffers(2, &vertexBufferObject);
 }
 
+Geometry::Geometry() {
+    glGenBuffers(2, &vertexBufferObject);
+    //empty geometry object
+}
+
 Geometry::Geometry(GLfloat *vertexData,
                    GLuint *indexData,
                    int vertexCount,

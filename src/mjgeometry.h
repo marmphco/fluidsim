@@ -22,6 +22,7 @@ private:
     Vector3 _max;
 
 public:
+    Geometry();
     Geometry(GLfloat *vertexData,
              GLuint *indexData,
              int vertexCount,

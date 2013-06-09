@@ -8,6 +8,7 @@
 #define MODELS_H
 
 #include "mj.h"
+#include <vector>
 
 using namespace mcjee;
 
@@ -52,6 +53,24 @@ public:
     virtual void setupUniforms() {
         rotation = _target->rotation;
     }
+};
+
+class ParticleSystem : public Renderable {
+private:
+    vector<Vector3> particles;
+    vector<GLuint> indices;
+    vector<float> lifes;
+    int width;
+    int height;
+    int depth;
+public:
+    float *velocityBuffer;
+
+    ParticleSystem(Shader *shader, int width, int height, int depth);
+    void update(float dt);
+    void add(Vector3 position, float life);
+    virtual void setupVertexAttributes(void);
+    virtual void setupUniforms(void);
 };
 
 #endif

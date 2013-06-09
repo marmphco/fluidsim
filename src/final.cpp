@@ -41,6 +41,7 @@ static Shader *displayShader;
 static Shader *simpleShader;
 static FluidModel *fluidDomain;
 static BoundingBox *boundingBox;
+static ParticleSystem *particleSystem;
 static Scene *scene;
 static FluidSolver *solver;
 static int width = 72;
@@ -157,6 +158,8 @@ void render(void) {
     profiler->end("solve velocity");
 
     profiler->start("transfer voxels");
+    solver->fillVelocityData(particleSystem->velocityBuffer);
+    
     glBindBuffer(GL_PIXEL_PACK_BUFFER, pbo);
     solver->fillDensityData((uint16_t *)0);
     glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
@@ -164,11 +167,15 @@ void render(void) {
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, pbo);
     densityTexture->initData((uint16_t *)0);
     glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+
     profiler->end("transfer voxels");
 
     profiler->start("render");
     glViewport(0, 0, FRAME_WIDTH, FRAME_HEIGHT);
     glEnable(GL_CULL_FACE);
+
+    particleSystem->update(dt); // do this during async pixel transfer
+    particleSystem->rotation = fluidDomain->rotation;
 
     // composite pass
     fluidDomain->shader = shaders[shaderIndex];
@@ -241,6 +248,15 @@ void init(void) {
     boundingBox->center = Vector3(0.5, 0.5, 0.5);
     boundingBox->scaleUniform(1.5);
     scene->add(boundingBox);
+
+    particleSystem = new ParticleSystem(simpleShader, width, width, width);
+    particleSystem->center = Vector3(0.5, 0.5, 0.5);
+    particleSystem->scaleUniform(1.5);
+    particleSystem->init();
+    scene->add(particleSystem);
+    for (int i = 0; i < 5000; ++i) {
+        particleSystem->add(Vector3(0.5+0.001*i, 0.5+0.001*i, 0.5+0.001*i), 1.0);
+    }
 
     solver = new GPUSolver(width, width, width);
 
