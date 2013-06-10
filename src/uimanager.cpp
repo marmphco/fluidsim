@@ -114,6 +114,7 @@ void uiInitialize(GLUI *gui) {
     gui->add_radiobutton_to_group(subGroup, "32 x 32 x 32");
     gui->add_radiobutton_to_group(subGroup, "48 x 48 x 48");
     gui->add_radiobutton_to_group(subGroup, "64 x 64 x 64");
+    subGroup->set_int_val(2);
     gui->add_separator_to_panel(simulationPanel);
 
     gui->add_button_to_panel(simulationPanel,
@@ -135,7 +136,7 @@ void uiInitialize(GLUI *gui) {
                                                       &(data._shaderIndex),
                                                       -1,
                                                       shaderList);
-    listBox->add_item(0, "Bluish");
+    listBox->add_item(0, "Pastel");
     listBox->add_item(1, "Smoke");
     listBox->add_item(3, "Fire");
     listBox->add_item(4, "Rainbows");

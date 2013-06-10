@@ -14,7 +14,7 @@
 namespace mcjee {
 
 Vector4 (*(getColorFunc)(int index))(float);
-Vector4 bluish(float t);
+Vector4 pastel(float t);
 Vector4 darkSmoke(float t);
 Vector4 lightSmoke(float t);
 Vector4 fire(float t);
