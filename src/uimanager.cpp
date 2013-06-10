@@ -19,6 +19,7 @@ struct {
     int _particlesEnabled; int *particlesEnabled;
     int _glow; int *glow;
     int _darkBackground; int *darkBackground;
+    int _boundingBox; int *boundingBox;
     int _subdivisions; void (*subdivisions)(int);
     void (*eraseFluid)();
 } data;
@@ -54,6 +55,10 @@ static void glowCheckbox(GLUI_Control *) {
 
 static void darkBackgroundCheckbox(GLUI_Control *) {
     *data.darkBackground = data._darkBackground;
+}
+
+static void boundingBoxCheckbox(GLUI_Control *) {
+    *data.boundingBox = data._boundingBox;
 }
 
 static void subdivisionsRadioGroup(GLUI_Control *) {
@@ -153,6 +158,12 @@ void uiInitialize(GLUI *gui) {
                                          -1,
                                          particlesEnabledCheckbox);
     control->set_int_val(1);
+    control = gui->add_checkbox_to_panel(renderingPanel,
+                                         "Bounding Box",
+                                         &(data._boundingBox),
+                                         -1,
+                                         boundingBoxCheckbox);
+    control->set_int_val(1);
 }
 
 void uiTearDown() {
@@ -201,6 +212,11 @@ void uiSetGlowPointer(int *p) {
 void uiSetDarkBackgroundPointer(int *p) {
     data.darkBackground = p;
     *data.darkBackground = data._darkBackground;
+}
+
+void uiSetBoundingBoxPointer(int *p) {
+    data.boundingBox = p;
+    *data.boundingBox = data._boundingBox;
 }
 
 void uiSetSubdivisionsCallback(void (*callback)(int)) {

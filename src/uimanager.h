@@ -24,6 +24,7 @@ void uiSetDensityScalePointer(float *);
 void uiSetParticlesEnabledPointer(int *);
 void uiSetGlowPointer(int *);
 void uiSetDarkBackgroundPointer(int *);
+void uiSetBoundingBoxPointer(int *);
 void uiSetSubdivisionsCallback(void (*)(int));
 void uiSetEraseFluidCallback(void (*)());
 

@@ -60,7 +60,6 @@ static GLuint pbo;
 
 // OPTIONS
 static int colorFuncIndex;
-static int particlesEnabled;
 static int glow;
 static int darkBackground;
 
@@ -127,7 +126,6 @@ void render(void) {
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    particleSystem->visible = particlesEnabled;
     particleSystem->update(dt); // do this during async pixel transfer
     particleSystem->rotation = fluidDomain->rotation;
 
@@ -205,7 +203,8 @@ void initSimulation(int size) {
 
     uiSetIterationsPointer(&solver->iterations);
     uiSetSamplesPointer(&fluidDomain->samples);
-    uiSetParticlesEnabledPointer(&particlesEnabled);
+    uiSetParticlesEnabledPointer(&particleSystem->visible);
+    uiSetBoundingBoxPointer(&boundingBox->visible);
 }
 
 void deleteSimulation() {
@@ -233,7 +232,6 @@ void keyboardEvent(unsigned char, int, int) {
     fullscreen = !fullscreen;
     if (fullscreen) glutFullScreen();
     else glutReshapeWindow(640+sidebarWidth, 640+sidebarHeight);
-    /**/
 }
 
 void mouseMove(int x, int y) {
