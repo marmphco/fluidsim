@@ -83,7 +83,6 @@ submission: ${MAINTARGET}
 	cp -r shaders ${SUBMITNAME}/code/bin
 	cp -r report ${SUBMITNAME}
 	#tar -cf ${SUBMITNAME}.tar ${SUBMITNAME}
-	#rm -rf ${SUBMITNAME}
 
 bundle: ${BUNDLE}
 
