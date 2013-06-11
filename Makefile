@@ -82,6 +82,8 @@ submission: ${MAINTARGET}
 	cp -r shaders ${SUBMITNAME}/code
 	cp -r shaders ${SUBMITNAME}/code/bin
 	cp -r report ${SUBMITNAME}
+	cp favscreenshot1.png ${SUBMITNAME}
+	cp favscreenshot2.png ${SUBMITNAME}
 	#tar -cf ${SUBMITNAME}.tar ${SUBMITNAME}
 
 bundle: ${BUNDLE}

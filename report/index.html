@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>Final Project Proposal</title>
+    <title>Final Project: Fluid Simulation</title>
     <link rel="stylesheet" type="text/css" href="clean.css">
 </head>
 
@@ -18,6 +18,11 @@
             <li><a href="../code/bin">executable</a></li>
             <li><a href="../README.txt">README</a></li>
         </ul>
+
+        <h2>Project Overview</h2>
+        <p>
+            This goal of this project was to create a 3-Dimensional fluid simulator that would run at interactive framerates. My original goals were to implement a CPU Solver, a GPU Solver, and Volumetric lighting. I achieved the first 2 goals, but was not able to implement an effective volumetric lighting system. This fluid simulator has a volume renderer that does not perform any lighting calculations.
+        </p>
 
         <h2>User Guide</h2>
         <h3>Controls</h3>
@@ -41,10 +46,7 @@
             <li>Bounding Box: Toggles fluid domain bounding box visibility.</li>
         </ul>
 
-        <h2>Project Overview</h2>
-        <p>
-            This goal of this project was to create a 3-Dimensional fluid simulator that would run at interactive framerates. My original goals were to implement a CPU Solver, a GPU Solver, and Volumetric lighting. I achieved the first 2 goals, but was not able to implement an effective volumetric lighting system. This fluid simulator has a volume renderer that does not perform any lighting calculations.
-        </p>
+        <div id="hero2"></div>
 
         <h2>Solver</h2>
         <h3>High Level Overview</h3>
@@ -64,7 +66,9 @@
             Even with GPU Solving there were still speed issues. Initially I was using textures full 32-bit floating point components for the fluid volume, but this became too bandwidth intensive. The GPU Gems article suggested using half-precision floating point textures for speed up, so I implemented those and the framerate easily increased by about 1.5x. There is minimal loss of simulation quality when using low precision floats. <a href="http://cellperformance.beyond3d.com/articles/2006/07/update-19-july-06-added.html">Mike Acton's half-precision</a> c implementation was used. 
         </p>
         <h3>Derivation</h3>
-        Well, I did say I would derive the math. This is a rough overview.
+        <p>Well, I did say I would derive the math. However, I have decided not to include the derivation because it is not very graphics related, and it would require a ridiculous amount of work to write it out on this page.</p>
+
+        <div id="hero3"></div>
 
         <h2>Renderer</h2>
         <h3>High Level Overview</h3>
