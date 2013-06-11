@@ -70,15 +70,20 @@ run: ${EXECUTABLE}
 	./${EXECUTABLE}
 
 submission: ${MAINTARGET}
-	- mkdir ${SUBMITNAME} ${SUBMITNAME}/obj
-	cp Makefile README.txt ${SUBMITNAME}
-	cp -r shaders ${SUBMITNAME}
-	cp -r src ${SUBMITNAME}
-	cp -r bin ${SUBMITNAME}
-	cp -r shaders ${SUBMITNAME}/bin
-	cp index.html thumbnail.png ${SUBMITNAME}
-	tar -cf ${SUBMITNAME}.tar ${SUBMITNAME}
-	rm -rf ${SUBMITNAME}
+	- rm -rf ${SUBMITNAME}
+	- mkdir ${SUBMITNAME}\
+	 ${SUBMITNAME}/code\
+	 ${SUBMITNAME}/code/obj\
+	 ${SUBMITNAME}/data
+	cp README.txt ${SUBMITNAME}
+	cp Makefile ${SUBMITNAME}/code
+	cp -r src ${SUBMITNAME}/code
+	cp -r bin ${SUBMITNAME}/code
+	cp -r shaders ${SUBMITNAME}/code
+	cp -r shaders ${SUBMITNAME}/code/bin
+	cp -r report ${SUBMITNAME}
+	#tar -cf ${SUBMITNAME}.tar ${SUBMITNAME}
+	#rm -rf ${SUBMITNAME}
 
 bundle: ${BUNDLE}
 
