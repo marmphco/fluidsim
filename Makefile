@@ -43,7 +43,7 @@ ifeq "${UNAME}" "Darwin"
 # OS X/Darwin, using clang and stuff.
 	COMPILER = clang++
 	COMPILE = ${COMPILER} ${OPTIONS}
-	FRAMEWORKS = -framework OpenGL -framework GLUT
+	FRAMEWORKS = -framework OpenGL -framework GLUT -framework CoreFoundation
 	LINK = ${COMPILER} ${OPTIONS} ${FRAMEWORKS}
 	MAINTARGET = bundle
 	LIBS = ${SRCDIR}/libglui/libglui${UNAME}${ARCH}.a
