@@ -137,9 +137,11 @@ void ParticleSystem::update(float dt) {
         int tx = p.x*width;
         int ty = p.y*height;
         int tz = p.z*depth;
-        float vx = velocityBuffer[idv((int)tx, (int)ty, (int)tz, 0)];
-        float vy = velocityBuffer[idv((int)tx, (int)ty, (int)tz, 1)];
-        float vz = velocityBuffer[idv((int)tx, (int)ty, (int)tz, 2)];
+        int idx = idv((int)tx, (int)ty, (int)tz, 0);
+        if (idx+2 >= width*height*depth*3) std::cerr << "fads" << std::endl;
+        float vx = velocityBuffer[idx];
+        float vy = velocityBuffer[idx+1];
+        float vz = velocityBuffer[idx+2];
 
         Vector3 vel = Vector3(vx, vy, vz);
         if (vel.length() > 1) vel.normalize();

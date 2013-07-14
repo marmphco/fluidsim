@@ -1,0 +1,106 @@
+<html>
+
+<head>
+    <title>Final Project: Fluid Simulation</title>
+    <link rel="stylesheet" type="text/css" href="clean.css">
+</head>
+
+<body>
+    <div class="container">
+        <h1>Fluid Simulation</h1>
+
+        <div id="hero"></div>
+
+        <p>Matthew Jee, mcjee@ucsc.edu</p>
+        <ul>
+            <li><a href="../code/src">source</a></li>
+            <li><a href="../code/shaders">shaders</a></li>
+            <li><a href="../code/bin">executable</a></li>
+            <li><a href="../README.txt">README</a></li>
+            <li><a href="../screencast.mov">video</a></li>
+            <li><a href="../favscreenshot1.png">screenshot 1</a></li>
+            <li><a href="../favscreenshot2.png">screenshot 2</a></li>
+        </ul>
+
+        <h2>Project Overview</h2>
+        <p>
+            This goal of this project was to create a 3-Dimensional fluid simulator that would run at interactive framerates. My original goals were to implement a CPU Solver, a GPU Solver, and Volumetric lighting. I achieved the first 2 goals, but was not able to implement an effective volumetric lighting system. This fluid simulator has a volume renderer that does not perform any lighting calculations.
+        </p>
+
+        <h2>User Guide</h2>
+        <h3>Controls</h3>
+        <ul>
+            <li>Left click and drag to move rotate the fluid domain.</li>
+            <li>Right click and drag to add fluid.</li>
+            <li>Press any key to enter/exit fullscreen.</li>
+        </ul>
+        <h3>Sidebar Options</h3>
+        <ul>
+            <li>Velocity Scale: The speed of inserted fluid.</li>
+            <li>Density Scale: The amount of inserted fluid.</li>
+            <li>Iterations: Simulation Accuracy (the number of iterations the projection step should use).</li>
+            <li>Subdivisions: The number of cells in the fluid domain.</li>
+            <li>Erase Fluid: Clear the density and velocity fields.</li>
+            <li>Samples: The number of teps the ray marcher should take.</li>
+            <li>Colors: The color function of inserted fluid.</li>
+            <li>Glow: Toggles additive blending.</li>
+            <li>Dark Background: Toggles background black/white.</li>
+            <li>Particles: Toggles particle simulation.</li>
+            <li>Bounding Box: Toggles fluid domain bounding box visibility.</li>
+        </ul>
+
+        <div id="hero2"></div>
+
+        <h2>Solver</h2>
+        <h3>High Level Overview</h3>
+        <img src="SolverArch.png">
+        <h3>Challenges</h3>
+        <p>Note: All of the framerate listed below are based on testing on a Nvidia 330M, which is not very fast at all.</p>
+        <p>
+            Speed was a major issue throughout the development process. The CPU Solver struggled to maintain 30 fps at very low (32 x 32 x 32) grid sizes, and just 1 color channel, even with a low (less than 10) iteration count. This is why the CPU solver is not accessible in the final product (the code is still there).
+        </p>
+        <p>
+            The GPU Solver is much more performant. It is able to compute at about 30 fps a 64 x 64 x 64 grid with 16 iterations and 4 color channels. That's more than 30 times as fast. The GPU Solver required several revisions to get it up to this speed.
+        </p>
+        <p>
+            In order to use OpenGL to run fluid simulation kernels, the GPU Solver renders a full screen quad, with a 2D texture corresponding to the volume data mapped to the quad. The fragment shader then takes samples of this 2D texture to do the simulation computation. To run computations on a volume, either each slice of the volume must be rendered separately, or the data representing the 3D texture must be mapped to a 2D texture. This project uses the latter approach.
+        </p> 
+        <p>
+            Even with GPU Solving there were still speed issues. Initially I was using textures full 32-bit floating point components for the fluid volume, but this became too bandwidth intensive. The GPU Gems article suggested using half-precision floating point textures for speed up, so I implemented those and the framerate easily increased by about 1.5x. There is minimal loss of simulation quality when using low precision floats. <a href="http://cellperformance.beyond3d.com/articles/2006/07/update-19-july-06-added.html">Mike Acton's half-precision</a> c implementation was used. 
+        </p>
+        <h3>Derivation</h3>
+        <p>Well, I did say I would derive the math. However, I have decided not to include the derivation because it is not very graphics related, and it would require a ridiculous amount of work to write it out on this page.</p>
+
+        <div id="hero3"></div>
+
+        <h2>Renderer</h2>
+        <h3>High Level Overview</h3>
+        <img src="RenderArch.png">
+        <h3>Challenges</h3>
+        <p>
+            I attempted to implement volumetric lighting, but the quality was to low for the speed penalty it induced. My method involved taking samples from each sample point to each light source, to determine occlusion by other parts of the volume.
+        </p>
+        <p>
+            The GPU Gems paper proposed a deferred rendering method. First the depth of back faces of the fluid domain would be rendered, then the positions of the front faces would be rendered and the depth of the front faces subtracted from the first pass. This deferred buffer would contain all the data necessary to perform ray marching over the fluid volume. I experimented with this, but it only slowed down rendering. It was faster to just use a conditional to terminate sampling rather than get depth values from a deferred buffer. It should be noted that compositing fluid with other geometry in a scene necessitates the deferred approach. Since I don't render any other geometry besides the fluid, deferred rendering was not necessary.
+        </p>
+        <p>
+            The blending used in the simulation is not physically accurate. For the non-additive blend shader, the volume samples are blended from front to back. This way, we can stop taking samples as soon as the front-most voxels obscure the back ones. This is faster than correct blending back to front.
+        </p>
+        <p>
+            Partway through the project I realized that using the density color channels as red, green, and blue parts of a single substance does not produce color the way I thought it would. The colors always turned out very dark and washed out. Instead, it turns out that having each color channel represent a unique substance with an arbitrary color works best. For the non-additive shader, red is the amount of red fluid, green is the amount of green fluid, blue is the amount of blue fluid, and alpha is the amount of white fluid. Using alpha as a white fluid allows for brighter colors.
+        </p>
+        <p>
+            The solver density data is passed to the renderer though a pixel buffer object. By using a pixel buffer object, the data transfer is asynchronous, letting the CPU do other stuff while the pixels/voxels are transferred. This fluid simulator uses that extra time to run a particle simulation using the solver velocity data. Since this occurs alongside the density pixel transfer, the cost is minimal (though the velocity texture must be transferred first).
+        </p>
+
+        <h2>References and Acknowledgments</h2>
+        <ul>
+            <li><a href="http://www.dgp.toronto.edu/people/stam/reality/Research/pdf/GDC03.pdf">Jos Stam, GDC 2003</a></li>
+            <li><a href="http://http.developer.nvidia.com/GPUGems3/gpugems3_ch30.html">GPU Gems</a></li>
+            <li><a href="http://cellperformance.beyond3d.com/articles/2006/07/update-19-july-06-added.html">Mike Acton, half.c and half.h</a></li>
+        </ul>
+
+    <div>
+</body>
+
+</html>

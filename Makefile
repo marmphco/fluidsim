@@ -43,7 +43,7 @@ ifeq "${UNAME}" "Darwin"
 # OS X/Darwin, using clang and stuff.
 	COMPILER = clang++
 	COMPILE = ${COMPILER} ${OPTIONS}
-	FRAMEWORKS = -framework OpenGL -framework GLUT
+	FRAMEWORKS = -framework OpenGL -framework GLUT -framework CoreFoundation
 	LINK = ${COMPILER} ${OPTIONS} ${FRAMEWORKS}
 	MAINTARGET = bundle
 	LIBS = ${SRCDIR}/libglui/libglui${UNAME}${ARCH}.a
@@ -70,15 +70,21 @@ run: ${EXECUTABLE}
 	./${EXECUTABLE}
 
 submission: ${MAINTARGET}
-	- mkdir ${SUBMITNAME} ${SUBMITNAME}/obj
-	cp Makefile README.txt ${SUBMITNAME}
-	cp -r shaders ${SUBMITNAME}
-	cp -r src ${SUBMITNAME}
-	cp -r bin ${SUBMITNAME}
-	cp -r shaders ${SUBMITNAME}/bin
-	cp index.html thumbnail.png ${SUBMITNAME}
-	tar -cf ${SUBMITNAME}.tar ${SUBMITNAME}
-	rm -rf ${SUBMITNAME}
+	- rm -rf ${SUBMITNAME}
+	- mkdir ${SUBMITNAME}\
+	 ${SUBMITNAME}/code\
+	 ${SUBMITNAME}/code/obj\
+	 ${SUBMITNAME}/data
+	cp README.txt ${SUBMITNAME}
+	cp Makefile ${SUBMITNAME}/code
+	cp -r src ${SUBMITNAME}/code
+	cp -r bin ${SUBMITNAME}/code
+	cp -r shaders ${SUBMITNAME}/code
+	cp -r shaders ${SUBMITNAME}/code/bin
+	cp -r report ${SUBMITNAME}
+	cp favscreenshot1.png ${SUBMITNAME}
+	cp favscreenshot2.png ${SUBMITNAME}
+	#tar -cf ${SUBMITNAME}.tar ${SUBMITNAME}
 
 bundle: ${BUNDLE}
 

@@ -18,7 +18,7 @@ FluidSolver::FluidSolver(int width, int height, int depth) :
 }
 
 FluidSolver::~FluidSolver() {
-
+    
 }
 
 CPUSolver::CPUSolver(int width, int height, int depth) :

@@ -86,17 +86,17 @@ GPUSolver::GPUSolver(int width, int height, int depth) :
     velocityTex1->wrap(GL_CLAMP_TO_BORDER);
 
     pressureTex0 = new Texture2D(GL_R16F, GL_RED, GL_HALF_FLOAT, width, height*depth);
-    pressureTex0->initData((float *)densityBuffer);
+    pressureTex0->initData(densityBuffer);
     pressureTex0->interpolation(GL_NEAREST);
     pressureTex0->wrap(GL_CLAMP_TO_BORDER);
 
     pressureTex1 = new Texture2D(GL_R16F, GL_RED, GL_HALF_FLOAT, width, height*depth);
-    pressureTex1->initData((float *)densityBuffer);
+    pressureTex1->initData(densityBuffer);
     pressureTex1->interpolation(GL_NEAREST);
     pressureTex1->wrap(GL_CLAMP_TO_BORDER);
 
     divergenceTex = new Texture2D(GL_R16F, GL_RED, GL_HALF_FLOAT, width, height*depth);
-    divergenceTex->initData((float *)densityBuffer);
+    divergenceTex->initData(densityBuffer);
     divergenceTex->interpolation(GL_NEAREST);
     divergenceTex->wrap(GL_CLAMP_TO_BORDER);
 

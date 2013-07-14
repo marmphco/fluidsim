@@ -18,6 +18,7 @@
 #include "colors.h"
 #include <cmath>
 #include <iostream>
+#include <CoreFoundation/CoreFoundation.h>
 
 using namespace mcjee;
 using namespace std;
@@ -291,7 +292,9 @@ int main(int argc, char **argv) {
     glutInitWindowSize(FRAME_WIDTH, FRAME_HEIGHT);
     glutInitWindowPosition(100, 100);
     mainWindow = glutCreateWindow("Fluid Simulator");
-
+    //for debug with Instruments
+    //Core Foundation needs to be used somewhere
+    //CFShow(CFSTR("Debug Mode\n"));
 #ifndef __APPLE__
     glewInit();
 #endif
@@ -305,7 +308,6 @@ int main(int argc, char **argv) {
     mainFrameBuffer->addRenderTarget(colorTarget, GL_COLOR_ATTACHMENT0);
     mainFrameBuffer->addRenderTarget(GL_DEPTH_COMPONENT, GL_DEPTH_ATTACHMENT);
     mainFrameBuffer->backgroundColor = Vector4(0.0, 0.0, 0.0, 0.0);
-
 
     GLUI *gui = GLUI_Master.create_glui_subwindow(mainWindow, GLUI_SUBWINDOW_LEFT);
     profiler = new Profiler(gui);
@@ -340,10 +342,13 @@ int main(int argc, char **argv) {
     GLUI_Master.set_glutKeyboardFunc(keyboardEvent);
     glutMainLoop();
 
-    //delete all shaders too
     uiTearDown();
     deleteSimulation();
     delete displayShader;
+    delete simpleShader;
+    delete particleShader;
+    delete glowShader;
+    delete mixShader;
     delete colorTarget;
     delete mainFrameBuffer;
     delete profiler;
